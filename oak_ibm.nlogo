@@ -1,4 +1,4 @@
-globals [year harvestyear harvestsite phase Hs Ds J G]
+globals [year harvestyear harvestsite phase Hs Ds J G basal-area prop-oak prop-tol prop-intol tree-dens]
 breed [oaks oak]
 breed [acorns acorn]
 breed [maples maple]
@@ -195,6 +195,12 @@ to setup
   ask patches with [canopy-cover > 0.7] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
   
+  set tree-dens count turtles with [dbh >= 0.025]
+  set basal-area sum [ba] of turtles with [dbh >= 0.025]
+  set prop-oak (sum [ba] of turtles with [dbh >= 0.025 and breed = oaks] / basal-area)
+  set prop-tol (sum [ba] of turtles with [dbh >= 0.025 and breed = maples] / basal-area)
+  set prop-intol (sum [ba] of turtles with [dbh >= 0.025 and breed = poplars] / basal-area)
+  setup-plots
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -274,6 +280,13 @@ to go
   ask patches with [canopy-cover > 0.3] [set pcolor yellow]
   ask patches with [canopy-cover > 0.7] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
+
+  set tree-dens count turtles with [dbh >= 0.025]
+  set basal-area sum [ba] of turtles with [dbh >= 0.025]
+  set prop-oak (sum [ba] of turtles with [dbh >= 0.025 and breed = oaks] / basal-area)
+  set prop-tol (sum [ba] of turtles with [dbh >= 0.025 and breed = maples] / basal-area)
+  set prop-intol (sum [ba] of turtles with [dbh >= 0.025 and breed = poplars] / basal-area)
+  
   tick
 end
 
@@ -751,10 +764,10 @@ to conduct-harvest
   ]]
 end
 
-to-report basal-area
-  let total sum [ba] of turtles with [dbh >= 0.025]
-  report total
-end
+;;to-report basal-area
+;;  let total sum [ba] of turtles with [dbh >= 0.025]
+;;  report total
+;;end
 
 
 
@@ -1002,7 +1015,7 @@ maple-establish-prob
 maple-establish-prob
 0
 1
-0.26
+0.15
 0.01
 1
 NIL
@@ -1025,7 +1038,7 @@ SWITCH
 637
 harvest
 harvest
-0
+1
 1
 -1000
 
@@ -1151,9 +1164,65 @@ SWITCH
 637
 full-harvest
 full-harvest
-0
+1
 1
 -1000
+
+PLOT
+1050
+106
+1250
+256
+Basal Area
+Years
+M2/ha
+0.0
+10.0
+0.0
+10.0
+true
+false
+"set-plot-y-range (precision (basal-area - 10) 0) (precision (basal-area + 10) 0)\nplot-pen-up\nplotxy 0 basal-area\nplot-pen-down" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot basal-area"
+
+PLOT
+1070
+309
+1270
+459
+Density
+Years
+Trees / ha
+0.0
+10.0
+0.0
+10.0
+true
+false
+"set-plot-y-range (precision (tree-dens - 100) 0) (precision (tree-dens + 100) 0)\nplot-pen-up\nplotxy 0 tree-dens\nplot-pen-down" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles with [dbh >= 0.025]"
+
+PLOT
+1046
+491
+1246
+641
+Prop Oak
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot prop-oak"
+"pen-1" 1.0 0 -13345367 true "" "plot prop-tol"
+"pen-2" 1.0 0 -6917194 true "" "plot prop-intol"
 
 @#$#@#$#@
 ## WHAT IS IT?
