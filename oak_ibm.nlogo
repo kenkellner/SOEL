@@ -1,4 +1,5 @@
-globals [year harvestyear harvestsite phase Hs Ds J G basal-area prop-oak prop-tol prop-intol tree-dens]
+globals [year harvestyear harvestsite phase Hs Ds J G basal-area prop-oak prop-tol prop-intol tree-dens
+  oak-crown-dens maple-crown-dens pop-crown-dens]
 breed [oaks oak]
 breed [acorns acorn]
 breed [maples maple]
@@ -27,6 +28,12 @@ to setup
   [set harvestyear rotation-length]
   set harvestsite 1
   set phase 1
+  
+  ;;Initialize crown density
+  set oak-crown-dens 0.8
+  set maple-crown-dens 0.9
+  set pop-crown-dens 0.8
+  
   
   ;;calculate some values related to dbh/height
   ;;Johnson 2002
@@ -195,7 +202,7 @@ to setup
   ask patches with [canopy-cover > 0.7] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
   
-  set tree-dens count turtles with [dbh >= 0.025]
+  set tree-dens count turtles with [height >= 1.5]
   set basal-area sum [ba] of turtles with [dbh >= 0.025]
   set prop-oak (sum [ba] of turtles with [dbh >= 0.025 and breed = oaks] / basal-area)
   set prop-tol (sum [ba] of turtles with [dbh >= 0.025 and breed = maples] / basal-area)
@@ -225,6 +232,11 @@ to go
   ask patches [set canopy-cover 0]
   ask patches [set pcolor brown]
   
+   ;;draw the tree canopy (which will effect other trees)
+  ask turtles with [stage = "mature" or stage = "sapling"][
+    draw-canopy
+  ]
+  
   ;;start with mature and sapling trees
   ask turtles with [stage = "mature" or stage = "sapling"][
     ;;set crown class (dominant = dom/codominant; non-dominant = intermediate/suppressed)
@@ -235,8 +247,6 @@ to go
     check-survival
     ;;if it does, grow
     grow
-    ;;draw the tree canopy (which will effect other trees)
-    draw-canopy
   ]
   
   ;;ask mature trees to produce seeds or sapling trees
@@ -281,7 +291,7 @@ to go
   ask patches with [canopy-cover > 0.7] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
 
-  set tree-dens count turtles with [dbh >= 0.025]
+  set tree-dens count turtles with [height >= 1.5]
   set basal-area sum [ba] of turtles with [dbh >= 0.025]
   set prop-oak (sum [ba] of turtles with [dbh >= 0.025 and breed = oaks] / basal-area)
   set prop-tol (sum [ba] of turtles with [dbh >= 0.025 and breed = maples] / basal-area)
@@ -370,8 +380,8 @@ to init-oak-values
    set color black
    set seedling-growth oak-seedling-growth
    ;;placeholders for canopy density values (need to be calibrated)
-   set canopy-density 0.5
-   set midstory-density 0.3
+   set canopy-density oak-crown-dens
+   set midstory-density (oak-crown-dens * 0.5)
    set light-cutoff 0.49
    set site-index site-index-oak
    ;;growth parameters ( 
@@ -389,8 +399,8 @@ to init-maple-values
   set color blue
   set seedling-growth 0.3
   set light-cutoff 0.05
-  set canopy-density 0.7
-  set midstory-density 0.5
+  set canopy-density maple-crown-dens
+  set midstory-density (maple-crown-dens * 0.5)
   set site-index site-index-maple
   set b1 6.1308
   set b2 0.6904
@@ -406,8 +416,8 @@ to init-poplar-values
   ;;placeholder
   set seedling-growth 0.3
   set light-cutoff 0.65
-  set canopy-density 0.5
-  set midstory-density 0.3
+  set canopy-density pop-crown-dens
+  set midstory-density (pop-crown-dens * 0.5)
   set site-index site-index-maple
   ;;Carmean 1989
   set b1 1.2941
@@ -503,7 +513,7 @@ to check-survival
       ifelse dominance = true [
         if random-float 1 > .997 [create-sprout]]
       [if random-float 1 > 0.992 [create-sprout]]]]
- ;;placeholder for maple survival
+ ;;placeholder for poplar survival
  if breed = poplars [
    if stage = "sapling" [
      if random-float 1 > .97 [die]
@@ -665,6 +675,18 @@ to create-sprout
     [die]]
 end
 
+
+
+
+
+
+
+
+;;;;;;Harvest Stuff;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 to conduct-harvest
   if harvest = true and harvesttype = "clearcut" [
     ;;cut all mature trees in one quadrant
@@ -764,12 +786,6 @@ to conduct-harvest
   ]]
 end
 
-;;to-report basal-area
-;;  let total sum [ba] of turtles with [dbh >= 0.025]
-;;  report total
-;;end
-
-
 
 
 
@@ -820,7 +836,7 @@ rotation-length
 rotation-length
 0
 100
-93
+100
 1
 1
 years
@@ -1015,7 +1031,7 @@ maple-establish-prob
 maple-establish-prob
 0
 1
-0.15
+0.14
 0.01
 1
 NIL
@@ -1029,7 +1045,7 @@ CHOOSER
 harvesttype
 harvesttype
 "clearcut" "shelterwood" "single-tree" "group"
-2
+0
 
 SWITCH
 21
@@ -1096,7 +1112,7 @@ MONITOR
 111
 597
 trees per acre
-count turtles with [dbh >= 0.025] * 0.40477
+count turtles with [height >= 1.5] * 0.40477
 2
 1
 11
@@ -1107,7 +1123,7 @@ MONITOR
 198
 596
 trees per ha
-count turtles with [dbh >= 0.025]
+count turtles with [height >= 1.5]
 2
 1
 11
@@ -1164,7 +1180,7 @@ SWITCH
 637
 full-harvest
 full-harvest
-1
+0
 1
 -1000
 
@@ -1187,10 +1203,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot basal-area"
 
 PLOT
-1070
-309
-1270
-459
+1050
+312
+1250
+462
 Density
 Years
 Trees / ha
@@ -1202,13 +1218,13 @@ true
 false
 "set-plot-y-range (precision (tree-dens - 100) 0) (precision (tree-dens + 100) 0)\nplot-pen-up\nplotxy 0 tree-dens\nplot-pen-down" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles with [dbh >= 0.025]"
+"default" 1.0 0 -16777216 true "" "plot tree-dens"
 
 PLOT
-1046
-491
-1246
-641
+1050
+472
+1250
+622
 Prop Oak
 NIL
 NIL
@@ -1223,6 +1239,17 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot prop-oak"
 "pen-1" 1.0 0 -13345367 true "" "plot prop-tol"
 "pen-2" 1.0 0 -6917194 true "" "plot prop-intol"
+
+MONITOR
+1050
+630
+1151
+675
+understory light
+mean [light] of turtles with [height < 1.5]
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
