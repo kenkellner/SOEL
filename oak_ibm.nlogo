@@ -6,13 +6,13 @@ breed [maples maple]
 breed [poplars poplar]
 oaks-own [age dbh height canopy-radius canopy-density midstory-density ba light-cutoff sprout?
   root stage dominance light acorn-mean seedling-growth site-index
-  b1 b2 b3 b4 b5 maxage maxht]
+  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept]
 maples-own [age dbh height canopy-radius canopy-density midstory-density ba seedling-growth light-cutoff sprout?
   root stage dominance light site-index
-  b1 b2 b3 b4 b5 maxage maxht]
+  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept]
 poplars-own [age dbh height canopy-radius canopy-density midstory-density ba seedling-growth light-cutoff sprout?
   root stage dominance light site-index
-  b1 b2 b3 b4 b5 maxage maxht]
+  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept]
 acorns-own [weevil cached germ]
 patches-own [canopy-cover midstory-cover]
 
@@ -198,8 +198,8 @@ to setup
   ;;color patches accordingly
   ask patches with [midstory-cover > 0] [set pcolor green]
   ask patches with [midstory-cover > 0.3] [set pcolor lime]
-  ask patches with [canopy-cover > 0.3] [set pcolor yellow]
-  ask patches with [canopy-cover > 0.7] [set pcolor orange]
+  ask patches with [canopy-cover > 0.7] [set pcolor yellow]
+  ask patches with [canopy-cover > 0.8] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
   
   set tree-dens count turtles with [height >= 1.5]
@@ -287,8 +287,8 @@ to go
   ;;re-color patches according to available light
   ask patches with [midstory-cover > 0] [set pcolor green]
   ask patches with [midstory-cover > 0.3] [set pcolor lime]
-  ask patches with [canopy-cover > 0.3] [set pcolor yellow]
-  ask patches with [canopy-cover > 0.7] [set pcolor orange]
+  ask patches with [canopy-cover > 0.7] [set pcolor yellow]
+  ask patches with [canopy-cover > 0.8] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
 
   set tree-dens count turtles with [height >= 1.5]
@@ -316,22 +316,39 @@ to grow
     
     ;;adjusted height growth based on environment
     ;;only grow if > than light cutoff
-    if light >= light-cutoff [ 
+    ;;if light >= light-cutoff [ 
       ;;scale growth based on avaiable light (light ranges from 0 to 1)
-      set height height + raw-ht-growth * light
+      
       if breed = oaks [
+        let light-scale (growth-slope * light + growth-intercept)
+        if light > .25 [set light-scale 1]
+        if light < .10 [set light-scale 0]
+        
+        set height (height + raw-ht-growth * light-scale)
       ;;set dbh Johnson 2002 curve
       if (1 - ((height - 1.37) / G)) > 0 [
-      set dbh (ln(1 - ((height - 1.37) / G)) / J) * 0.01
-      set ba pi * (dbh / 2) ^ 2]
+        set dbh (ln(1 - ((height - 1.37) / G)) / J) * 0.01
+        set ba pi * (dbh / 2) ^ 2]
       set canopy-radius (0.376 * height) / 2]
+      
       if breed = maples [
-        if height > 1.3 [set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
+        let light-scale (growth-slope * light + growth-intercept)
+        if light > .10 [set light-scale 1]
+        if light < .05 [set light-scale 0]
+        set height (height + raw-ht-growth * light-scale)
+        if height > 1.3 [
+          set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
           set ba pi * (dbh / 2) ^ 2]
       set canopy-radius (0.393 * height) / 2]
+      
       if breed = poplars [
+        let light-scale (growth-slope * light + growth-intercept)
+        if light > .50 [set light-scale 1]
+        if light < .25 [set light-scale 0]
+        set height (height + raw-ht-growth * light-scale)
         ;;placeholder!!!!!!
-        if height > 1.3 [set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
+        if height > 1.3 [
+          set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
           set ba pi * (dbh / 2) ^ 2]
         set canopy-radius (0.393 * height) / 2
       ]
@@ -344,14 +361,16 @@ to grow
       if breed = maples [set shape "leaf"]
       if breed = poplars [set shape "plant"]
       ]   
-  ]
+;;]
   ;;seedling class
   if height < 1.5 [ 
     ;;baseline height growth
     let raw-ht-growth random-normal seedling-growth 0.09    
     set height height + raw-ht-growth   
     ;;convert to sapling class if height >1.5m
-    if height >= 1.5 [set stage "sapling" set shape "square" set hidden? FALSE init-oak-values]
+    if height >= 1.5 and breed = oaks [set stage "sapling" set shape "square" set hidden? FALSE init-oak-values]
+    if height >= 1.5 and breed = maples [set stage "sapling" set shape "square" set hidden? FALSE init-maple-values]
+    if height >= 1.5 and breed = poplars [set stage "sapling" set shape "square" set hidden? FALSE init-poplar-values]
   ]    
 end
 
@@ -382,7 +401,9 @@ to init-oak-values
    ;;placeholders for canopy density values (need to be calibrated)
    set canopy-density oak-crown-dens
    set midstory-density (oak-crown-dens * 0.5)
-   set light-cutoff 0.49
+   ;;set light-cutoff 0.49
+   set growth-slope 6.667
+   set growth-intercept -0.667
    set site-index site-index-oak
    ;;growth parameters ( 
    set b1 4.5598
@@ -398,7 +419,9 @@ end
 to init-maple-values
   set color blue
   set seedling-growth 0.3
-  set light-cutoff 0.05
+  ;;set light-cutoff 0.05
+  set growth-slope 20
+  set growth-intercept -1
   set canopy-density maple-crown-dens
   set midstory-density (maple-crown-dens * 0.5)
   set site-index site-index-maple
@@ -415,7 +438,9 @@ to init-poplar-values
   set color violet
   ;;placeholder
   set seedling-growth 0.3
-  set light-cutoff 0.65
+  ;;set light-cutoff 0.65
+  set growth-slope 4
+  set growth-intercept -1
   set canopy-density pop-crown-dens
   set midstory-density (pop-crown-dens * 0.5)
   set site-index site-index-maple
