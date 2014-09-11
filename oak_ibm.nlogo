@@ -1,18 +1,17 @@
-globals [year harvestyear harvestsite phase Hs Ds J G basal-area prop-oak prop-tol prop-intol tree-dens
-  oak-crown-dens maple-crown-dens pop-crown-dens]
+globals [year harvestyear harvestsite phase Hs Ds J G basal-area prop-oak prop-tol prop-intol tree-dens]
 breed [oaks oak]
 breed [acorns acorn]
 breed [maples maple]
 breed [poplars poplar]
-oaks-own [age dbh height canopy-radius canopy-density midstory-density ba light-cutoff sprout?
-  root stage dominance light acorn-mean seedling-growth site-index
-  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept]
-maples-own [age dbh height canopy-radius canopy-density midstory-density ba seedling-growth light-cutoff sprout?
-  root stage dominance light site-index
-  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept]
-poplars-own [age dbh height canopy-radius canopy-density midstory-density ba seedling-growth light-cutoff sprout?
-  root stage dominance light site-index
-  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept]
+oaks-own [age dbh height canopy-radius canopy-density midstory-density ba sprout?
+  stage dominance light acorn-mean seedling-growth site-index
+  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept upper-cutoff lower-cutoff]
+maples-own [age dbh height canopy-radius canopy-density midstory-density ba seedling-growth sprout?
+  stage dominance light site-index
+  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept upper-cutoff lower-cutoff]
+poplars-own [age dbh height canopy-radius canopy-density midstory-density ba seedling-growth sprout?
+  stage dominance light site-index
+  b1 b2 b3 b4 b5 maxage maxht growth-slope growth-intercept upper-cutoff lower-cutoff]
 acorns-own [weevil cached germ]
 patches-own [canopy-cover midstory-cover]
 
@@ -22,18 +21,14 @@ patches-own [canopy-cover midstory-cover]
 to setup
   clear-all
   reset-ticks
-  ;;initialize some index variables related to harvest
+  
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;Initialize global variables without sliders
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   set year 0
-  ifelse full-harvest = TRUE [set harvestyear 50]
-  [set harvestyear rotation-length]
+  ifelse full-harvest = TRUE [set harvestyear 50][set harvestyear rotation-length]
   set harvestsite 1
   set phase 1
-  
-  ;;Initialize crown density
-  set oak-crown-dens 0.8
-  set maple-crown-dens 0.9
-  set pop-crown-dens 0.8
-  
   
   ;;calculate some values related to dbh/height
   ;;Johnson 2002
@@ -43,8 +38,9 @@ to setup
   set J ln((1.12 * Hs - Hs) / (1.12 * Hs - 1.37)) / Ds
   set G 1.12 * Hs - 1.37
   
-  
-  ;;set all patches to no cover and color brown to initialize
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
+  ;;Set all patches to no cover and color brown to initialize
   ask patches [
     set pcolor brown
     set midstory-cover 0
@@ -53,25 +49,13 @@ to setup
   ;;Create intial oaks:
   ;;Create mature oaks (even-aged distribution)
   create-oaks init-mature-oak [
-    init-oak-values
-    set age random-poisson stand-age
+    init-tree-values
     set stage "mature"
+    set age random-poisson stand-age
     set shape "tree"
-    set size 2
-    ;;mean oak production based on HEE histogram
-    set acorn-mean random-exponential 10
-   
-    ;; from Carmean 1989 - set height based on growth equation; set other size vars based on height
-    set height (b1 * site-index ^ b2 * (1 - e ^ (b3 * (age + 1))) ^ (b4 * site-index ^ b5)) * 0.3048
-    if height > maxht [set height maxht]
-    ;;Kenefic and Nyland 1999
-    set dbh (ln(1 - ((height - 1.37) / G)) / J) * 0.01
-  
-    ;;basal area
-    set ba pi * (dbh / 2) ^ 2
-    ;;From Yang et al. 1999
-    set canopy-radius (0.376 * height) / 2
-    
+    set size 2    
+    set height calc-height (age + 1)
+    calc-size-vars   
     ;;place trees semi-randomly (so they aren't unrealisticly close to each other)
     ifelse init-mature-oak < 500 [
     loop [
@@ -80,134 +64,106 @@ to setup
     [setxy random-xcor random-ycor]
   ]
   
+  ;;now create maple trees on site (basically same way as oak)
+  create-maples init-mature-maple [
+    init-tree-values
+    set stage "mature"
+    set age random-poisson stand-age
+    set shape "leaf"
+    set size 2
+    set height calc-height (age + 1)
+    calc-size-vars   
+    ;;place trees semi-randomly
+    loop [
+    setxy random-xcor random-ycor
+    if count turtles with [stage = "mature"] in-radius 2 < 2 [stop]]
+  ]
+  
+  ;;create mature poplars
+  create-poplars init-mature-poplar [
+    init-tree-values
+    set stage "mature"
+    set age random-poisson stand-age
+    set shape "plant"
+    set size 2
+    set height calc-height (age + 1)    
+    calc-size-vars  
+    ;;place trees semi-randomly
+    loop [
+    setxy random-xcor random-ycor
+    if count turtles with [stage = "mature"] in-radius 2 < 2 [stop]]
+  ]
+  
+  ask turtles with [stage = "mature"] [draw-canopy]
+  
   ;;create sapling oaks
   create-oaks init-sapling-oak [
-    init-oak-values
+    init-tree-values
     set stage "sapling"
     set shape "square"
     set age random 32 + 3
-    ;;from Carmean 1989 - set size based on age as above
-    set height (b1 * site-index ^ b2 * (1 - e ^ (b3 * (age + 1))) ^ (b4 * site-index ^ b5)) * 0.3048
-    set dbh (ln(1 - ((height - 1.37) / G)) / J) * 0.01
-    set ba pi * (dbh / 2) ^ 2
-    ;;set canopy-radius sqrt(height * 3.585 / pi)
-    ;;set canopy-radius (1.7173 + dbh * 15.6159) / 2
-    set canopy-radius (0.376 * height) / 2
+    set height calc-height (age + 1)
+    calc-size-vars   
+    loop [
     setxy random-xcor random-ycor
+    if mean [canopy-cover] of patches in-radius 3 < 0.8 [stop]]
   ]
   
   ;;create seedling oaks
   create-oaks init-seedling-oak [
-    init-oak-values
+    init-tree-values
     set size 1
     set stage "seedling"
     set age random 3
     ;;seedlings are below 1.5 m in height
     set height random 1.5
-    ;;will only grow if available light is above cutoff
-    set light-cutoff 0.49
-    ;;to minimize distractions
     set hidden? TRUE
     setxy random-xcor random-ycor
   ]
-  
-  ;;now create maple trees on site (basically same way as oak)
-  create-maples init-mature-maple [
-    init-maple-values
-    set stage "mature"
-    set age random-poisson stand-age
-    set shape "leaf"
-    set size 2
-    ;;set size based on height and site index (equation is the same, parameters b1-b5 differ)
-    set height (b1 * site-index ^ b2 * (1 - e ^ (b3 * (age + 1))) ^ (b4 * site-index ^ b5)) * 0.3048
-    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-    set ba pi * (dbh / 2) ^ 2
-    ;;set canopy-radius sqrt(height * 3.585 / pi)
-    set canopy-radius (0.393 * height) / 2
     
-    ;;place trees semi-randomly
-    loop [
-    setxy random-xcor random-ycor
-    if count turtles with [stage = "mature"] in-radius 2 < 2 [stop]]
-  ]
-  
   ;;create sapling maples
   create-maples init-sapling-maple [
-    init-maple-values
+    init-tree-values
     set stage "sapling"
-    set shape "square"
     set age random 32 + 3
-    set height (b1 * site-index ^ b2 * (1 - e ^ (b3 * (age + 1))) ^ (b4 * site-index ^ b5)) * 0.3048
-    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-    set ba pi * (dbh / 2) ^ 2
-    ;;set canopy-radius sqrt(height * 3.585 / pi)
-    set canopy-radius (0.393 * height) / 2
+    set shape "square"
+    set height calc-height (age + 1)
+    calc-size-vars
     setxy random-xcor random-ycor
   ]
-  
-  ;;create mature poplars
-  create-poplars init-mature-poplar [
-    init-poplar-values
-    set stage "mature"
-    set age random-poisson stand-age
-    set shape "plant"
-    set size 2
-    ;;set size based on height and site index (equation is the same, parameters b1-b5 differ)
-    set height (b1 * site-index ^ b2 * (1 - e ^ (b3 * (age + 1))) ^ (b4 * site-index ^ b5)) * 0.3048
     
-    ;;placeholder!!
-    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-    
-    set ba pi * (dbh / 2) ^ 2
-    ;;set canopy-radius sqrt(height * 3.585 / pi)
-    ;;placeholder!!
-    set canopy-radius (0.393 * height) / 2
-    
-    ;;place trees semi-randomly
-    loop [
-    setxy random-xcor random-ycor
-    if count turtles with [stage = "mature"] in-radius 2 < 2 [stop]]
-  ]
-  
   ;;create sapling poplars
   create-poplars init-sapling-poplar [
-    init-poplar-values
+    init-tree-values
     set stage "sapling"
     set shape "square"
     set color violet
     set age random 32 + 3
-    set height (b1 * site-index ^ b2 * (1 - e ^ (b3 * (age + 1))) ^ (b4 * site-index ^ b5)) * 0.3048
-    
-    ;;placeholder!
-    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-    
-    set ba pi * (dbh / 2) ^ 2
-    
-    ;;set canopy-radius sqrt(height * 3.585 / pi)
-    ;;placeholder!!
-    set canopy-radius (0.393 * height) / 2
+    set height calc-height (age + 1)   
+    calc-size-vars
+    loop [
     setxy random-xcor random-ycor
+    if mean [canopy-cover] of patches in-radius 3 < 0.8 [stop]]
   ]
- 
- 
- 
- 
- 
-  ;;draw canopies of mature and sapling trees
-  ask turtles with [stage = "mature" or stage = "sapling"] [draw-canopy]
+  
+  ;;draw canopies of sapling trees
+  ask turtles with [stage = "sapling"] [draw-canopy]
+  
+  
   ;;color patches accordingly
-  ask patches with [midstory-cover > 0] [set pcolor green]
   ask patches with [midstory-cover > 0.3] [set pcolor lime]
   ask patches with [canopy-cover > 0.7] [set pcolor yellow]
   ask patches with [canopy-cover > 0.8] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
   
+  ;;Calculate global reporter values  
   set tree-dens count turtles with [height >= 1.5]
   set basal-area sum [ba] of turtles with [dbh >= 0.025]
   set prop-oak (sum [ba] of turtles with [dbh >= 0.025 and breed = oaks] / basal-area)
   set prop-tol (sum [ba] of turtles with [dbh >= 0.025 and breed = maples] / basal-area)
   set prop-intol (sum [ba] of turtles with [dbh >= 0.025 and breed = poplars] / basal-area)
   setup-plots
+
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -220,22 +176,13 @@ end
 to go
   ;;advance year and reset patches to brown
   set year year + 1
-  
-  let current-age max [age] of oaks
-  
-  set Hs 1.80408 * (site-index-oak * 0.3048) ^ (0.932097) * (1 - exp(-0.0240308 * current-age)) ^ (2.55529 * (site-index-oak * 0.3048) ^ (-0.280445))
-  set Ds 6.40146 * (site-index-oak * 0.3048) ^ (0.631893) * (1 - exp(-0.0227614 * current-age)) ^ (1.21892)
-  set J ln((1.12 * Hs - Hs) / (1.12 * Hs - 1.37)) / Ds
-  set G 1.12 * Hs - 1.37
-  
+
   ask patches [set midstory-cover 0]
   ask patches [set canopy-cover 0]
   ask patches [set pcolor brown]
   
    ;;draw the tree canopy (which will effect other trees)
-  ask turtles with [stage = "mature" or stage = "sapling"][
-    draw-canopy
-  ]
+  ask turtles with [stage = "mature" or stage = "sapling"][draw-canopy]
   
   ;;start with mature and sapling trees
   ask turtles with [stage = "mature" or stage = "sapling"][
@@ -267,6 +214,9 @@ to go
     check-survival
     grow
   ]
+  
+  ;;;;;;;;;;;;;;;;;;
+  ;;;;;Harvest stuff
   if full-harvest = TRUE [set harvestsite 6]
    ;;harvest cycle (if enabled) - occurs last, assumed to be fall/winter
    if year = harvestyear [
@@ -283,14 +233,16 @@ to go
      ;;setup next harvest time
      set harvestyear harvestyear + rotation-length] 
      ]
+   
+  ;;;;;;;;;;;;;;;;;;;;
   
   ;;re-color patches according to available light
-  ask patches with [midstory-cover > 0] [set pcolor green]
   ask patches with [midstory-cover > 0.3] [set pcolor lime]
   ask patches with [canopy-cover > 0.7] [set pcolor yellow]
   ask patches with [canopy-cover > 0.8] [set pcolor orange]
   ask patches with [canopy-cover > 0.9] [set pcolor red]
 
+  ;;Calculate global reporter values
   set tree-dens count turtles with [height >= 1.5]
   set basal-area sum [ba] of turtles with [dbh >= 0.025]
   set prop-oak (sum [ba] of turtles with [dbh >= 0.025 and breed = oaks] / basal-area)
@@ -298,10 +250,44 @@ to go
   set prop-intol (sum [ba] of turtles with [dbh >= 0.025 and breed = poplars] / basal-area)
   
   tick
+
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+to-report calc-height [input-age]
+  ;;Based on Carmean 1989
+  let output (b1 * site-index ^ b2 * (1 - e ^ (b3 * input-age)) ^ (b4 * site-index ^ b5)) * 0.3048
+  ifelse output > maxht [report maxht][report output]
+end
+
+
+
+to calc-size-vars
+  if breed = oaks and (1 - ((height - 1.37) / G)) > 0[
+    ;;Kenefic and Nyland 1999
+    set dbh (ln(1 - ((height - 1.37) / G)) / J) * 0.01
+    set ba pi * (dbh / 2) ^ 2
+    set canopy-radius (0.376 * height) / 2
+  ]
+  
+  if breed = maples [
+    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
+    set ba pi * (dbh / 2) ^ 2
+    set canopy-radius (0.393 * height) / 2
+  ]
+  
+  if breed = poplars [
+    ;placeholder
+    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
+    set ba pi * (dbh / 2) ^ 2
+    set canopy-radius (0.393 * height) / 2
+  ]
+  
+end
+
 
 
 to grow
@@ -310,68 +296,43 @@ to grow
     ;;baseline height growth
     ;;apparent age is how old the tree should be based on its current height
     let apparent-age round((ln(1 - ((height * 3.28084) * site-index ^ (-1 * b2) / b1) ^ (site-index ^ (-1 * b5) / b4))) / b3)
-    ;;max growth possible for a tree of that "apparent age"  
-    let raw-ht-growth ((b1 * site-index ^ b2 * (1 - e ^ (b3 * (apparent-age + 1))) ^ (b4 * site-index ^ b5)) - 
-      (b1 * site-index ^ b2 * (1 - e ^ (b3 * (apparent-age))) ^ (b4 * site-index ^ b5))) * 0.3048
-    
-    ;;adjusted height growth based on environment
-    ;;only grow if > than light cutoff
-    ;;if light >= light-cutoff [ 
-      ;;scale growth based on avaiable light (light ranges from 0 to 1)
-      
-      if breed = oaks [
-        let light-scale (growth-slope * light + growth-intercept)
-        if light > .25 [set light-scale 1]
-        if light < .10 [set light-scale 0]
+    ;;max growth possible for a tree of that "apparent age"   
+    let raw-ht-growth (calc-height (apparent-age + 1)) - (calc-height (apparent-age))
         
-        set height (height + raw-ht-growth * light-scale)
-      ;;set dbh Johnson 2002 curve
-      if (1 - ((height - 1.37) / G)) > 0 [
-        set dbh (ln(1 - ((height - 1.37) / G)) / J) * 0.01
-        set ba pi * (dbh / 2) ^ 2]
-      set canopy-radius (0.376 * height) / 2]
+    ;;adjusted height growth based on environment
+    ;;scale growth based on available light (light ranges from 0 to 1)
+    let light-scale (growth-slope * light + growth-intercept)    
+    if light > upper-cutoff [set light-scale 1]
+    if light < lower-cutoff [set light-scale 0]        
+    set height (height + raw-ht-growth * light-scale)    
+    if raw-ht-growth > 0 [calc-size-vars]
       
-      if breed = maples [
-        let light-scale (growth-slope * light + growth-intercept)
-        if light > .10 [set light-scale 1]
-        if light < .05 [set light-scale 0]
-        set height (height + raw-ht-growth * light-scale)
-        if height > 1.3 [
-          set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-          set ba pi * (dbh / 2) ^ 2]
-      set canopy-radius (0.393 * height) / 2]
-      
-      if breed = poplars [
-        let light-scale (growth-slope * light + growth-intercept)
-        if light > .50 [set light-scale 1]
-        if light < .25 [set light-scale 0]
-        set height (height + raw-ht-growth * light-scale)
-        ;;placeholder!!!!!!
-        if height > 1.3 [
-          set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-          set ba pi * (dbh / 2) ^ 2]
-        set canopy-radius (0.393 * height) / 2
-      ]
-      
-    ]
     ;;convert saplings with dbh >0.1 to mature trees
     if stage = "sapling" and dbh >= 0.1 [
       set stage "mature" set size 2 
-      if breed = oaks [set shape "tree" set acorn-mean random-exponential 10]
+      if breed = oaks [set shape "tree"]
       if breed = maples [set shape "leaf"]
       if breed = poplars [set shape "plant"]
-      ]   
-;;]
+    ]
+  ]   
+
   ;;seedling class
   if height < 1.5 [ 
     ;;baseline height growth
-    let raw-ht-growth random-normal seedling-growth 0.09    
-    set height height + raw-ht-growth   
+    let raw-ht-growth random-normal seedling-growth 0.09 
+    let light-scale (growth-slope * light + growth-intercept)   
+    if light > upper-cutoff [set light-scale 1]
+    if light < lower-cutoff [set light-scale 0]
+    set height (height + raw-ht-growth * light-scale)
+    
     ;;convert to sapling class if height >1.5m
-    if height >= 1.5 and breed = oaks [set stage "sapling" set shape "square" set hidden? FALSE init-oak-values]
-    if height >= 1.5 and breed = maples [set stage "sapling" set shape "square" set hidden? FALSE init-maple-values]
-    if height >= 1.5 and breed = poplars [set stage "sapling" set shape "square" set hidden? FALSE init-poplar-values]
-  ]    
+    if height >= 1.5 [
+      set stage "sapling" 
+      set shape "square" 
+      set hidden? FALSE
+    ]   
+  ]  
+    
 end
 
 
@@ -395,65 +356,72 @@ end
 
 
 ;;simple function to set a bunch of variables quickly
-to init-oak-values
-   set color black
-   set seedling-growth oak-seedling-growth
-   ;;placeholders for canopy density values (need to be calibrated)
-   set canopy-density oak-crown-dens
-   set midstory-density (oak-crown-dens * 0.5)
-   ;;set light-cutoff 0.49
-   set growth-slope 6.667
-   set growth-intercept -0.667
-   set site-index site-index-oak
-   ;;growth parameters ( 
-   set b1 4.5598
-   set b2 0.8136
-   set b3 -0.0132
-   set b4 2.2410
-   set b5 -0.1880
-   set maxage random 100 + 250
-   set maxht G
+to init-tree-values
+  if breed = oaks [
+    set color black
+    set seedling-growth oak-seedling-growth
+    ;;placeholders for canopy density values (need to be calibrated)
+    set canopy-density 0.8
+    set midstory-density (canopy-density * 0.5)
+    set growth-slope 6.667
+    set growth-intercept -0.667
+    set upper-cutoff 0.25
+    set lower-cutoff 0.10
+    set site-index site-index-oak
+    ;;growth parameters
+    set b1 4.5598
+    set b2 0.8136
+    set b3 -0.0132
+    set b4 2.2410
+    set b5 -0.1880
+    set maxage random 100 + 250
+    set maxht G
+    ;;mean oak production based on HEE histogram
+    set acorn-mean random-exponential 10
+  ]
+  if breed = maples [
+    set color blue
+    set seedling-growth 0.3
+    set growth-slope 20
+    set growth-intercept -1
+    set upper-cutoff 0.10
+    set lower-cutoff 0.05
+    set canopy-density 0.9
+    set midstory-density (canopy-density * 0.5)
+    set site-index site-index-maple
+    set b1 6.1308
+    set b2 0.6904
+    set b3 -0.0195
+    set b4 10.1563
+    set b5 -0.5330
+    set maxage random 100 + 250
+    set maxht 34
+  ]
+  if breed = poplars [
+    set color violet
+    set seedling-growth 0.3
+    set growth-slope 4
+    set growth-intercept -1
+    set upper-cutoff 0.50
+    set lower-cutoff 0.25
+    set canopy-density 0.8
+    set midstory-density (canopy-density * 0.5)
+    set site-index site-index-poplar
+    ;;Carmean 1989
+    set b1 1.2941
+    set b2 0.9892
+    set b3 -0.0315
+    ;;error in Carmean 1989 for this!!!
+    set b4 1.0471
+    set b5 -0.0368
+    set maxage random 150 + 100
+    set maxht 40
+  ]
+  
 end
 
-;;simple function to set a bunch of variables quickly
-to init-maple-values
-  set color blue
-  set seedling-growth 0.3
-  ;;set light-cutoff 0.05
-  set growth-slope 20
-  set growth-intercept -1
-  set canopy-density maple-crown-dens
-  set midstory-density (maple-crown-dens * 0.5)
-  set site-index site-index-maple
-  set b1 6.1308
-  set b2 0.6904
-  set b3 -0.0195
-  set b4 10.1563
-  set b5 -0.5330
-  set maxage random 100 + 250
-  set maxht 34
-end
 
-to init-poplar-values
-  set color violet
-  ;;placeholder
-  set seedling-growth 0.3
-  ;;set light-cutoff 0.65
-  set growth-slope 4
-  set growth-intercept -1
-  set canopy-density pop-crown-dens
-  set midstory-density (pop-crown-dens * 0.5)
-  set site-index site-index-maple
-  ;;Carmean 1989
-  set b1 1.2941
-  set b2 0.9892
-  set b3 -0.0315
-  ;;error in Carmean 1989 for this!!!
-  set b4 1.0471
-  set b5 -0.0368
-  set maxage random 150 + 100
-  set maxht 40
-end
+
 
 to check-dominance
   ;;for saplings
@@ -468,6 +436,7 @@ to check-dominance
   ifelse height >= max [height] of turtles with [breed != acorns and stage = "mature"] in-radius canopy-radius [set dominance true]
   [set dominance false]]
 end
+
 
 
 
@@ -509,17 +478,17 @@ end
 
 
 
+
 to check-survival
  ;;advance age
  set age age + 1
  if breed = oaks [
-  if stage = "seedling" [
-    ;;survival related to available light
-   if random-float 1 > light * 0.97 [die]]   
-  if stage = "sapling" [
-    ifelse sprout? = TRUE [
-    if random-float 1 > light * 0.99 [die]]
-    [if random-float 1 > light * 0.97 [die]]]
+  if stage = "seedling" or stage = "sapling"[
+    ;;gap + partial light scenario
+    if light >= 0.5 [
+      if random-float 1 > 0.97 [die]]
+    if light < 0.5 [
+      if random-float 1 > 0.60 [die]]]   
   if stage = "mature" [
     ifelse age > maxage [die][
       ;;from Fan, Kabrick, Shifley 2006 - survival based on canopy class
@@ -528,6 +497,7 @@ to check-survival
         [if random-float 1 > .9922 [create-sprout]]]
       ;;[if random-float 1 > 0.9935 [create-sprout]]]]]
       [if random-float 1 > 0.9872 [create-sprout]]]]]
+ 
  ;;placeholder for maple survival
  if breed = maples [
    if stage = "sapling" [
@@ -535,20 +505,28 @@ to check-survival
    ]
    if stage = "mature" [
      ;;from Long, Horsle, Hilja 1997
-      ifelse dominance = true [
+     ifelse age > maxage [die][
+       ifelse dominance = true [
         if random-float 1 > .997 [create-sprout]]
-      [if random-float 1 > 0.992 [create-sprout]]]]
+      [if random-float 1 > 0.992 [create-sprout]]]]]
+ 
  ;;placeholder for poplar survival
  if breed = poplars [
    if stage = "sapling" [
-     if random-float 1 > .97 [die]
+         ;;gap + partial light scenario
+    if light >= 0.5 [
+      if random-float 1 > 0.97 [die]]
+    if light < 0.5 [
+      if random-float 1 > 0.60 [die]]
    ]
    if stage = "mature" [
+     ifelse age > maxage [die][
      ;;from Long, Horsle, Hilja 1997
       ifelse dominance = true [
         if random-float 1 > .997 [create-sprout]]
-      [if random-float 1 > 0.992 [create-sprout]]]]
+      [if random-float 1 > 0.992 [create-sprout]]]]]
 end
+
 
 
 
@@ -568,6 +546,10 @@ to produce-mast
   ]
 end
   
+  
+  
+  
+  
 to disperse-mast
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
@@ -584,6 +566,9 @@ to disperse-mast
   [if random-float 1 < 0.538 [die]]
 end
 
+
+
+
 ;;chance of acorn germination
 to germinate-mast
   ifelse cached = TRUE [
@@ -594,57 +579,55 @@ to germinate-mast
       hatch-oaks 1 [
         set age 1
         set size 1
-        init-oak-values
+        init-tree-values
         set stage "seedling"    
         set hidden? TRUE
       ]]
     die
 end
 
+
+
+
 to establish-trees
   if breed = maples [
   ;;sapling-stage maples produced randomly from mature maples to save time
   if random-float 1 < maple-establish-prob [
-  ;;let seedlings-produced (light * 3.1415 * canopy-radius * canopy-radius *  0.44) ;;per meter squared
-  let treexcor xcor
-  let treeycor ycor
-  ;;hatch a new maple sapling
-  hatch-maples 1
-  [
-    init-maple-values
-    set size 1
-    set age 4
-    set stage "sapling"
-    set shape "square"
-    set height 1.5
-    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-    ;;set canopy-radius sqrt(height * 3.585 / pi)
-    set canopy-radius (0.393 * height) / 2
-    right random 360
-    forward random-float 28
-  ]]]
+    ;;let seedlings-produced (light * 3.1415 * canopy-radius * canopy-radius *  0.44) ;;per meter squared
+    let treexcor xcor
+    let treeycor ycor
+    ;;hatch a new maple sapling
+    hatch-maples 1 [
+      init-tree-values
+      set age 4
+      set stage "sapling"
+      set shape "square"
+      set height 1.5
+      calc-size-vars
+      right random 360
+      forward random-float 28
+     ]
+   ]]
+  
   if breed = poplars [
     if random-float 1 < poplar-establish-prob [
-  ;;let seedlings-produced (light * 3.1415 * canopy-radius * canopy-radius *  0.44) ;;per meter squared
-  let treexcor xcor
-  let treeycor ycor
-  ;;hatch a new maple sapling
-  hatch-poplars 1
-  [
-    init-poplar-values
-    set size 1
-    set age 4
-    set stage "sapling"
-    set shape "square"
-    set color violet
-    set height 1.5
-    ;;placeholders!!
-    set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-    ;;set canopy-radius sqrt(height * 3.585 / pi)
-    set canopy-radius (0.393 * height) / 2
-    right random 360
-    forward random-float 28
-  ]]]
+      ;;let seedlings-produced (light * 3.1415 * canopy-radius * canopy-radius *  0.44) ;;per meter squared
+      let treexcor xcor
+      let treeycor ycor
+      ;;hatch a new maple sapling
+      hatch-poplars 1 [
+        init-tree-values
+        set age 4
+        set stage "sapling"
+        set shape "square"
+        set color violet
+        set height 1.5
+        calc-size-vars
+        right random 360
+        forward random-float 28
+      ]
+   ]]
+  
 end
 
 
@@ -657,12 +640,9 @@ to create-sprout
     ifelse random-float 1 < prob [
       set stage "sapling" set shape "square" set color black set sprout? TRUE
       set height 5.13286 - 0.07647 * (dbh * 39.3701) - 0.015 * age
-      set dbh (ln(1 - ((height - 1.37) / G)) / J) * 0.01
-      set canopy-radius (0.376 * height) / 2
-      set ba pi * (dbh / 2) ^ 2
+      calc-size-vars
       set age 1
       set maxage random 100 + 250
-      set maxht G
     ]
     [die]
   ]
@@ -676,10 +656,7 @@ to create-sprout
       set height 5.003 * dbh * dbh - 3.8167 * dbh + 1.274
       set age 1
       set dbh 0
-      if height > 1.3 [      
-      set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-      set ba pi * (dbh / 2) ^ 2]
-      set canopy-radius (0.393 * height) / 2
+      if height > 1.3 [calc-size-vars]
     ]
     [die]
   ]
@@ -692,13 +669,21 @@ to create-sprout
       set height random-normal 1.3 0.3
       set dbh 0
       set age 1
-      if height > 1.3 [      
-      set dbh ((-15.4112 / ln((height - 1.3) / 36.8618)) - 3.8011) * 0.01
-      set ba pi * (dbh / 2) ^ 2]
-      set canopy-radius (0.393 * height) / 2
+      if height > 1.3 [calc-size-vars]
     ]
     [die]]
 end
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1041,7 +1026,7 @@ init-sapling-maple
 init-sapling-maple
 0
 500
-52
+235
 1
 1
 maples
@@ -1275,6 +1260,21 @@ mean [light] of turtles with [height < 1.5]
 2
 1
 11
+
+SLIDER
+239
+901
+411
+934
+site-index-poplar
+site-index-poplar
+0
+100
+60
+5
+1
+feet
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
