@@ -495,7 +495,6 @@ to check-survival
       ifelse dominance = true [
         ifelse dbh <= 43 [if random-float 1 > .9976 [create-sprout] ]
         [if random-float 1 > .9922 [create-sprout]]]
-      ;;[if random-float 1 > 0.9935 [create-sprout]]]]]
       [if random-float 1 > 0.9872 [create-sprout]]]]]
  
  ;;placeholder for maple survival
@@ -621,6 +620,7 @@ to establish-trees
         set stage "sapling"
         set shape "square"
         set color violet
+        set size 1
         set height 1.5
         calc-size-vars
         right random 360
