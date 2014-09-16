@@ -1,6 +1,7 @@
 globals [ ]
 breed [oaks oak]
-oaks-own [Dmax Hmax Amax dbh height canopy-radius canopy-density ba b2 b3 C G tol light fAL max-growth]
+oaks-own [Dmax Hmax Amax age dbh height canopy-radius canopy-density ba b2 b3 C G tol light actual-growth intrinsic-mortality
+  min-increment growth-mortality degd-min degd-max]
 patches-own [cc5 cc10 cc15 cc20 cc25 cc30 cc35]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,9 +21,6 @@ to setup
     set cc30 0
     set cc35 0]
   
-  
-  ;;40 600 103.2 2245.9 40.869 0.198 72 1.75 2 10204 2966 1 1 
-  
   create-oaks init-mature-oak [
     ;;Parameters based on white oak; Holm 2012 and Botkin 1992/1993
     set shape "tree"
@@ -33,13 +31,21 @@ to setup
     set Amax 400
     ;;Initial dbh distribution based on HEE data
     set dbh (random-normal 39.2 11.5) / 100
+    ;;set age
     set b2 2 * (Hmax - 137) / (Dmax)
     set b3 (Hmax - 137) / (Dmax ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
     set C 1.75
     set G 104
+    set degd-min 1977
+    set degd-max 5894
     set canopy-density calc-shade (dbh * 100)
+    ;Based on 2% reaching max age; common to all species
+    ;Based on Botkin 1993
+    set intrinsic-mortality 4.0 / Amax
+    set min-increment 0.01
+    set growth-mortality 0.368
 
     set tol "intermediate"
     
@@ -81,14 +87,8 @@ to go
     set cc30 0
     set cc35 0]
   
-  ask turtles [
-    grow
-    draw-canopy
-  ]
-  
+  ask turtles [draw-canopy]
   ask patches [draw-final-canopy]
-  
-  ask turtles [calc-available-light]
   
   ;;color patches accordingly
   
@@ -98,6 +98,12 @@ to go
   ask patches with [cc5 > 0.7] [set pcolor orange]
   ask patches with [cc5 > 0.9] [set pcolor red]
   
+  ask turtles [
+    calc-available-light
+    grow
+    check-survival
+  ]
+    
   tick
 end
 
@@ -162,33 +168,70 @@ to-report max-growth-increment [dbh-input height-input]
   
 end
 
-to grow
-
-  set max-growth (max-growth-increment (dbh * 100) (height * 100))
+to-report light-growth-index [tol-input]
   
   ;Based on Botkin 1992
-  if tol = "low" or tol = "intermediate" [    
-    set fAL (2.24 * (1 - exp(-1.136 * (light - 0.08))))       
+  if tol-input = "low" or tol-input = "intermediate" [    
+    report (2.24 * (1 - exp(-1.136 * (light - 0.08))))       
   ]
   
-  if tol = "high" [
-    set fAL (1 - exp(-4.64 * (light - 0.05)))
+  if tol-input = "high" [
+    report (1 - exp(-4.64 * (light - 0.05)))   
   ]
   
-  let actual-growth (max-growth * fAL)
+end
+
+to-report degree-days-index [degd-min-input degd-max-input]
+  
+  let tdegd (4 * (DegDays - degd-min-input) * (degd-max-input - DegDays) / ((degd-max-input - degd-min-input) ^ 2))
+  
+  report max list 0 tdegd
+    
+end
+
+;to-report wilt-index [  ]
+  
+;  let wilt ((evap-potential-input - evap-actual-input) / evap-potential-input)
+  
+;  let wilt-step2 (1 - (wilt-step2 / wlmax-input) ^ 2)
+  
+;  report max list 0 wilt-step2
+  
+;end
+
+
+
+
+
+
+
+to grow
+
+  let max-growth (max-growth-increment (dbh * 100) (height * 100))
+  
+  let fAL light-growth-index tol
+  
+  let fT degree-days-index degd-min degd-max
+    
+  set actual-growth (max-growth * fAL * fT)
   
   set dbh (dbh * 100 + actual-growth) / 100
   set height (convert-dbh-height (dbh * 100)) / 100
   set canopy-radius (convert-height-canopy-radius height)
   set canopy-density (calc-shade (dbh * 100))
   set ba (pi * (dbh / 2) ^ 2)
-
-   
+  
 end
 
 to check-survival
+  
+  if random-float 1 < intrinsic-mortality [die]
+  
+  if actual-growth < min-increment and random-float 1 < growth-mortality [die]
+  
+  set age age + 1
+  
 end
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -347,6 +390,32 @@ NIL
 NIL
 NIL
 0
+
+MONITOR
+36
+273
+134
+318
+NIL
+count turtles
+17
+1
+11
+
+SLIDER
+9
+67
+184
+100
+DegDays
+DegDays
+1980
+5500
+4026
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
