@@ -1,7 +1,10 @@
 globals [ ]
 breed [oaks oak]
-oaks-own [Dmax Hmax Amax age dbh height canopy-radius canopy-density ba b2 b3 C G tol light actual-growth intrinsic-mortality
-  min-increment growth-mortality degd-min degd-max]
+oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
+  actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
+  age dbh height canopy-radius canopy-density ba
+  fAL fT fWT fN
+  ]
 patches-own [cc5 cc10 cc15 cc20 cc25 cc30 cc35]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -22,33 +25,16 @@ to setup
     set cc35 0]
   
   create-oaks init-mature-oak [
-    ;;Parameters based on white oak; Holm 2012 and Botkin 1992/1993
     set shape "tree"
     set size 2 
     set color black
-    set Dmax 100
-    set Hmax 3500
-    set Amax 400
-    ;;Initial dbh distribution based on HEE data
+    init-oak-params
     set dbh (random-normal 39.2 11.5) / 100
-    ;;set age
-    set b2 2 * (Hmax - 137) / (Dmax)
-    set b3 (Hmax - 137) / (Dmax ^ 2)
+    set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
-    set C 1.75
-    set G 104
-    set degd-min 1977
-    set degd-max 5894
     set canopy-density calc-shade (dbh * 100)
-    ;Based on 2% reaching max age; common to all species
-    ;Based on Botkin 1993
-    set intrinsic-mortality 4.0 / Amax
-    set min-increment 0.01
-    set growth-mortality 0.368
-
-    set tol "intermediate"
-    
+      
     ifelse init-mature-oak > 500 [
       loop [
         setxy random-xcor random-ycor
@@ -98,7 +84,7 @@ to go
   ask patches with [cc5 > 0.7] [set pcolor orange]
   ask patches with [cc5 > 0.9] [set pcolor red]
   
-  ask turtles [
+  ask turtles with [height >= 1.37] [
     calc-available-light
     grow
     check-survival
@@ -170,7 +156,7 @@ end
 
 to-report light-growth-index [tol-input]
   
-  ;Based on Botkin 1992
+  ;Based on Botkin 1993
   if tol-input = "low" or tol-input = "intermediate" [    
     report (2.24 * (1 - exp(-1.136 * (light - 0.08))))       
   ]
@@ -189,8 +175,9 @@ to-report degree-days-index [degd-min-input degd-max-input]
     
 end
 
-;to-report wilt-index [  ]
+;to-report wilt-index [evap-potential-input evap-actual-input wlmax-input]
   
+  ;based on Botkin 1993
 ;  let wilt ((evap-potential-input - evap-actual-input) / evap-potential-input)
   
 ;  let wilt-step2 (1 - (wilt-step2 / wlmax-input) ^ 2)
@@ -200,7 +187,34 @@ end
 ;end
 
 
+to-report saturation-index [wt-dist-min-input]
+  
+  let wefi (1 - (wt-dist-min-input / wt-dist))
+  
+  report max list 0 wefi
+  
+end
 
+
+to-report nitrogen-index [N-tol-input]
+  
+  if N-tol-input = "intolerant" [
+    let a1 2.99 let a2 0.00175 let a3 207.43 let a4 -5 let a5 2.9 let a6 3.671
+    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (available-N + a3))))
+    report (a4 + a5 * lambdaN) / a6
+    ]
+  if N-tol-input = "intermediate" [
+    let a1 2.94 let a2 0.00234 let a3 117.52 let a4 -1.2 let a5 1.3 let a6 2.622
+    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (available-N + a3))))
+    report (a4 + a5 * lambdaN) / a6
+    ]
+  if N-tol-input = "tolerant" [
+    let a1 2.79 let a2 0.00179 let a3 219.77 let a4 -0.6 let a5 1.0 let a6 2.190
+    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (available-N + a3))))
+    report (a4 + a5 * lambdaN) / a6
+    ]
+  
+end
 
 
 
@@ -209,11 +223,15 @@ to grow
 
   let max-growth (max-growth-increment (dbh * 100) (height * 100))
   
-  let fAL light-growth-index tol
+  set fAL light-growth-index light-tol
   
-  let fT degree-days-index degd-min degd-max
+  set fT degree-days-index degd-min degd-max
+  
+  set fWT saturation-index wt-dist-min
+  
+  set fN nitrogen-index N-tol
     
-  set actual-growth (max-growth * fAL * fT)
+  set actual-growth (max-growth * fAL * fT * fWT * fN)
   
   set dbh (dbh * 100 + actual-growth) / 100
   set height (convert-dbh-height (dbh * 100)) / 100
@@ -314,6 +332,31 @@ end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+to init-oak-params
+  ;White oak; Based on Botkin 1993 and Holm 2012
+  set Dmax 100
+  set Hmax 3500
+  set Amax 400
+  set b2 2 * (Hmax - 137) / (Dmax)
+  set b3 (Hmax - 137) / (Dmax ^ 2)
+  set C 1.75
+  set G 104
+  set degd-min 1977
+  set degd-max 5894
+  set wt-dist-min 0.933
+  set wlmax 0.45
+  set light-tol "intermediate"
+  set N-tol "intermediate"
+  set actual-growth 0.02
+  ;Based on 2% reaching max age; common to all species
+  ;Based on Botkin 1993
+  set intrinsic-mortality 4.0 / Amax
+  set min-increment 0.01
+  set growth-mortality 0.368
+end
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -343,10 +386,10 @@ ticks
 30.0
 
 BUTTON
-36
-149
-99
-182
+28
+204
+91
+237
 NIL
 setup
 NIL
@@ -368,17 +411,17 @@ init-mature-oak
 init-mature-oak
 0
 500
-401
+299
 1
 1
 trees
 HORIZONTAL
 
 BUTTON
-106
-149
-169
-182
+98
+204
+161
+237
 NIL
 go
 T
@@ -411,11 +454,52 @@ DegDays
 DegDays
 1980
 5500
-4026
+3212
 1
 1
 NIL
 HORIZONTAL
+
+SLIDER
+10
+105
+182
+138
+wt-dist
+wt-dist
+0.1
+2
+1.5
+0.1
+1
+m
+HORIZONTAL
+
+SLIDER
+10
+145
+182
+178
+available-N
+available-N
+0
+300
+275
+25
+1
+kg/ha/yr
+HORIZONTAL
+
+MONITOR
+53
+508
+172
+553
+Basal Area (m2/ha)
+sum [ba] of turtles with [height >= 1.37]
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
