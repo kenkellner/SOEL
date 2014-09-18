@@ -2,9 +2,11 @@ globals [ ]
 breed [oaks oak]
 oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
   actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
-  age dbh height canopy-radius canopy-density ba
+  age dbh height canopy-radius canopy-density ba acorn-mean seedling
   fAL fT fWT fN
   ]
+breed [acorns acorn]
+acorns-own [weevil cached germ]
 patches-own [cc5 cc10 cc15 cc20 cc25 cc30 cc35]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,8 +30,9 @@ to setup
     set shape "tree"
     set size 2 
     set color black
+    set seedling FALSE
     init-oak-params
-    set dbh (random-normal 39.2 11.5) / 100
+    set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
@@ -44,18 +47,14 @@ to setup
 
   ]
   
-  ask turtles [draw-canopy]
+  ask oaks with [seedling = FALSE] [draw-canopy]
   
   ask patches [draw-final-canopy]
   
-  ask turtles [calc-available-light]
+  ask oaks [calc-available-light]
   
   ;;color patches accordingly
-  ask patches with [cc5 > 0.1] [set pcolor green]
-  ask patches with [cc5 > 0.3] [set pcolor lime]
-  ask patches with [cc5 > 0.5] [set pcolor yellow]
-  ask patches with [cc5 > 0.7] [set pcolor orange]
-  ask patches with [cc5 > 0.9] [set pcolor red]
+  ask patches [color-patches]
  
 end
 
@@ -73,21 +72,29 @@ to go
     set cc30 0
     set cc35 0]
   
-  ask turtles [draw-canopy]
+  ask oaks with [seedling = FALSE] [draw-canopy]
   ask patches [draw-final-canopy]
   
   ;;color patches accordingly
   
-  ask patches with [cc5 > 0.1] [set pcolor green]
-  ask patches with [cc5 > 0.3] [set pcolor lime]
-  ask patches with [cc5 > 0.5] [set pcolor yellow]
-  ask patches with [cc5 > 0.7] [set pcolor orange]
-  ask patches with [cc5 > 0.9] [set pcolor red]
+  ask patches [color-patches]
   
-  ask turtles with [height >= 1.37] [
+  ask oaks with [seedling = FALSE] [
     calc-available-light
     grow
+    if dbh >= 0.1 [produce-mast]
     check-survival
+  ]
+  
+  ask oaks with [seedling = TRUE] [
+    calc-seedling-light
+    grow-seedling
+    check-seedling-survival
+  ]
+  
+  ask acorns [
+   disperse-mast
+   germinate-mast 
   ]
     
   tick
@@ -122,7 +129,9 @@ to-report calc-shade [dbh-input]
   ;;leaf weight based on dbh
   ;;C is species-specific parameter
   ;;Based on Botkin 1992/1993
-  let SLA (C * dbh-input ^ 2)
+  ;;adjusted exponent to 2.5
+  ;;Botkin notes it can be anywhere from 1.5 to 3
+  let SLA (C * dbh-input ^ (2.5))
   
   ;;Beer-Lambert law where light above canopy = 1
   ;;K set according to QuabbinPlot206
@@ -239,6 +248,8 @@ to grow
   set canopy-density (calc-shade (dbh * 100))
   set ba (pi * (dbh / 2) ^ 2)
   
+  if dbh >= 0.1 and shape = "square" [set shape "tree"]
+  
 end
 
 to check-survival
@@ -249,6 +260,106 @@ to check-survival
   
   set age age + 1
   
+end
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;Processes associated with reproduction;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+to produce-mast
+  ;;# of acorns produced per meter squared of capy area
+  let acorns-produced (3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
+  let tree-radius canopy-radius
+  let treexcor xcor
+  let treeycor ycor
+  hatch-acorns acorns-produced [
+  ;;drop produced acorns under canopy randomly 
+    set hidden? TRUE
+    set xcor (treexcor + random tree-radius - random tree-radius - 0.5)
+    set ycor (treeycor + random tree-radius - random tree-radius - 0.5)
+    ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
+  ]
+end
+
+
+to disperse-mast
+  ;;move mast via "dispersers"
+  ;;removal probability - HEE dispersal data for WO
+  ifelse random-float 1 < 0.41 and weevil = FALSE [
+    right random 360
+    ;;based on HEE data
+    forward random-exponential 5.185
+    ;;probability of being eaten
+    ifelse random-float 1 > 0.704 [
+      ;;probability of being cached
+      ifelse random-float 1 < 0.288 [set cached TRUE] [set cached FALSE]]
+    [die]]
+  ;;check if eaten
+  [if random-float 1 < 0.538 [die]]
+end
+
+
+to germinate-mast
+  ifelse cached = TRUE [
+    set germ germ-prob]
+  ;;placeholder
+  [ifelse weevil = TRUE [set germ germ-prob * 0.1 * 0.1] 
+    [set germ germ-prob * 0.1]]  
+  if random-float 1 < germ [
+      hatch-oaks 1 [
+        set age 1
+        set size 1
+        set seedling TRUE   
+        set hidden? TRUE
+      ]]
+    die
+end
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;Seedling-specific processes;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+to calc-seedling-light
+  set light (1 - mean [cc5] of patches in-radius 2)
+end
+
+to grow-seedling
+  ;growth is height-based
+  let max-growth seedling-growth 
+  set fAL light-growth-index "intermediate"
+  set actual-growth (max-growth * fAL)
+  set height (height + actual-growth)
+  
+  if height > 1.37 [
+    init-oak-params
+    set dbh (1 + random-float 0.5) / 100
+    set seedling FALSE
+    set hidden? FALSE
+    set shape "square"
+  ]
+end
+
+to check-seedling-survival
+  ;Placeholders
+  ;Intrinsic seedling mortality
+  if random-float 1 < 0.1 [die]
+  
+  ;Growth-based mortality
+  if actual-growth < (0.5 * seedling-growth) and random-float 1 < 0.393 [die]
+  
+  set age age + 1
 end
 
 
@@ -303,7 +414,6 @@ to draw-final-canopy
 end
 
 to calc-available-light
-  
   ifelse height < 5 [
     set light (1 - mean [cc10] of patches in-radius 3)
   ] [
@@ -322,7 +432,7 @@ to calc-available-light
             ifelse height >= 25 and height < 30 [
               set light (1 - mean [cc35] of patches in-radius canopy-radius)
             ] [
-              ifelse height >= 30 and height >= max [height] of turtles in-radius canopy-radius [    
+              ifelse height >= 30 and height >= max [height] of turtles with [breed != acorns] in-radius canopy-radius [    
                set light 1
               ] [set light (1 - mean [cc35] of patches in-radius canopy-radius)]
               
@@ -354,9 +464,17 @@ to init-oak-params
   set intrinsic-mortality 4.0 / Amax
   set min-increment 0.01
   set growth-mortality 0.368
+  ;;mean oak production based on HEE histogram
+  set acorn-mean random-exponential 10
 end
 
-
+to color-patches
+  if cc5 > 0.1 [set pcolor green]
+  if cc5 > 0.3 [set pcolor lime]
+  if cc5 > 0.5 [set pcolor yellow]
+  if cc5 > 0.7 [set pcolor orange]
+  if cc5 > 0.9 [set pcolor red]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -411,7 +529,7 @@ init-mature-oak
 init-mature-oak
 0
 500
-299
+382
 1
 1
 trees
@@ -437,10 +555,10 @@ NIL
 MONITOR
 36
 273
-134
+114
 318
-NIL
-count turtles
+count oaks
+count oaks with [seedling = FALSE]
 17
 1
 11
@@ -454,7 +572,7 @@ DegDays
 DegDays
 1980
 5500
-3212
+4004
 1
 1
 NIL
@@ -468,8 +586,8 @@ SLIDER
 wt-dist
 wt-dist
 0.1
-2
-1.5
+10
+8
 0.1
 1
 m
@@ -483,8 +601,8 @@ SLIDER
 available-N
 available-N
 0
-300
-275
+350
+325
 25
 1
 kg/ha/yr
@@ -498,6 +616,62 @@ MONITOR
 Basal Area (m2/ha)
 sum [ba] of turtles with [height >= 1.37]
 2
+1
+11
+
+SLIDER
+18
+351
+190
+384
+weevil-probability
+weevil-probability
+0
+1
+0.5
+0.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+17
+392
+189
+425
+germ-prob
+germ-prob
+0
+1
+0.2
+0.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+17
+434
+189
+467
+seedling-growth
+seedling-growth
+0
+1.37
+0.3
+0.01
+1
+m
+HORIZONTAL
+
+MONITOR
+56
+584
+120
+629
+seedlings
+count oaks with [seedling = TRUE]
+0
 1
 11
 
