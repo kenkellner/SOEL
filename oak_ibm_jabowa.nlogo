@@ -47,6 +47,42 @@ to setup
 
   ]
   
+  
+  ask oaks with [seedling = FALSE] [draw-canopy]
+  
+  ask patches [draw-final-canopy]
+  
+  ask oaks [calc-available-light]
+  
+  create-oaks init-sapling-oak [
+    set shape "square"
+    set size 1 
+    set color black
+    set seedling FALSE
+    init-oak-params
+    set dbh random-float 0.085 + 0.015
+    set ba (pi * (dbh / 2) ^ 2)
+    set height (convert-dbh-height (dbh * 100)) / 100
+    set canopy-radius convert-height-canopy-radius height
+    set canopy-density calc-shade (dbh * 100)
+      
+    loop [
+      setxy random-xcor random-ycor
+      if mean [cc10] of patches in-radius 2 < 0.5 [stop]]
+
+
+  ]
+  
+  ask patches [
+    set pcolor brown
+    set cc5 0
+    set cc10 0
+    set cc15 0
+    set cc20 0
+    set cc25 0
+    set cc30 0
+    set cc35 0]
+  
   ask oaks with [seedling = FALSE] [draw-canopy]
   
   ask patches [draw-final-canopy]
@@ -248,7 +284,7 @@ to grow
   set canopy-density (calc-shade (dbh * 100))
   set ba (pi * (dbh / 2) ^ 2)
   
-  if dbh >= 0.1 and shape = "square" [set shape "tree"]
+  if dbh >= 0.1 and shape = "square" [set shape "tree" set size 2]
   
 end
 
@@ -273,7 +309,7 @@ end
 
 to produce-mast
   ;;# of acorns produced per meter squared of capy area
-  let acorns-produced (3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
+  let acorns-produced (light * 3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
   let tree-radius canopy-radius
   let treexcor xcor
   let treeycor ycor
@@ -504,10 +540,10 @@ ticks
 30.0
 
 BUTTON
-28
-204
-91
-237
+29
+268
+92
+301
 NIL
 setup
 NIL
@@ -536,10 +572,10 @@ trees
 HORIZONTAL
 
 BUTTON
-98
-204
-161
-237
+99
+268
+162
+301
 NIL
 go
 T
@@ -553,10 +589,10 @@ NIL
 0
 
 MONITOR
-36
-273
-114
-318
+37
+337
+115
+382
 count oaks
 count oaks with [seedling = FALSE]
 17
@@ -564,10 +600,10 @@ count oaks with [seedling = FALSE]
 11
 
 SLIDER
-9
-67
-184
-100
+10
+131
+185
+164
 DegDays
 DegDays
 1980
@@ -579,10 +615,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-10
-105
-182
-138
+11
+169
+183
+202
 wt-dist
 wt-dist
 0.1
@@ -594,10 +630,10 @@ m
 HORIZONTAL
 
 SLIDER
-10
-145
-182
-178
+11
+209
+183
+242
 available-N
 available-N
 0
@@ -609,10 +645,10 @@ kg/ha/yr
 HORIZONTAL
 
 MONITOR
-53
-508
-172
-553
+54
+572
+173
+617
 Basal Area (m2/ha)
 sum [ba] of turtles with [height >= 1.37]
 2
@@ -620,10 +656,10 @@ sum [ba] of turtles with [height >= 1.37]
 11
 
 SLIDER
-18
-351
-190
-384
+19
+415
+191
+448
 weevil-probability
 weevil-probability
 0
@@ -635,10 +671,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-17
-392
-189
-425
+18
+456
+190
+489
 germ-prob
 germ-prob
 0
@@ -650,10 +686,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-17
-434
-189
-467
+18
+498
+190
+531
 seedling-growth
 seedling-growth
 0
@@ -665,15 +701,30 @@ m
 HORIZONTAL
 
 MONITOR
-56
-584
-120
-629
+57
+648
+121
+693
 seedlings
 count oaks with [seedling = TRUE]
 0
 1
 11
+
+SLIDER
+23
+83
+195
+116
+init-sapling-oak
+init-sapling-oak
+0
+500
+400
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
