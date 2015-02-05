@@ -1,4 +1,4 @@
-globals [ ]
+globals [basal-area ]
 
 breed [oaks oak]
 oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
@@ -36,16 +36,17 @@ to setup
     set color black
     set seedling FALSE
     init-params
-    set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
+    ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
+    set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
     set canopy-density calc-shade (dbh * 100)
       
-    ifelse init-mature-oak > 500 [
+    ifelse init-mature-oak > 200 [
       loop [
         setxy random-xcor random-ycor
-        if count turtles in-radius 4 < 2 [stop]]]
+        if count turtles in-radius 3 < 2 [stop]]]
     [setxy random-xcor random-ycor]
 
 
@@ -56,16 +57,17 @@ to setup
     set size 2 
     set color blue
     init-params
-    set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
+    ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
+    set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
     set canopy-density calc-shade (dbh * 100)
       
-    ifelse init-mature-oak > 500 [
+    ifelse init-mature-oak > 200 [
       loop [
         setxy random-xcor random-ycor
-        if count turtles in-radius 4 < 2 [stop]]]
+        if count turtles in-radius 3 < 2 [stop]]]
     [setxy random-xcor random-ycor]
 
 
@@ -106,6 +108,9 @@ to setup
   
   ;;color patches accordingly
   ask patches [color-patches]
+  
+  ;;Calculate global reporter values
+  set basal-area sum [ba] of turtles with [height > 1.37]
  
 end
 
@@ -144,6 +149,9 @@ to go
     grow-seedling
     check-seedling-survival
   ]
+  
+  ;;Calculate global reporter values
+  set basal-area sum [ba] of turtles with [height > 1.37]
   
   tick
 end
@@ -419,6 +427,7 @@ to check-sapling-existence
   set fN nitrogen-index N-tol
   
   ifelse random-float 1 > (fAL * fT * fWT * fN) [die] [
+    set potential-sapling FALSE
     set hidden? FALSE
     set age 1
     set dbh 0.01
@@ -597,7 +606,8 @@ to init-params
   ]
   if breed = maples [
     ;Sugar maple; based bon Botkin 1993 and Holm 2012
-    set Dmax 170
+    ;set Dmax 170
+    set Dmax 100
     set Hmax 3350
     set Amax 400
     set b2 2 * (Hmax - 137) / (Dmax)
@@ -619,7 +629,8 @@ to init-params
     set seedling FALSE
     set potential-sapling FALSE
     ;Based on Botkin 1993
-    set max-saplings 3
+    ;set max-saplings 3
+    set max-saplings 1
   ]
     
 end
@@ -696,7 +707,7 @@ init-mature-oak
 init-mature-oak
 0
 500
-385
+277
 1
 1
 trees
@@ -739,7 +750,7 @@ DegDays
 DegDays
 1980
 5500
-4004
+3806
 1
 1
 NIL
@@ -769,7 +780,7 @@ available-N
 available-N
 0
 350
-325
+225
 25
 1
 kg/ha/yr
@@ -781,7 +792,7 @@ MONITOR
 174
 706
 Basal Area (m2/ha)
-sum [ba] of turtles with [height >= 1.37]
+basal-area
 2
 1
 11
@@ -843,34 +854,63 @@ count oaks with [seedling = TRUE]
 11
 
 SLIDER
-23
-83
-195
-116
+9
+66
+181
+99
 init-sapling-oak
 init-sapling-oak
 0
 500
-204
+315
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-22
-134
-201
-167
+9
+106
+188
+139
 init-mature-maple
 init-mature-maple
 0
 400
-102
+76
 1
 1
 trees
 HORIZONTAL
+
+PLOT
+1008
+92
+1208
+242
+plot 1
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"set-plot-x-range 0 1\nset-plot-y-range 0 800                       \nset-histogram-num-bars 10" ""
+PENS
+"default" 1.0 1 -16777216 true "" "histogram [dbh] of turtles with [dbh > 0.09]"
+
+MONITOR
+128
+426
+183
+471
+quad dbh
+sqrt(basal-area / (0.0000785 * count turtles with [height > 1.37]))
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
