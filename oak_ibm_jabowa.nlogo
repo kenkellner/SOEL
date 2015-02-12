@@ -1,9 +1,10 @@
+extensions [profiler]
 globals [basal-area ]
 
 breed [oaks oak]
 oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
   actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
-  age dbh height canopy-radius canopy-density ba acorn-mean seedling potential-sapling
+  age dbh height canopy-radius canopy-density ba acorn-mean seedling potential-sapling sprout?
   fAL fT fWT fN
   
   tot-acorns
@@ -12,7 +13,7 @@ oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
 breed [maples maple]
 maples-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
   actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
-  age dbh height canopy-radius canopy-density ba seedling
+  age dbh height canopy-radius canopy-density ba seedling sprout?
   fAL fT fWT fN max-saplings potential-sapling
   ]
 
@@ -187,7 +188,8 @@ to-report calc-shade [dbh-input]
   ;;Based on Botkin 1992/1993
   ;;adjusted exponent to 2.5
   ;;Botkin notes it can be anywhere from 1.5 to 3
-  let SLA (C * dbh-input ^ (2.5))
+  ;;let SLA (C * dbh-input ^ (2.5))
+  let SLA (C * dbh-input ^ (2.4))
   
   ;;Beer-Lambert law where light above canopy = 1
   ;;K set according to QuabbinPlot206
@@ -305,20 +307,74 @@ to grow
   set ba (pi * (dbh / 2) ^ 2)
   
   if dbh >= 0.1 and shape = "square" [
-    if breed = "oaks" [set size 2 set shape "tree"]
-    if breed = "maples" [set size 2 set shape "leaf"]
+    if breed = oaks [set size 2 set shape "tree"]
+    if breed = maples [set size 2 set shape "leaf"]
   ]
   
 end
 
 to check-survival
   
-  if random-float 1 < intrinsic-mortality [die]
+  if dbh >= 0.1 [ 
+    if random-float 1 < intrinsic-mortality [create-sprout] 
+    if actual-growth < min-increment and random-float 1 < growth-mortality [create-sprout]
+  ]
   
-  if actual-growth < min-increment and random-float 1 < growth-mortality [die]
+  if dbh < 0.1 [
+    if random-float 1 < intrinsic-mortality [die] 
+    if actual-growth < min-increment and random-float 1 < growth-mortality [die]
+  ]
   
   set age age + 1
   
+end
+
+
+to create-sprout
+  ;;From Dey 2002
+  if breed = oaks [
+    let prob (1 + exp(-1 * (5.9991 - 0.2413 * (dbh * 39.3701) - 0.0475 * age))) ^ (-1)
+    ifelse random-float 1 < prob [
+      set shape "square" set color black   
+      set age 1
+      set dbh 0.01
+      set height (convert-dbh-height (dbh * 100)) / 100
+      set canopy-radius (convert-height-canopy-radius height)
+      set canopy-density (calc-shade (dbh * 100))
+      set ba (pi * (dbh / 2) ^ 2)      
+    ]
+    [die]
+  ]
+  if breed = maples [
+    ;;Based on Powell 1983
+    let prob -0.314 * ln(dbh) + 0.0877
+    if prob > 1 [set prob 1]
+    if dbh > 0.8 [set prob 0]
+    ifelse random-float 1 < prob [
+      set shape "square" set color blue
+      set age 1
+      set dbh 0.01
+      set height (convert-dbh-height (dbh * 100)) / 100
+      set canopy-radius (convert-height-canopy-radius height)
+      set canopy-density (calc-shade (dbh * 100))
+      set ba (pi * (dbh / 2) ^ 2)          
+    ]
+    [die]
+  ]
+  ;if breed = poplars [
+    ;;based on Wendel 1975 plus some guesses
+    ;let prob 0.97
+    ;if dbh > 0.8 [set prob 0]
+    ;ifelse random-float 1 < prob [
+    ;  set shape "square" set color violet set sprout? TRUE
+    ;  set height random-normal 1.3 0.3
+
+    ;  set age 1
+
+
+    ;]
+    ;[die]
+    ;]
 end
 
 
@@ -335,33 +391,33 @@ to reproduce
   ifelse breed = oaks [
     let acorns-produced (light * 3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
     let tree-radius canopy-radius
-    let treexcor xcor
-    let treeycor ycor
+    ;let treexcor xcor
+    ;let treeycor ycor
     hatch-acorns acorns-produced [
       ;;drop produced acorns under canopy randomly 
       set hidden? TRUE
-      set xcor (treexcor + random tree-radius - random tree-radius - 0.5)
-      set ycor (treeycor + random tree-radius - random tree-radius - 0.5)
+      right random 360
+      forward (random-float (tree-radius - 0.5)) + 0.5
+      ;set xcor (treexcor + random tree-radius - random tree-radius - 0.5)
+      ;set ycor (treeycor + random tree-radius - random tree-radius - 0.5)
       ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
     ]
   ]
   ;other tree species
-  [let treexcor xcor
-   let treeycor ycor
-   let tree-radius canopy-radius
+  [
    let max-sap max-saplings
-   hatch round (random-float 1 * max-sap) [
-     init-params
-     set size 1
-     set shape "square"
+   hatch (random (max-saplings + 1)) [
      set hidden? TRUE
-     if breed = "maples" [set color blue]
-     set potential-sapling TRUE
-     set xcor (treexcor + random tree-radius - random tree-radius - 0.5)
-     set ycor (treeycor + random tree-radius - random tree-radius - 0.5)   
+     init-params
      right random 360
      ;;based on HEE data
      forward random-exponential 5.185 
+     set potential-sapling TRUE
+     ;set xcor (treexcor + random tree-radius - random tree-radius - 0.5)
+     ;set ycor (treeycor + random tree-radius - random tree-radius - 0.5)   
+     ;right random 360
+     ;;based on HEE data
+     ;forward random-exponential 5.185 
      check-sapling-existence   
    ]
   ]
@@ -428,10 +484,12 @@ to check-sapling-existence
   
   ifelse random-float 1 > (fAL * fT * fWT * fN) [die] [
     set potential-sapling FALSE
+    set size 1
+    set shape "square"
+    if breed = "maples" [set color blue]
     set hidden? FALSE
     set age 1
-    set dbh 0.01
-    
+    set dbh 0.01  
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
@@ -598,7 +656,8 @@ to init-params
     ;Based on 2% reaching max age; common to all species
     ;Based on Botkin 1993
     set intrinsic-mortality 4.0 / Amax
-    set min-increment 0.01
+    ;set min-increment 0.01
+    set min-increment 0.05
     set growth-mortality 0.368
     ;;mean oak production based on HEE histogram
     set acorn-mean random-exponential 10
@@ -624,22 +683,23 @@ to init-params
     ;Based on 2% reaching max age; common to all species
     ;Based on Botkin 1993
     set intrinsic-mortality 4.0 / Amax
-    set min-increment 0.01
+    ;set min-increment 0.01
+    set min-increment 0.05
     set growth-mortality 0.368
     set seedling FALSE
     set potential-sapling FALSE
     ;Based on Botkin 1993
-    ;set max-saplings 3
-    set max-saplings 1
+    set max-saplings 2
+    ;set max-saplings 1
   ]
     
 end
 
 to color-patches
   if cc5 > 0.1 [set pcolor green]
-  if cc5 > 0.3 [set pcolor lime]
-  if cc5 > 0.5 [set pcolor yellow]
-  if cc5 > 0.7 [set pcolor orange]
+  if cc5 > 0.5 [set pcolor lime]
+  if cc5 > 0.7 [set pcolor yellow]
+  if cc5 > 0.85 [set pcolor orange]
   if cc5 > 0.9 [set pcolor red]
 end
 
@@ -707,7 +767,7 @@ init-mature-oak
 init-mature-oak
 0
 500
-277
+344
 1
 1
 trees
@@ -750,7 +810,7 @@ DegDays
 DegDays
 1980
 5500
-3806
+4598
 1
 1
 NIL
@@ -780,7 +840,7 @@ available-N
 available-N
 0
 350
-225
+300
 25
 1
 kg/ha/yr
@@ -821,7 +881,7 @@ germ-prob
 germ-prob
 0
 1
-0.2
+0.3
 0.1
 1
 NIL
@@ -862,7 +922,7 @@ init-sapling-oak
 init-sapling-oak
 0
 500
-315
+283
 1
 1
 NIL
@@ -877,7 +937,7 @@ init-mature-maple
 init-mature-maple
 0
 400
-76
+120
 1
 1
 trees
@@ -899,7 +959,7 @@ true
 false
 "set-plot-x-range 0 1\nset-plot-y-range 0 800                       \nset-histogram-num-bars 10" ""
 PENS
-"default" 1.0 1 -16777216 true "" "histogram [dbh] of turtles with [dbh > 0.09]"
+"default" 1.0 1 -16777216 true "" "histogram [dbh] of oaks with [dbh > 0.09]"
 
 MONITOR
 128
