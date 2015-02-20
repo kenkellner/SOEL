@@ -5,7 +5,7 @@ breed [oaks oak]
 oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
   actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
   age dbh height canopy-radius canopy-density ba acorn-mean seedling potential-sapling sprout?
-  fAL fT fWT fN
+  fAL fT fWT fN fR
   
   tot-acorns
   ]
@@ -14,13 +14,13 @@ breed [maples maple]
 maples-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
   actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
   age dbh height canopy-radius canopy-density ba seedling sprout?
-  fAL fT fWT fN max-saplings potential-sapling
+  fAL fT fWT fN fR max-saplings potential-sapling
   ]
 
 breed [acorns acorn]
 acorns-own [weevil cached germ]
 
-patches-own [cc5 cc10 cc15 cc20 cc25 cc30 cc35]
+patches-own [cc5 cc10 cc15 cc20 cc25 cc30 cc35 dn5 dn10 dn15]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -132,7 +132,7 @@ to go
     calc-available-light
     grow
     check-survival
-    if dbh >= 0.2 [reproduce]
+    if dbh >= 0.25 [reproduce]
   ]
   
   ;ask oaks with [dbh >= 0.2][produce-mast]
@@ -177,7 +177,8 @@ to-report convert-height-canopy-radius [height-input]
   ;;Based on Kenefic and Nyland 1999 and others
   ;;range reported is 0.376 - 0.393; going with .385 for now
   
-  report (0.385 * height-input / 2)
+  ;report (0.4 * height-input / 2)
+  report max list 1 (0.4 * height-input / 2)
   
 end
 
@@ -194,8 +195,9 @@ to-report calc-shade [dbh-input]
   ;;Beer-Lambert law where light above canopy = 1
   ;;K set according to QuabbinPlot206
   let k 0.0000756
+  ;let k 0.00016666667
   let PHI 1
-  report (1 - (PHI * exp(-1 * k * SLA)))
+  report min list 0.98 (1 - (PHI * exp(-1 * k * SLA)))
     
 end
 
@@ -297,8 +299,11 @@ to grow
   set fWT saturation-index wt-dist-min
   
   set fN nitrogen-index N-tol
+  
+  ;;random variability
+  set fR (0.95 + (random-float 0.1))
     
-  set actual-growth (max-growth * fAL * fT * fWT * fN)
+  set actual-growth (max-growth * fAL * fT * fWT * fN * fR)
   
   set dbh (dbh * 100 + actual-growth) / 100
   set height (convert-dbh-height (dbh * 100)) / 100
@@ -559,12 +564,15 @@ to draw-canopy
   
   ifelse height < 5 [
     ask patches in-radius canopy-radius [set cc5 (cc5 + (1 - cc5) * temp)]
+    ask patches in-radius 2 [set dn5 (dn5 + 1)]
   ] [
     ifelse height >= 5 and height < 10 [
       ask patches in-radius canopy-radius [set cc10 (cc10 + (1 - cc10) * temp)]
+      ask patches in-radius 2 [set dn10 (dn10 + 1)]
     ] [
       ifelse height >= 10 and height < 15 [
         ask patches in-radius canopy-radius [set cc15 (cc15 + (1 - cc15) * temp)]
+        ask patches in-radius 2 [set dn15 (dn15 + 1)]
       ] [
         ifelse height >= 15 and height < 20 [
           ask patches in-radius canopy-radius [set cc20 (cc20 + (1 - cc20) * temp)]
@@ -593,15 +601,16 @@ to draw-final-canopy
   
 end
 
+
 to calc-available-light
   ifelse height < 5 [
-    set light (1 - mean [cc10] of patches in-radius 3)
+    set light (1 - mean [cc10] of patches in-radius 3) / (max list 1 ([dn5] of patch-here))
   ] [
     ifelse height >= 5 and height < 10 [
-      set light (1 - mean [cc15] of patches in-radius 3)
+      set light (1 - mean [cc15] of patches in-radius 3) / (max list 1 ([dn10] of patch-here))
     ] [
       ifelse height >= 10 and height < 15 [
-        set light (1 - mean [cc20] of patches in-radius canopy-radius)
+        set light (1 - mean [cc20] of patches in-radius canopy-radius) / (max list 1 ([dn15] of patch-here))
       ] [
         ifelse height >= 15 and height < 20 [
           set light (1 - mean [cc25] of patches in-radius canopy-radius)
@@ -640,12 +649,12 @@ to init-params
   if breed = oaks [
     ;White oak; Based on Botkin 1993 and Holm 2012
     set Dmax 100
-    set Hmax 3350
+    set Hmax 3500
     set Amax 400
     set b2 2 * (Hmax - 137) / (Dmax)
     set b3 (Hmax - 137) / (Dmax ^ 2)
     set C 1.75
-    set G 72
+    set G 104
     set degd-min 1977
     set degd-max 5894
     set wt-dist-min 0.933
@@ -657,7 +666,7 @@ to init-params
     ;Based on Botkin 1993
     set intrinsic-mortality 4.0 / Amax
     ;set min-increment 0.01
-    set min-increment 0.05
+    set min-increment 0.01
     set growth-mortality 0.368
     ;;mean oak production based on HEE histogram
     set acorn-mean random-exponential 10
@@ -684,7 +693,7 @@ to init-params
     ;Based on Botkin 1993
     set intrinsic-mortality 4.0 / Amax
     ;set min-increment 0.01
-    set min-increment 0.05
+    set min-increment 0.01
     set growth-mortality 0.368
     set seedling FALSE
     set potential-sapling FALSE
@@ -712,6 +721,9 @@ to reset-patches
   set cc25 0
   set cc30 0
   set cc35 0
+  set dn5 0
+  set dn10 0
+  set dn15 0
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -767,7 +779,7 @@ init-mature-oak
 init-mature-oak
 0
 500
-344
+271
 1
 1
 trees
@@ -810,7 +822,7 @@ DegDays
 DegDays
 1980
 5500
-4598
+4444
 1
 1
 NIL
@@ -825,7 +837,7 @@ wt-dist
 wt-dist
 0.1
 10
-8
+6.9
 0.1
 1
 m
@@ -881,7 +893,7 @@ germ-prob
 germ-prob
 0
 1
-0.3
+0.9
 0.1
 1
 NIL
@@ -896,7 +908,7 @@ seedling-growth
 seedling-growth
 0
 1.37
-0.3
+0.6
 0.01
 1
 m
