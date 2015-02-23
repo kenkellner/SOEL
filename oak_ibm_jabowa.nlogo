@@ -1,5 +1,7 @@
 extensions [profiler]
-globals [basal-area ]
+globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
+  newsaps-maple newsaps-oak repro-oak repro-maple
+  prop-oak prop-tol prop-intol]
 
 breed [oaks oak]
 oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
@@ -38,6 +40,7 @@ to setup
     set seedling FALSE
     init-params
     ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
+    ;;set age random 20 + (initial-stand-age - 10)
     set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
@@ -59,6 +62,7 @@ to setup
     set color blue
     init-params
     ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
+    ;;set age random 20 + (initial-stand-age - 10)
     set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
@@ -112,6 +116,15 @@ to setup
   
   ;;Calculate global reporter values
   set basal-area sum [ba] of turtles with [height > 1.37]
+  set basal-area-ft basal-area * 4.356
+  set qdbh sqrt(basal-area / (0.0000785 * count turtles with [height > 1.37]))
+  set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37] / pi)) * 39.37
+  set dens (count turtles with [height >= 1.37])
+  set dens-ac (count turtles with [height >= 1.37] * 0.40477)
+  set prop-oak (sum [ba] of turtles with [height > 1.37 and breed = oaks] / basal-area)
+  set prop-tol (sum [ba] of turtles with [height > 1.37 and breed = maples] / basal-area)
+  ;set prop-intol (sum [ba] of turtles with [height > 1.37 and breed = poplars] / basal-area)
+  setup-plots
  
 end
 
@@ -120,6 +133,8 @@ end
 to go
   
   ask patches [reset-patches]
+  set newsaps-oak 0
+  set newsaps-maple 0
   
   ask turtles with [seedling = FALSE] [draw-canopy]
   ask patches [draw-final-canopy]
@@ -153,6 +168,15 @@ to go
   
   ;;Calculate global reporter values
   set basal-area sum [ba] of turtles with [height > 1.37]
+  set basal-area-ft basal-area * 4.356
+  set qdbh sqrt(basal-area / (0.0000785 * count turtles with [height > 1.37]))
+  set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37] / pi)) * 39.37
+  set dens (count turtles with [height >= 1.37])
+  set dens-ac (count turtles with [height >= 1.37] * 0.40477)
+  set repro-oak (newsaps-oak / (count oaks with [dbh >= 0.25]))
+  set repro-maple (newsaps-maple / (count maples with [dbh >= 0.25]))
+  set prop-oak (sum [ba] of turtles with [height > 1.37 and breed = oaks] / basal-area)
+  set prop-tol (sum [ba] of turtles with [height > 1.37 and breed = maples] / basal-area)
   
   tick
 end
@@ -489,9 +513,10 @@ to check-sapling-existence
   
   ifelse random-float 1 > (fAL * fT * fWT * fN) [die] [
     set potential-sapling FALSE
+    
     set size 1
     set shape "square"
-    if breed = "maples" [set color blue]
+    if breed = maples [set newsaps-maple (newsaps-maple + 1)]
     set hidden? FALSE
     set age 1
     set dbh 0.01  
@@ -529,6 +554,7 @@ to grow-seedling
   
   if height > 1.37 [
     init-params
+    set newsaps-oak (newsaps-oak + 1)
     set dbh (1 + random-float 0.5) / 100
     set seedling FALSE
     set hidden? FALSE
@@ -564,15 +590,15 @@ to draw-canopy
   
   ifelse height < 5 [
     ask patches in-radius canopy-radius [set cc5 (cc5 + (1 - cc5) * temp)]
-    ask patches in-radius 2 [set dn5 (dn5 + 1)]
+    ask patches in-radius 1 [set dn5 (dn5 + 1)]
   ] [
     ifelse height >= 5 and height < 10 [
       ask patches in-radius canopy-radius [set cc10 (cc10 + (1 - cc10) * temp)]
-      ask patches in-radius 2 [set dn10 (dn10 + 1)]
+      ask patches in-radius 1 [set dn10 (dn10 + 1)]
     ] [
       ifelse height >= 10 and height < 15 [
         ask patches in-radius canopy-radius [set cc15 (cc15 + (1 - cc15) * temp)]
-        ask patches in-radius 2 [set dn15 (dn15 + 1)]
+        ask patches in-radius 1 [set dn15 (dn15 + 1)]
       ] [
         ifelse height >= 15 and height < 20 [
           ask patches in-radius canopy-radius [set cc20 (cc20 + (1 - cc20) * temp)]
@@ -698,7 +724,7 @@ to init-params
     set seedling FALSE
     set potential-sapling FALSE
     ;Based on Botkin 1993
-    set max-saplings 2
+    set max-saplings 4
     ;set max-saplings 1
   ]
     
@@ -754,10 +780,10 @@ ticks
 30.0
 
 BUTTON
-30
-357
-93
-390
+27
+21
+90
+54
 NIL
 setup
 NIL
@@ -771,25 +797,25 @@ NIL
 1
 
 SLIDER
-9
-28
-181
-61
+14
+100
+186
+133
 init-mature-oak
 init-mature-oak
 0
 500
-271
+277
 1
 1
 trees
 HORIZONTAL
 
 BUTTON
-100
-357
-163
-390
+97
+21
+160
+54
 NIL
 go
 T
@@ -802,22 +828,11 @@ NIL
 NIL
 0
 
-MONITOR
-38
-426
-116
-471
-count oaks
-count oaks with [seedling = FALSE]
-17
-1
-11
-
 SLIDER
-11
-220
-186
-253
+1039
+168
+1214
+201
 DegDays
 DegDays
 1980
@@ -829,10 +844,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-12
-258
-184
-291
+1040
+206
+1212
+239
 wt-dist
 wt-dist
 0.1
@@ -844,10 +859,10 @@ m
 HORIZONTAL
 
 SLIDER
-12
-298
-184
-331
+1040
+246
+1212
+279
 available-N
 available-N
 0
@@ -859,21 +874,21 @@ kg/ha/yr
 HORIZONTAL
 
 MONITOR
-55
-661
-174
-706
-Basal Area (m2/ha)
+26
+272
+94
+317
+BA (m2/ha)
 basal-area
 2
 1
 11
 
 SLIDER
-20
-504
-192
-537
+1039
+13
+1211
+46
 weevil-probability
 weevil-probability
 0
@@ -885,10 +900,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-19
-545
-191
-578
+1038
+54
+1210
+87
 germ-prob
 germ-prob
 0
@@ -900,10 +915,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-19
-587
-191
-620
+1038
+96
+1210
+129
 seedling-growth
 seedling-growth
 0
@@ -915,10 +930,10 @@ m
 HORIZONTAL
 
 MONITOR
-58
-737
-122
-782
+1045
+297
+1109
+342
 seedlings
 count oaks with [seedling = TRUE]
 0
@@ -926,10 +941,10 @@ count oaks with [seedling = TRUE]
 11
 
 SLIDER
-9
-66
-181
-99
+14
+138
+186
+171
 init-sapling-oak
 init-sapling-oak
 0
@@ -941,48 +956,148 @@ NIL
 HORIZONTAL
 
 SLIDER
-9
-106
-188
-139
+14
+178
+187
+211
 init-mature-maple
 init-mature-maple
 0
 400
-120
+116
 1
 1
 trees
 HORIZONTAL
 
-PLOT
-1008
+MONITOR
+26
+323
+93
+368
+qDBH (cm)
+qdbh
+2
+1
+11
+
+MONITOR
+101
+272
+175
+317
+BA (ft2/ac)
+basal-area-ft
+2
+1
+11
+
+MONITOR
+104
+323
+169
+368
+qDBH (in)
+qdbh-in
+2
+1
+11
+
+MONITOR
+28
+375
 92
-1208
-242
-plot 1
+420
+Trees/Ha
+dens
+2
+1
+11
+
+MONITOR
+105
+375
+168
+420
+Trees/Ac
+dens-ac
+2
+1
+11
+
+SLIDER
+14
+62
+186
+95
+initial-stand-age
+initial-stand-age
+0
+200
+80
+1
+1
 NIL
-NIL
+HORIZONTAL
+
+PLOT
+1043
+359
+1243
+509
+Basal Area
+Years
+m2/ha
 0.0
 10.0
 0.0
 10.0
 true
 false
-"set-plot-x-range 0 1\nset-plot-y-range 0 800                       \nset-histogram-num-bars 10" ""
+"set-plot-y-range (precision (basal-area - 10) 0) (precision (basal-area + 10) 0)\nplot-pen-up\nplotxy 0 basal-area\nplot-pen-down" ""
 PENS
-"default" 1.0 1 -16777216 true "" "histogram [dbh] of oaks with [dbh > 0.09]"
+"default" 1.0 0 -16777216 true "" "plot basal-area"
 
 MONITOR
-128
-426
-183
-471
-quad dbh
-sqrt(basal-area / (0.0000785 * count turtles with [height > 1.37]))
+27
+444
+92
+489
+Oak Repro
+repro-oak
 2
 1
 11
+
+MONITOR
+102
+444
+173
+489
+Maple Repro
+repro-maple
+2
+1
+11
+
+PLOT
+1044
+518
+1244
+668
+Prop Oak
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"set-plot-y-range (precision 0 0) (precision 1 0)\nplot-pen-up\nplot-pen-down" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot prop-oak"
+"pen-1" 1.0 0 -13345367 true "" "plot prop-tol"
 
 @#$#@#$#@
 ## WHAT IS IT?
