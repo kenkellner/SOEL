@@ -1,6 +1,6 @@
 extensions [profiler]
 globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
-  newsaps-maple newsaps-oak repro-oak repro-maple
+  newsaps-maple newsaps-oak newsaps-poplar repro-oak repro-maple repro-poplar
   prop-oak prop-tol prop-intol]
 
 breed [oaks oak]
@@ -14,6 +14,13 @@ oaks-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
 
 breed [maples maple]
 maples-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
+  actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
+  age dbh height canopy-radius canopy-density ba seedling sprout?
+  fAL fT fWT fN fR max-saplings potential-sapling
+  ]
+
+breed [poplars poplar]
+poplars-own [Dmax Hmax Amax b2 b3 C G light-tol N-tol
   actual-growth intrinsic-mortality min-increment growth-mortality light degd-min degd-max wlmax wt-dist-min
   age dbh height canopy-radius canopy-density ba seedling sprout?
   fAL fT fWT fN fR max-saplings potential-sapling
@@ -78,6 +85,28 @@ to setup
 
   ]
   
+  create-poplars init-mature-poplar [
+    set shape "plant"
+    set size 2 
+    set color violet
+    init-params
+    ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
+    ;;set age random 20 + (initial-stand-age - 10)
+    set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
+    set ba (pi * (dbh / 2) ^ 2)
+    set height (convert-dbh-height (dbh * 100)) / 100
+    set canopy-radius convert-height-canopy-radius height
+    set canopy-density calc-shade (dbh * 100)
+      
+    ifelse init-mature-oak > 200 [
+      loop [
+        setxy random-xcor random-ycor
+        if count turtles in-radius 3 < 2 [stop]]]
+    [setxy random-xcor random-ycor]
+
+
+  ]
+  
   
   ask turtles with [seedling = FALSE] [draw-canopy]
   
@@ -123,7 +152,7 @@ to setup
   set dens-ac (count turtles with [height >= 1.37] * 0.40477)
   set prop-oak (sum [ba] of turtles with [height > 1.37 and breed = oaks] / basal-area)
   set prop-tol (sum [ba] of turtles with [height > 1.37 and breed = maples] / basal-area)
-  ;set prop-intol (sum [ba] of turtles with [height > 1.37 and breed = poplars] / basal-area)
+  set prop-intol (sum [ba] of turtles with [height > 1.37 and breed = poplars] / basal-area)
   setup-plots
  
 end
@@ -135,6 +164,7 @@ to go
   ask patches [reset-patches]
   set newsaps-oak 0
   set newsaps-maple 0
+  set newsaps-poplar 0
   
   ask turtles with [seedling = FALSE] [draw-canopy]
   ask patches [draw-final-canopy]
@@ -173,10 +203,12 @@ to go
   set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37] / pi)) * 39.37
   set dens (count turtles with [height >= 1.37])
   set dens-ac (count turtles with [height >= 1.37] * 0.40477)
-  set repro-oak (newsaps-oak / (count oaks with [dbh >= 0.25]))
-  set repro-maple (newsaps-maple / (count maples with [dbh >= 0.25]))
+  if count oaks with [dbh >= 0.25] > 0 [set repro-oak (newsaps-oak / (count oaks with [dbh >= 0.25]))]
+  if count maples with [dbh >= 0.25] > 0 [set repro-maple (newsaps-maple / (count maples with [dbh >= 0.25]))]
+  if count poplars with [dbh >= 0.25] > 0 [set repro-poplar (newsaps-poplar / (count poplars with [dbh >= 0.25]))]
   set prop-oak (sum [ba] of turtles with [height > 1.37 and breed = oaks] / basal-area)
   set prop-tol (sum [ba] of turtles with [height > 1.37 and breed = maples] / basal-area)
+  set prop-intol (sum [ba] of turtles with [height > 1.37 and breed = poplars] / basal-area)
   
   tick
 end
@@ -249,9 +281,13 @@ end
 
 to-report light-growth-index [tol-input]
   
-  ;Based on Botkin 1993
-  if tol-input = "low" or tol-input = "intermediate" [    
+  ;Based on Botkin 1993 and Bonan 1990
+  if tol-input = "low" [    
     report (2.24 * (1 - exp(-1.136 * (light - 0.08))))       
+  ]
+  
+  if tol-input = "intermediate" [
+    report (1.371 * (1 - exp(-2.227 * (light - 0.05))))
   ]
   
   if tol-input = "high" [
@@ -267,18 +303,6 @@ to-report degree-days-index [degd-min-input degd-max-input]
   report max list 0 tdegd
     
 end
-
-;to-report wilt-index [evap-potential-input evap-actual-input wlmax-input]
-  
-  ;based on Botkin 1993
-;  let wilt ((evap-potential-input - evap-actual-input) / evap-potential-input)
-  
-;  let wilt-step2 (1 - (wilt-step2 / wlmax-input) ^ 2)
-  
-;  report max list 0 wilt-step2
-  
-;end
-
 
 to-report saturation-index [wt-dist-min-input]
   
@@ -338,6 +362,7 @@ to grow
   if dbh >= 0.1 and shape = "square" [
     if breed = oaks [set size 2 set shape "tree"]
     if breed = maples [set size 2 set shape "leaf"]
+    if breed = poplars [set size 2 set shape "plant"]
   ]
   
 end
@@ -390,20 +415,20 @@ to create-sprout
     ]
     [die]
   ]
-  ;if breed = poplars [
+  if breed = poplars [
     ;;based on Wendel 1975 plus some guesses
-    ;let prob 0.97
-    ;if dbh > 0.8 [set prob 0]
-    ;ifelse random-float 1 < prob [
-    ;  set shape "square" set color violet set sprout? TRUE
-    ;  set height random-normal 1.3 0.3
-
-    ;  set age 1
-
-
-    ;]
-    ;[die]
-    ;]
+    let prob 0.97
+    if dbh > 0.8 [set prob 0]
+    ifelse random-float 1 < prob [
+      set shape "square" set color violet set sprout? TRUE
+      set dbh 0.01
+      set height (convert-dbh-height (dbh * 100)) / 100
+      set canopy-radius (convert-height-canopy-radius height)
+      set canopy-density (calc-shade (dbh * 100))
+      set age 1
+    ]
+    [die]
+    ]
 end
 
 
@@ -454,23 +479,6 @@ to reproduce
   
 end
 
-;to produce-mast
-  ;;# of acorns produced per meter squared of capy area
-;  let acorns-produced (light * 3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
-;  set tot-acorns 5
-;  let tree-radius canopy-radius
-;  let treexcor xcor
-;  let treeycor ycor
-;  hatch-acorns acorns-produced [
-  ;;drop produced acorns under canopy randomly 
-;    set hidden? FALSE
-;    set xcor (treexcor + random tree-radius - random tree-radius - 0.5)
-;    set ycor (treeycor + random tree-radius - random tree-radius - 0.5)
-;    ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
-;  ]
-;end
-
-
 to disperse-mast
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
@@ -517,6 +525,7 @@ to check-sapling-existence
     set size 1
     set shape "square"
     if breed = maples [set newsaps-maple (newsaps-maple + 1)]
+    if breed = poplars [set newsaps-poplar (newsaps-poplar + 1)]
     set hidden? FALSE
     set age 1
     set dbh 0.01  
@@ -590,15 +599,15 @@ to draw-canopy
   
   ifelse height < 5 [
     ask patches in-radius canopy-radius [set cc5 (cc5 + (1 - cc5) * temp)]
-    ask patches in-radius 1 [set dn5 (dn5 + 1)]
+    ask patches in-radius 2 [set dn5 (dn5 + 1)]
   ] [
     ifelse height >= 5 and height < 10 [
       ask patches in-radius canopy-radius [set cc10 (cc10 + (1 - cc10) * temp)]
-      ask patches in-radius 1 [set dn10 (dn10 + 1)]
+      ask patches in-radius 2 [set dn10 (dn10 + 1)]
     ] [
       ifelse height >= 10 and height < 15 [
         ask patches in-radius canopy-radius [set cc15 (cc15 + (1 - cc15) * temp)]
-        ask patches in-radius 1 [set dn15 (dn15 + 1)]
+        ask patches in-radius 2 [set dn15 (dn15 + 1)]
       ] [
         ifelse height >= 15 and height < 20 [
           ask patches in-radius canopy-radius [set cc20 (cc20 + (1 - cc20) * temp)]
@@ -708,8 +717,8 @@ to init-params
     set b3 (Hmax - 137) / (Dmax ^ 2)
     set C 1.57
     set G 118.7
-    set degd-min 6300
-    set degd-max 2000
+    set degd-min 2000
+    set degd-max 6300
     set wt-dist-min 0.567
     set wlmax 0.35
     set light-tol "high"
@@ -726,6 +735,37 @@ to init-params
     ;Based on Botkin 1993
     set max-saplings 4
     ;set max-saplings 1
+  ]
+  if breed = poplars [
+    ;Tulip poplar; based bon Botkin 1993 and Holm 2012
+    set Dmax 100
+    set Hmax 4000
+    set Amax 300
+    set b2 2 * (Hmax - 137) / (Dmax)
+    set b3 (Hmax - 137) / (Dmax ^ 2)
+    ;need estimate for this
+    set C 1.57
+    ;;;;;
+    set G 140
+    set degd-min 2171
+    set degd-max 6363
+    ;;need to get estimates for these:
+    set wt-dist-min 0.567
+    set wlmax 0.35
+    ;;;;;;;;
+    set light-tol "low"
+    set N-tol "intermediate"
+    set actual-growth 0.02
+    ;Based on 2% reaching max age; common to all species
+    ;Based on Botkin 1993
+    set intrinsic-mortality 4.0 / Amax
+    ;set min-increment 0.01
+    set min-increment 0.01
+    set growth-mortality 0.368
+    set seedling FALSE
+    set potential-sapling FALSE
+    ;Based on Botkin 1993
+    set max-saplings 4
   ]
     
 end
@@ -964,7 +1004,7 @@ init-mature-maple
 init-mature-maple
 0
 400
-116
+81
 1
 1
 trees
@@ -1098,6 +1138,33 @@ false
 PENS
 "default" 1.0 0 -16777216 true "" "plot prop-oak"
 "pen-1" 1.0 0 -13345367 true "" "plot prop-tol"
+"pen-2" 1.0 0 -6917194 true "" "plot prop-intol"
+
+SLIDER
+14
+219
+186
+252
+init-mature-poplar
+init-mature-poplar
+0
+400
+79
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+27
+497
+99
+542
+Poplar Repro
+repro-poplar
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
