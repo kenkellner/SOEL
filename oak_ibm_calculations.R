@@ -49,6 +49,38 @@ plot(D,H)
 test = seq(0,10,0.01)
 test2 = rexp()
 
+##########################################
+
+##Calculating the intermediate light response curve
+
+#Existing high/low curves
+light <- seq(0,1,0.01)
+
+ylow <- 2.24*(1 - exp(-1.136 * (light-0.08)))
+
+yhigh <- 1 - exp(-4.64*(light-0.05))
+
+#Calculate average values for curve fitting
+
+yint <- rowMeans(cbind(ylow,yhigh))
+
+#Fit to logarithmic response curve
+
+fit = nls(yint ~ a*(1 - exp(b*(light - 0.05))), 
+          start = list(a=1,b=-4),control=list(maxiter=10000))
+
+#Equation for intermediate tolerance
+yint.fit <- 1.371*(1 - exp(-2.227*(light-0.05)))
+
+#Check on plot - it works!
+
+plot(light,ylow,type='l',col='blue')
+
+lines(light,yhigh,type='l',col='red')
+
+lines(light,yint.fit,type='l',col='green')
+
+
 
 
 
