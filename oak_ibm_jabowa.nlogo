@@ -40,7 +40,9 @@ to setup
   
   ask patches [reset-patches]
   
-  create-oaks init-mature-oak [
+  ;;Initial stand values based on Saunders and Arseneault 2013
+  
+  create-oaks init-overstory-oak [
     set shape "tree"
     set size 2 
     set color black
@@ -48,60 +50,66 @@ to setup
     init-params
     ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
     ;;set age random 20 + (initial-stand-age - 10)
-    set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
+    ;set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
+    set dbh (random-normal 45.75 5) / 100
+    set age random-normal 100 5 
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
     set canopy-density calc-shade (dbh * 100)
       
-    ifelse init-mature-oak > 200 [
+    ifelse init-overstory-oak > 0 [
       loop [
         setxy random-xcor random-ycor
-        if count turtles in-radius 3 < 2 [stop]]]
+        if count oaks in-radius 7 < 2 [stop]]]
     [setxy random-xcor random-ycor]
 
 
   ]
   
-  create-maples init-mature-maple [
+  create-maples init-overstory-maple [
     set shape "leaf"
     set size 2 
     set color blue
     init-params
     ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
     ;;set age random 20 + (initial-stand-age - 10)
-    set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
+    ;set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
+    set dbh (random-normal 40.8 5) / 100
+    set age round random-normal 100 5
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
     set canopy-density calc-shade (dbh * 100)
       
-    ifelse init-mature-oak > 200 [
+    ifelse init-overstory-oak > 0 [
       loop [
         setxy random-xcor random-ycor
-        if count turtles in-radius 3 < 2 [stop]]]
+        if count turtles in-radius 8 < 2 [stop]]]
     [setxy random-xcor random-ycor]
 
 
   ]
   
-  create-poplars init-mature-poplar [
+  create-poplars init-overstory-poplar [
     set shape "plant"
     set size 2 
     set color violet
     init-params
     ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
     ;;set age random 20 + (initial-stand-age - 10)
-    set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
+    ;set dbh max list 0.015 ((random-normal 29.2 11.5) / 100)
+    set dbh (random-normal 45.07 5) / 100
+    set age round random-normal 100 5
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
     set canopy-density calc-shade (dbh * 100)
       
-    ifelse init-mature-oak > 200 [
+    ifelse init-overstory-oak > 200 [
       loop [
         setxy random-xcor random-ycor
-        if count turtles in-radius 3 < 2 [stop]]]
+        if count turtles in-radius 8 < 2 [stop]]]
     [setxy random-xcor random-ycor]
 
 
@@ -120,7 +128,8 @@ to setup
     set color black
     set seedling FALSE
     init-params
-    set dbh random-float 0.085 + 0.015
+    set age round random-float 10
+    set dbh max list 0.015 ((random-normal 14.9 5) / 100)
     set ba (pi * (dbh / 2) ^ 2)
     set height (convert-dbh-height (dbh * 100)) / 100
     set canopy-radius convert-height-canopy-radius height
@@ -130,6 +139,38 @@ to setup
       setxy random-xcor random-ycor
       if mean [cc10] of patches in-radius 2 < 0.5 [stop]]
 
+  ]
+  
+  create-maples init-sapling-maple [
+    set shape "square"
+    set size 1 
+    set color blue
+    set seedling FALSE
+    init-params
+    set age round random-float 20
+    set dbh max list 0.015 ((random-normal 10.3 5) / 100)
+    set ba (pi * (dbh / 2) ^ 2)
+    set height (convert-dbh-height (dbh * 100)) / 100
+    set canopy-radius convert-height-canopy-radius height
+    set canopy-density calc-shade (dbh * 100)
+    setxy random-xcor random-ycor
+  ]
+  
+  create-poplars init-sapling-poplar [
+    set shape "square"
+    set size 1 
+    set color violet
+    set seedling FALSE
+    init-params
+    set age round random-float 10
+    set dbh max list 0.015 ((random-normal 14.9 5) / 100)
+    set ba (pi * (dbh / 2) ^ 2)
+    set height (convert-dbh-height (dbh * 100)) / 100
+    set canopy-radius convert-height-canopy-radius height
+    set canopy-density calc-shade (dbh * 100)
+    loop [
+      setxy random-xcor random-ycor
+      if mean [cc10] of patches in-radius 2 < 0.5 [stop]]
   ]
   
   ask patches [reset-patches]
@@ -234,7 +275,7 @@ to-report convert-height-canopy-radius [height-input]
   ;;range reported is 0.376 - 0.393; going with .385 for now
   
   ;report (0.4 * height-input / 2)
-  report max list 1 (0.4 * height-input / 2)
+  report max list 1 (0.5 * height-input / 2)
   
 end
 
@@ -734,7 +775,6 @@ to init-params
     set potential-sapling FALSE
     ;Based on Botkin 1993
     set max-saplings 4
-    ;set max-saplings 1
   ]
   if breed = poplars [
     ;Tulip poplar; based bon Botkin 1993 and Holm 2012
@@ -743,15 +783,15 @@ to init-params
     set Amax 300
     set b2 2 * (Hmax - 137) / (Dmax)
     set b3 (Hmax - 137) / (Dmax ^ 2)
-    ;need estimate for this
-    set C 1.57
+    ;assumed to be similar to oak
+    set C 1.75
     ;;;;;
     set G 140
     set degd-min 2171
     set degd-max 6363
-    ;;need to get estimates for these:
-    set wt-dist-min 0.567
-    set wlmax 0.35
+    ;;based on white spruce/red maple (similar moisture tolerance)
+    set wt-dist-min 0.544
+    set wlmax 0.245
     ;;;;;;;;
     set light-tol "low"
     set N-tol "intermediate"
@@ -839,13 +879,13 @@ NIL
 SLIDER
 14
 100
-186
+195
 133
-init-mature-oak
-init-mature-oak
-0
-500
-277
+init-overstory-oak
+init-overstory-oak
+48
+123
+89
 1
 1
 trees
@@ -914,10 +954,10 @@ kg/ha/yr
 HORIZONTAL
 
 MONITOR
-26
-272
-94
-317
+25
+380
+93
+425
 BA (m2/ha)
 basal-area
 2
@@ -948,7 +988,7 @@ germ-prob
 germ-prob
 0
 1
-0.9
+0.5
 0.1
 1
 NIL
@@ -987,9 +1027,9 @@ SLIDER
 171
 init-sapling-oak
 init-sapling-oak
-0
-500
-283
+37
+124
+95
 1
 1
 NIL
@@ -998,23 +1038,23 @@ HORIZONTAL
 SLIDER
 14
 178
-187
+201
 211
-init-mature-maple
-init-mature-maple
+init-overstory-maple
+init-overstory-maple
 0
-400
-81
+22
+11
 1
 1
 trees
 HORIZONTAL
 
 MONITOR
-26
-323
-93
-368
+25
+431
+92
+476
 qDBH (cm)
 qdbh
 2
@@ -1022,10 +1062,10 @@ qdbh
 11
 
 MONITOR
-101
-272
-175
-317
+100
+380
+174
+425
 BA (ft2/ac)
 basal-area-ft
 2
@@ -1033,10 +1073,10 @@ basal-area-ft
 11
 
 MONITOR
-104
-323
-169
-368
+103
+431
+168
+476
 qDBH (in)
 qdbh-in
 2
@@ -1044,10 +1084,10 @@ qdbh-in
 11
 
 MONITOR
-28
-375
-92
-420
+27
+483
+91
+528
 Trees/Ha
 dens
 2
@@ -1055,30 +1095,15 @@ dens
 11
 
 MONITOR
-105
-375
-168
-420
+104
+483
+167
+528
 Trees/Ac
 dens-ac
 2
 1
 11
-
-SLIDER
-14
-62
-186
-95
-initial-stand-age
-initial-stand-age
-0
-200
-80
-1
-1
-NIL
-HORIZONTAL
 
 PLOT
 1043
@@ -1099,10 +1124,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot basal-area"
 
 MONITOR
-27
-444
-92
-489
+26
+552
+91
+597
 Oak Repro
 repro-oak
 2
@@ -1110,10 +1135,10 @@ repro-oak
 11
 
 MONITOR
-102
-444
-173
-489
+101
+552
+172
+597
 Maple Repro
 repro-maple
 2
@@ -1145,26 +1170,56 @@ SLIDER
 219
 186
 252
-init-mature-poplar
-init-mature-poplar
+init-overstory-poplar
+init-overstory-poplar
 0
-400
-79
+18
+9
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-27
-497
-99
-542
+26
+605
+98
+650
 Poplar Repro
 repro-poplar
 2
 1
 11
+
+SLIDER
+16
+263
+188
+296
+init-sapling-maple
+init-sapling-maple
+0
+700
+538
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+16
+303
+188
+336
+init-sapling-poplar
+init-sapling-poplar
+51
+354
+162
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
