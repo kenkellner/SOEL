@@ -68,9 +68,9 @@ to setup
   ]
   
   create-maples init-overstory-maple [
-    set shape "leaf"
+    set shape "tree"
     set size 2 
-    set color blue
+    set color sky
     init-params
     ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
     ;;set age random 20 + (initial-stand-age - 10)
@@ -92,9 +92,9 @@ to setup
   ]
   
   create-poplars init-overstory-poplar [
-    set shape "plant"
+    set shape "tree"
     set size 2 
-    set color violet
+    set color red
     init-params
     ;;set dbh max list 0.015 ((random-normal 39.2 11.5) / 100)
     ;;set age random 20 + (initial-stand-age - 10)
@@ -144,7 +144,7 @@ to setup
   create-maples init-sapling-maple [
     set shape "square"
     set size 1 
-    set color blue
+    set color sky
     set seedling FALSE
     init-params
     set age round random-float 20
@@ -159,7 +159,7 @@ to setup
   create-poplars init-sapling-poplar [
     set shape "square"
     set size 1 
-    set color violet
+    set color red
     set seedling FALSE
     init-params
     set age round random-float 10
@@ -402,8 +402,8 @@ to grow
   
   if dbh >= 0.1 and shape = "square" [
     if breed = oaks [set size 2 set shape "tree"]
-    if breed = maples [set size 2 set shape "leaf"]
-    if breed = poplars [set size 2 set shape "plant"]
+    if breed = maples [set size 2 set shape "tree"]
+    if breed = poplars [set size 2 set shape "tree"]
   ]
   
 end
@@ -446,7 +446,7 @@ to create-sprout
     if prob > 1 [set prob 1]
     if dbh > 0.8 [set prob 0]
     ifelse random-float 1 < prob [
-      set shape "square" set color blue
+      set shape "square" set color sky
       set age 1
       set dbh 0.01
       set height (convert-dbh-height (dbh * 100)) / 100
@@ -461,7 +461,7 @@ to create-sprout
     let prob 0.97
     if dbh > 0.8 [set prob 0]
     ifelse random-float 1 < prob [
-      set shape "square" set color violet set sprout? TRUE
+      set shape "square" set color red set sprout? TRUE
       set dbh 0.01
       set height (convert-dbh-height (dbh * 100)) / 100
       set canopy-radius (convert-height-canopy-radius height)
@@ -648,7 +648,7 @@ to draw-canopy
     ] [
       ifelse height >= 10 and height < 15 [
         ask patches in-radius canopy-radius [set cc15 (cc15 + (1 - cc15) * temp)]
-        ask patches in-radius 2 [set dn15 (dn15 + 1)]
+        ask patches in-radius canopy-radius [set dn15 (dn15 + 1)]
       ] [
         ifelse height >= 15 and height < 20 [
           ask patches in-radius canopy-radius [set cc20 (cc20 + (1 - cc20) * temp)]
@@ -811,11 +811,14 @@ to init-params
 end
 
 to color-patches
-  if cc5 > 0.1 [set pcolor green]
-  if cc5 > 0.5 [set pcolor lime]
-  if cc5 > 0.7 [set pcolor yellow]
-  if cc5 > 0.85 [set pcolor orange]
-  if cc5 > 0.9 [set pcolor red]
+  if cc5 > 0 [set pcolor lime + 1]
+  if cc5 > 0.1 [set pcolor lime]
+  if cc5 > 0.2 [set pcolor lime - 1]
+  if cc5 > 0.3 [set pcolor green + 1]
+  if cc5 > 0.7 [set pcolor green]
+  if cc5 > 0.8 [set pcolor green - 1]
+  if cc5 > 0.9 [set pcolor green - 2]
+  if cc5 > 0.95 [set pcolor green - 3]
 end
 
 to reset-patches
@@ -835,11 +838,11 @@ end
 GRAPHICS-WINDOW
 210
 10
-1028
-849
+927
+748
 50
 50
-8.0
+7.0
 1
 10
 1
@@ -877,10 +880,10 @@ NIL
 1
 
 SLIDER
-14
-100
-195
-133
+13
+63
+194
+96
 init-overstory-oak
 init-overstory-oak
 48
@@ -932,7 +935,7 @@ wt-dist
 wt-dist
 0.1
 10
-6.9
+8.4
 0.1
 1
 m
@@ -1021,10 +1024,10 @@ count oaks with [seedling = TRUE]
 11
 
 SLIDER
-14
-138
-186
-171
+13
+101
+185
+134
 init-sapling-oak
 init-sapling-oak
 37
@@ -1036,10 +1039,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-14
-178
-201
-211
+13
+141
+200
+174
 init-overstory-maple
 init-overstory-maple
 0
@@ -1162,14 +1165,14 @@ false
 "set-plot-y-range (precision 0 0) (precision 1 0)\nplot-pen-up\nplot-pen-down" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot prop-oak"
-"pen-1" 1.0 0 -13345367 true "" "plot prop-tol"
-"pen-2" 1.0 0 -6917194 true "" "plot prop-intol"
+"pen-1" 1.0 0 -13791810 true "" "plot prop-tol"
+"pen-2" 1.0 0 -2674135 true "" "plot prop-intol"
 
 SLIDER
-14
-219
-186
-252
+13
+182
+185
+215
 init-overstory-poplar
 init-overstory-poplar
 0
@@ -1192,30 +1195,30 @@ repro-poplar
 11
 
 SLIDER
-16
-263
-188
-296
+15
+226
+187
+259
 init-sapling-maple
 init-sapling-maple
 0
 700
-538
+499
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-16
-303
-188
-336
+15
+266
+187
+299
 init-sapling-poplar
 init-sapling-poplar
 51
 354
-162
+163
 1
 1
 NIL
