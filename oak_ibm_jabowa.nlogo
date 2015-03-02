@@ -389,10 +389,7 @@ to grow
   
   set fN nitrogen-index N-tol
   
-  ;;random variability
-  set fR (0.95 + (random-float 0.1))
-    
-  set actual-growth (max-growth * fAL * fT * fWT * fN * fR)
+  set actual-growth (max-growth * fAL * fT * fWT * fN)
   
   set dbh (dbh * 100 + actual-growth) / 100
   set height (convert-dbh-height (dbh * 100)) / 100
@@ -410,12 +407,12 @@ end
 
 to check-survival
   
-  if dbh >= 0.1 [ 
+  if dbh >= 0.05 [ 
     if random-float 1 < intrinsic-mortality [create-sprout] 
     if actual-growth < min-increment and random-float 1 < growth-mortality [create-sprout]
   ]
   
-  if dbh < 0.1 [
+  if dbh < 0.05 [
     if random-float 1 < intrinsic-mortality [die] 
     if actual-growth < min-increment and random-float 1 < growth-mortality [die]
   ]
@@ -429,6 +426,7 @@ to create-sprout
   ;;From Dey 2002
   if breed = oaks [
     let prob (1 + exp(-1 * (5.9991 - 0.2413 * (dbh * 39.3701) - 0.0475 * age))) ^ (-1)
+    if prob > 1 [set prob 1]
     ifelse random-float 1 < prob [
       set shape "square" set color black   
       set age 1
@@ -457,8 +455,9 @@ to create-sprout
     [die]
   ]
   if breed = poplars [
-    ;;based on Wendel 1975 plus some guesses
-    let prob 0.97
+    ;;based on Wendel 1975, True 1953, Beck & Della-Bianca 1981
+    let prob 1.1832 - 1.3638 * dbh
+    if prob > 1 [set prob 1]
     if dbh > 0.8 [set prob 0]
     ifelse random-float 1 < prob [
       set shape "square" set color red set sprout? TRUE
@@ -553,8 +552,24 @@ to germinate-mast
     die
 end
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;SIMPLIFIED
+
+
+
+
+
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 to check-sapling-existence
-  calc-available-light
+  calc-seedling-light
   set fAL light-growth-index light-tol 
   set fT degree-days-index degd-min degd-max  
   set fWT saturation-index wt-dist-min 
@@ -602,10 +617,13 @@ to grow-seedling
   set actual-growth (max-growth * fAL)
   set height (height + actual-growth)
   
-  if height > 1.37 [
+  ;when seedling reaches dbh 0.01
+  ;height will be 2.039
+  ;convert to sapling
+  if height > 2.039 [
     init-params
     set newsaps-oak (newsaps-oak + 1)
-    set dbh (1 + random-float 0.5) / 100
+    set dbh 0.01
     set seedling FALSE
     set hidden? FALSE
     set shape "square"
@@ -696,11 +714,7 @@ to calc-available-light
           ] [
             ifelse height >= 25 and height < 30 [
               set light (1 - mean [cc35] of patches in-radius canopy-radius)
-            ] [
-              ifelse height >= 30 and height >= max [height] of turtles with [breed != acorns] in-radius canopy-radius [    
-               set light 1
-              ] [set light (1 - mean [cc35] of patches in-radius canopy-radius)]
-              
+            ] [set light 1
               ]]]]]]
 
 end
@@ -725,7 +739,8 @@ to init-params
   if breed = oaks [
     ;White oak; Based on Botkin 1993 and Holm 2012
     set Dmax 100
-    set Hmax 3500
+    ;based on HEE data
+    set Hmax 3800
     set Amax 400
     set b2 2 * (Hmax - 137) / (Dmax)
     set b3 (Hmax - 137) / (Dmax ^ 2)
