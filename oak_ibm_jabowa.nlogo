@@ -24,7 +24,7 @@ poplars-own [light age dbh height canopy-radius canopy-density actual-growth ba 
 breed [acorns acorn]
 acorns-own [weevil cached germ]
 
-patches-own [stem-dens shade]
+patches-own [stem-dens shade in-layer1 in-layer2]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -87,7 +87,7 @@ to allometerize [dbh-input]
   
   ;Based on Kenefic and Nyland 1999 and others
   ;range reported is 0.376 - 0.393; going with .5 for now 
-  set canopy-radius max list 1 (0.5 * height / 2)
+  set canopy-radius max list 1 (0.385 * height / 2)
   
   ;leaf weight based on dbh with C species-specific
   ;Exponent can be anywhere from 1.5 to 3 (Botkin 1993)
@@ -392,15 +392,85 @@ end
 ;;;;;;;;Processes associated with available light;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-to calc-available-light
+;to calc-available-light
+; ask patches [set pcolor brown set stem-dens 0 set shade 0] 
+; foreach sort-by [[height] of ?1 > [height] of ?2] turtles with [seedling = FALSE] [
+;    ask ? [
+;      let temp canopy-density
+;      set light (1 - mean [shade] of patches in-radius max list 3 canopy-radius) / max list 1 [stem-dens] of patch-here 
+;      ask patches in-radius canopy-radius [set shade (shade + (1 - shade) * temp) ] 
+;      ask patches in-radius 2 [set stem-dens stem-dens + 1]
+; ]]
+;end
+
+to calc-available-light 
  ask patches [set pcolor brown set stem-dens 0 set shade 0] 
  foreach sort-by [[height] of ?1 > [height] of ?2] turtles with [seedling = FALSE] [
     ask ? [
+      let start-ycor ycor
       let temp canopy-density
       set light (1 - mean [shade] of patches in-radius max list 3 canopy-radius) / max list 1 [stem-dens] of patch-here 
-      ask patches in-radius canopy-radius [set shade (shade + (1 - shade) * temp) ] 
-      ask patches in-radius 2 [set stem-dens stem-dens + 1]
+      
+      ;draw initial canopy
+      ifelse canopy-radius < 2 [
+        ask patches in-radius canopy-radius [set shade (shade + (1 - shade) * temp) ]]
+      [ask patches in-radius canopy-radius [
+        ;Interior circle  
+        set in-layer1 TRUE
+        set shade (shade + (1 - shade) * temp)]
+      
+      ;smaller ellipse (minus the initial canopy)
+      set ycor (ycor + canopy-radius / 2.5)
+      let test1 in-ellipse (canopy-radius * 2) (canopy-radius * 1.1) 1
+      ask test1 [ 
+        set in-layer2 TRUE
+        set shade (shade + (1 - shade) * temp * 0.5)]
+      
+      ;larger ellipse (minus the smaller ellipse)
+      set ycor (ycor + canopy-radius / 4.5)
+      let test2 in-ellipse (canopy-radius * 2.5) (canopy-radius * 2) 2
+      ask test2 [ 
+        set shade (shade + (1 - shade) * temp * 0.25)] 
+       
+      ;reset layering 
+      let test3 in-ellipse (canopy-radius * 2.5) (canopy-radius * 1.5) 3
+      ask test3 [set in-layer1 FALSE set in-layer2 FALSE]
+      ] 
+      
+      ;move tree back to starting location
+      set ycor start-ycor
+
+      ask patches in-radius 2.5 [set stem-dens stem-dens + 1]
  ]]
+end
+
+;Modified from Wilensky, U. (2003) Netlogo Fur Model
+to-report in-ellipse [x-radius y-radius layer]  ;; patch procedure
+  
+  if layer = 1 [
+    report other patches in-radius (max list x-radius y-radius)
+           with [1.0 >= ((xdistance myself ^ 2) / (x-radius ^ 2)) +
+                        ((ydistance myself ^ 2) / (y-radius ^ 2)) and in-layer1 = FALSE]]
+  if layer = 2 [
+    report other patches in-radius (max list x-radius y-radius)
+           with [1.0 >= ((xdistance myself ^ 2) / (x-radius ^ 2)) +
+                        ((ydistance myself ^ 2) / (y-radius ^ 2)) 
+                        and in-layer2 = FALSE and in-layer1 = FALSE]]
+  if layer = 3 [
+    report other patches in-radius (max list x-radius y-radius)
+           with [1.0 >= ((xdistance myself ^ 2) / (x-radius ^ 2)) +
+                        ((ydistance myself ^ 2) / (y-radius ^ 2))]]
+end
+
+
+to-report xdistance [other-patch]  ;; patch procedure
+  let xdiff abs (pxcor - [pxcor] of other-patch)
+  report min (list xdiff (world-width - xdiff))
+end
+
+to-report ydistance [other-patch]  ;; patch procedure
+  let ydiff abs (pycor - [pycor] of other-patch)
+  report min (list ydiff (world-height - ydiff))
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -535,7 +605,7 @@ to calc-global-vars ;;Calculate global reporter values
   set qdbh sqrt(basal-area / (0.0000785 * count turtles with [height > 1.37]))
   set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37] / pi)) * 39.37
   set dens (count turtles with [dbh >= 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50])
-  set dens-ac (count turtles with [dbh >= 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50])
+  set dens-ac dens * 0.40477
   set prop-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
   set prop-tol (sum [ba] of turtles with [dbh >= 0.01 and breed = maples and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
   set prop-intol (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
@@ -608,7 +678,7 @@ mature-oak
 mature-oak
 0
 300
-100
+6
 1
 1
 NIL
@@ -677,10 +747,10 @@ kg/ha/yr
 HORIZONTAL
 
 MONITOR
-25
-380
-93
-425
+29
+232
+97
+277
 BA (m2/ha)
 basal-area
 2
@@ -752,7 +822,7 @@ sapling-oak
 sapling-oak
 0
 300
-100
+0
 1
 1
 NIL
@@ -767,17 +837,17 @@ mature-maple
 mature-maple
 0
 300
-20
+0
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-25
-431
-92
-476
+29
+283
+96
+328
 qDBH (cm)
 qdbh
 2
@@ -785,10 +855,10 @@ qdbh
 11
 
 MONITOR
-100
-380
-174
-425
+104
+232
+178
+277
 BA (ft2/ac)
 basal-area-ft
 2
@@ -796,10 +866,10 @@ basal-area-ft
 11
 
 MONITOR
-103
-431
-168
-476
+107
+283
+172
+328
 qDBH (in)
 qdbh-in
 2
@@ -807,10 +877,10 @@ qdbh-in
 11
 
 MONITOR
-27
-483
-91
-528
+31
+335
+95
+380
 Trees/Ha
 dens
 2
@@ -818,10 +888,10 @@ dens
 11
 
 MONITOR
-104
-483
-167
-528
+108
+335
+171
+380
 Trees/Ac
 dens-ac
 2
@@ -847,10 +917,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot basal-area"
 
 MONITOR
-26
-552
-91
-597
+1067
+692
+1132
+737
 Oak Repro
 repro-oak
 2
@@ -858,10 +928,10 @@ repro-oak
 11
 
 MONITOR
-101
-552
-172
-597
+1142
+692
+1213
+737
 Maple Repro
 repro-maple
 2
@@ -874,7 +944,7 @@ PLOT
 1244
 668
 Prop Oak
-NIL
+Years
 NIL
 0.0
 10.0
@@ -897,17 +967,17 @@ mature-poplar
 mature-poplar
 0
 300
-20
+0
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-26
-605
-98
-650
+1067
+745
+1139
+790
 Poplar Repro
 repro-poplar
 2
@@ -923,7 +993,7 @@ sapling-maple
 sapling-maple
 0
 500
-200
+0
 1
 1
 NIL
@@ -938,19 +1008,19 @@ sapling-poplar
 sapling-poplar
 0
 500
-200
+0
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-64
-685
-181
-718
+27
+773
+144
+806
 Harvest Center
-ask turtles with [dbh > 0.015 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [create-sprout]
+ask turtles with [dbh > 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [create-sprout]
 NIL
 1
 T
@@ -981,6 +1051,17 @@ Initial Forest\n
 11
 0.0
 1
+
+MONITOR
+68
+481
+131
+526
+NIL
+prop-oak
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
