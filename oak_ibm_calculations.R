@@ -81,7 +81,60 @@ lines(light,yhigh,type='l',col='red')
 lines(light,yint.fit,type='l',col='green')
 
 
+##########Stump sprouting
 
+##yellow poplar
+#Probability
+x = c(0.1524,0.6604, 0.80)
+y = c(0.95, 0.40, 0)
 
+plot(x,y,xlim=c(0.10,1.00),ylim=c(0,1.10))
+abline(lm(y~x))
+abline(v=0.10)
 
+############Light Transmittence
 
+#check if my way of calculating is same as Botkin
+C = 1.75
+
+k = 0.0000756
+
+PHI = 1
+
+dbh.input1 = 80
+
+dbh.input2 = 35
+
+SLA1 <- C * dbh.input1 ^ 2
+
+SLA2 <- C * dbh.input2 ^ 2
+
+cdensity1 <- 1 - (PHI * exp(-1 * k * SLA1))
+
+cdensity2 <- 1 - (PHI * exp(-1 * k * SLA2))
+
+light.method1 = cdensity1 + (1 - cdensity1) * cdensity2
+
+light.method2 <- 1 - (PHI * exp(-1 * k * (SLA1 + SLA2)))
+
+#Approaches are identical
+light.method1
+light.method2
+
+#Selecting a value for k and the exponent
+dbh.input <- seq(1,100,1)
+k1 = 0.0000756
+k2 = 1/6000
+k3 = 1/4000
+approach1 <- 1 - (PHI * exp(-1 * k1 * C * dbh.input ^ 2.4))
+approach2 <- 1 - (PHI * exp(-1 * k2 * C *dbh.input ^ 2))
+approach3 <- 1 - (PHI * exp(-1 * k3 * C *dbh.input ^ 2))
+approach4 <- 1 - (PHI * exp(-1 * k1 * C * dbh.input ^ 2))
+
+plot(dbh.input,approach1,type='l',col='red')
+
+lines(dbh.input,approach2,type='l',col='blue')
+
+lines(dbh.input,approach3,type='l',col='green')
+
+lines(dbh.input,approach4, type='l',col='orange')
