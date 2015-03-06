@@ -54,7 +54,7 @@ to go
   ask turtles with [seedling = FALSE] [
     grow
     check-survival
-    if dbh >= 0.20 [reproduce]
+    if breed = oaks and dbh >= 0.20 [produce-acorns] ;based on Downs and McQuilkin 1944
   ]
    
   ask acorns [
@@ -62,15 +62,17 @@ to go
    germinate-mast 
   ]
   
-  ;ask turtles with [potential-sapling = TRUE] [check-sapling-existence]
-  
   ask oaks with [seedling = TRUE] [
     calc-seedling-light
     grow-seedling
     check-seedling-survival
   ]
   
-  ask patches [color-patches gen-saplings]
+  ask patches [
+    regenerate
+    color-patches   
+  ]
+  
   calc-global-vars
   
   tick
@@ -91,11 +93,14 @@ to allometerize [dbh-input]
   
   ;leaf weight based on dbh with C species-specific
   ;Exponent can be anywhere from 1.5 to 3 (Botkin 1993)
-  let SLA (C * (dbh-input * 100) ^ (2.4))
+  ;let SLA (C * (dbh-input * 100) ^ (2.4))
+  let SLA (C * (dbh-input * 100) ^ (2))
   
   ;Beer-Lambert law where light above canopy = 1
   let PHI 1
-  let k 0.0000756 ;Based on QuabbinPlot206
+  ;let k 0.0000756 ;Based on QuabbinPlot206, seems far too small
+  ;let k 1 / 6000 ;Based on Botkin 1993, allows too much light under big trees
+  let k 1 / 4000 ;Happy medium
   set canopy-density min list 0.98 (1 - (PHI * exp(-1 * k * SLA)))
   
   set ba (pi * (dbh / 2) ^ 2) ;Basal area 
@@ -233,64 +238,17 @@ end
 ;;;;;;;;                    Reproduction Procedures                      ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-to reproduce 
-  
-  ifelse breed = oaks [
-    let acorns-produced (light * 3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
-    let tree-radius canopy-radius
-    hatch-acorns acorns-produced [
-      ;;drop produced acorns under canopy randomly 
-      set hidden? TRUE
-      right random 360
-      forward (random-float (tree-radius - 0.5)) + 0.5
-      ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
-    ]
-  ]
-  ;other tree species
-  [
-;   let max-sap max-saplings
-;   let max-dist 2 * height
-;   hatch (random (max-saplings + 1)) [
-;     set hidden? TRUE
-;     init-params
-;     right random 360
-;     ;;based on HEE data
-;     forward random-float max-dist
-;     set potential-sapling TRUE
-     ;set xcor (treexcor + random tree-radius - random tree-radius - 0.5)
-     ;set ycor (treeycor + random tree-radius - random tree-radius - 0.5)   
-     ;right random 360
-     ;;based on HEE data
-     ;forward random-exponential 5.185 
-;     check-sapling-existence   
-;   ]
+to produce-acorns
+  let acorns-produced (light * 3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
+  let tree-radius canopy-radius
+  hatch-acorns acorns-produced [
+  ;;drop produced acorns under canopy randomly 
+    set hidden? TRUE
+    right random 360
+    forward (random-float (tree-radius - 0.5)) + 0.5
+    ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
   ]
   
-  
-end
-
-to gen-saplings  
-  let AL light-growth-index ((1 - shade) / max list 1 stem-dens ) "high"
-  let Al-pop light-growth-index ((1 - shade) / max list 1 stem-dens ) "low"
-  let T 0.8
-  let WT 0.8 
-  let N 0.8
-  let max-maple-saplings 1 let max-poplar-saplings 1
-  
-  if random-float 1 < (0.01 * max-maple-saplings * AL * T * WT * N)[
-    sprout-maples 1 [ 
-      set dbh 0.01   
-      init-params
-      if breed = maples [set newsaps-maple (newsaps-maple + 1)]
-    ]]
-  
-  if random-float 1 < (0.01 * max-poplar-saplings * AL-pop * T * WT * N)[
-    sprout-poplars 1 [  
-      set dbh 0.01  
-      init-params
-      if breed = poplars [set newsaps-poplar (newsaps-poplar + 1)]
-    ]]
-        
 end
 
 to disperse-mast
@@ -326,29 +284,30 @@ to germinate-mast
     die
 end
 
-
-;to check-sapling-existence
-;  calc-seedling-light
-;  set fAL light-growth-index light light-tol 
-;  set fT degree-days-index degd-min degd-max  
-;  set fWT saturation-index wt-dist-min 
-;  set fN nitrogen-index N-tol
-;  
-;  ifelse random-float 1 > (fAL * fT * fWT * fN) [die] [
-;    set potential-sapling FALSE
-;    
-;    set size 1
-;    set shape "square"
-;    if breed = maples [set newsaps-maple (newsaps-maple + 1)]
-;    if breed = poplars [set newsaps-poplar (newsaps-poplar + 1)]
-;    set hidden? FALSE
-;    set age 1
-;    set dbh 0.01  
-;    allometerize dbh    
-;    ]    
-;  
-;end
-
+to regenerate
+  if count turtles-here with [seedling = FALSE] > 0 [stop]  
+  let AL light-growth-index ((1 - shade) / max list 1 stem-dens ) "high"
+  let Al-pop light-growth-index ((1 - shade) / max list 1 stem-dens ) "low"
+  let T 0.8
+  let WT 0.8 
+  let N 0.8
+  let max-maple-saplings 1 let max-poplar-saplings 1
+  
+  if random-float 1 < (0.01 * max-maple-saplings * AL * T * WT * N)[
+    sprout-maples 1 [ 
+      set dbh 0.01   
+      init-params
+      if breed = maples [set newsaps-maple (newsaps-maple + 1)]
+    ]]
+  
+  if random-float 1 < (0.01 * max-poplar-saplings * AL-pop * T * WT * N)[
+    sprout-poplars 1 [  
+      set dbh 0.01  
+      init-params
+      if breed = poplars [set newsaps-poplar (newsaps-poplar + 1)]
+    ]]
+        
+end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -392,17 +351,6 @@ end
 ;;;;;;;;Processes associated with available light;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;to calc-available-light
-; ask patches [set pcolor brown set stem-dens 0 set shade 0] 
-; foreach sort-by [[height] of ?1 > [height] of ?2] turtles with [seedling = FALSE] [
-;    ask ? [
-;      let temp canopy-density
-;      set light (1 - mean [shade] of patches in-radius max list 3 canopy-radius) / max list 1 [stem-dens] of patch-here 
-;      ask patches in-radius canopy-radius [set shade (shade + (1 - shade) * temp) ] 
-;      ask patches in-radius 2 [set stem-dens stem-dens + 1]
-; ]]
-;end
-
 to calc-available-light 
  ask patches [set pcolor brown set stem-dens 0 set shade 0] 
  foreach sort-by [[height] of ?1 > [height] of ?2] turtles with [seedling = FALSE] [
@@ -412,9 +360,13 @@ to calc-available-light
       set light (1 - mean [shade] of patches in-radius max list 3 canopy-radius) / max list 1 [stem-dens] of patch-here 
       
       ;draw initial canopy
+      ;Shape of shade projection based on ShadeMotion simulation for 39 degrees latitude
       ifelse canopy-radius < 2 [
+        ;Calculate overlapping shade instead of summing up leaf-weight; mathematically equivalent and fewer calculations to make.
         ask patches in-radius canopy-radius [set shade (shade + (1 - shade) * temp) ]]
-      [ask patches in-radius canopy-radius [
+      [
+        set ycor (ycor + canopy-radius / 2)
+        ask patches in-radius canopy-radius [
         ;Interior circle  
         set in-layer1 TRUE
         set shade (shade + (1 - shade) * temp)]
@@ -428,12 +380,12 @@ to calc-available-light
       
       ;larger ellipse (minus the smaller ellipse)
       set ycor (ycor + canopy-radius / 4.5)
-      let test2 in-ellipse (canopy-radius * 2.5) (canopy-radius * 2) 2
+      let test2 in-ellipse (canopy-radius * 3) (canopy-radius * 1.5) 2
       ask test2 [ 
         set shade (shade + (1 - shade) * temp * 0.25)] 
        
       ;reset layering 
-      let test3 in-ellipse (canopy-radius * 2.5) (canopy-radius * 1.5) 3
+      let test3 in-ellipse (canopy-radius * 3) (canopy-radius * 1.5) 3
       ask test3 [set in-layer1 FALSE set in-layer2 FALSE]
       ] 
       
@@ -488,7 +440,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   create-oaks dens-adjust * n-oak [ ;dens-adjust adds more trees when there is a buffer
     set dbh (random-normal 45.75 5) / 100
     init-params  
-    set age random-normal 100 5   
+    set age round (Amax * (dbh * 100) / Dmax)   
     ifelse space-adjust = TRUE [
       loop [
         setxy random-xcor random-ycor
@@ -498,7 +450,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   create-maples dens-adjust * n-maple [
     set dbh (random-normal 40.8 5) / 100
     init-params
-    set age round random-normal 100 5      
+    set age round (Amax * (dbh * 100) / Dmax)      
     ifelse space-adjust = TRUE [
       loop [
         setxy random-xcor random-ycor
@@ -508,7 +460,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   create-poplars dens-adjust * n-poplar [
     set dbh (random-normal 45.07 5) / 100
     init-params
-    set age round random-normal 100 5 
+    set age round (Amax * (dbh * 100) / Dmax)
     ifelse space-adjust = TRUE [
       loop [
         setxy random-xcor random-ycor
@@ -522,7 +474,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   create-oaks dens-adjust * n-sap-oak [
     set dbh max list 0.015 ((random-normal 14.9 5) / 100)
     init-params
-    set age round random-float 10  
+    set age round (Amax * (dbh * 100) / Dmax)
     loop [
       setxy random-xcor random-ycor
       if mean [shade] of patches in-radius 2 < 0.6 [stop]]
@@ -530,13 +482,13 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   create-maples dens-adjust * n-sap-maple [
     set dbh max list 0.015 ((random-normal 10.3 5) / 100)
     init-params
-    set age round random-float 20
+    set age round (Amax * (dbh * 100) / Dmax)
     setxy random-xcor random-ycor
   ] 
   create-poplars dens-adjust * n-sap-poplar [
     set dbh max list 0.015 ((random-normal 14.9 5) / 100)
     init-params
-    set age round random-float 10
+    set age round (Amax * (dbh * 100) / Dmax)
     loop [
       setxy random-xcor random-ycor
       if mean [shade] of patches in-radius 2 < 0.6 [stop]]
@@ -1051,17 +1003,6 @@ Initial Forest\n
 11
 0.0
 1
-
-MONITOR
-68
-481
-131
-526
-NIL
-prop-oak
-17
-1
-11
 
 @#$#@#$#@
 ## WHAT IS IT?
