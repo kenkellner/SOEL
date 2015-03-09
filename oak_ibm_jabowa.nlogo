@@ -1,24 +1,22 @@
 extensions [profiler]
 globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
-  newsaps-maple newsaps-oak newsaps-poplar repro-oak repro-maple repro-poplar
-  prop-oak prop-tol prop-intol]
+  prop-oak prop-tol prop-intol
+  sitequal-oak sitequal-maple sitequal-poplar
+  harvest-year shelter-phase]
 
 breed [oaks oak]
-oaks-own [light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL fT fWT fN  
-  Dmax Hmax Amax b2 b3 C G light-tol N-tol intrinsic-mortality min-increment growth-mortality degd-min degd-max wlmax wt-dist-min 
-  ;potential-sapling  
+oaks-own [light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL
+  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality   
   ]
 
 breed [maples maple]
-maples-own [light age dbh height canopy-radius canopy-density actual-growth ba seedling sprout? fAL fT fWT fN  
-  Dmax Hmax Amax b2 b3 C G light-tol N-tol intrinsic-mortality min-increment growth-mortality degd-min degd-max wlmax wt-dist-min ;max-saplings   
-  ;potential-sapling
+maples-own [light age dbh height canopy-radius canopy-density actual-growth ba seedling sprout? fAL
+  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality
   ]
 
 breed [poplars poplar]
-poplars-own [light age dbh height canopy-radius canopy-density actual-growth ba seedling sprout? fAL fT fWT fN  
-  Dmax Hmax Amax b2 b3 C G light-tol N-tol intrinsic-mortality min-increment growth-mortality degd-min degd-max wlmax wt-dist-min ;max-saplings   
-  ;potential-sapling
+poplars-own [light age dbh height canopy-radius canopy-density actual-growth ba seedling sprout? fAL
+  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality
   ]
 
 breed [acorns acorn]
@@ -32,6 +30,8 @@ patches-own [stem-dens shade in-layer1 in-layer2]
 to setup
   clear-all
   reset-ticks
+  
+  calc-site-quality
  
   ifelse HEE-mean = TRUE [
     init-stand 2.25 TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
@@ -39,6 +39,7 @@ to setup
   
   ask patches [color-patches]
   calc-global-vars
+  setup-harvest
   setup-plots
  
 end
@@ -47,8 +48,6 @@ end
 
 to go
 
-  set newsaps-oak 0 set newsaps-maple 0 set newsaps-poplar 0
-  
   calc-available-light
   
   ask turtles with [seedling = FALSE] [
@@ -72,6 +71,8 @@ to go
     regenerate
     color-patches   
   ]
+  
+  conduct-harvest
   
   calc-global-vars
   
@@ -124,69 +125,87 @@ to-report max-growth-increment [dbh-input height-input] ;Based on JABOWA, Botkin
   report (num / denom)  
 end
 
-to-report light-growth-index [light-input tol-input]
-  
+to-report light-growth-index [light-input tol-input]  
   ;Based on Botkin 1993 and Bonan 1990
   if tol-input = "low" [    
     report (2.24 * (1 - exp(-1.136 * (light-input - 0.08))))       
-  ]
-  
+  ] 
   if tol-input = "intermediate" [
     report (1.371 * (1 - exp(-2.227 * (light-input - 0.05))))
-  ]
-  
+  ]  
   if tol-input = "high" [
     report (1 - exp(-4.64 * (light-input - 0.05)))   
-  ]
-  
+  ]  
 end
 
-to-report degree-days-index [degd-min-input degd-max-input]
-  
-  let tdegd (4 * (DegDays - degd-min-input) * (degd-max-input - DegDays) / ((degd-max-input - degd-min-input) ^ 2))
-  
-  report max list 0 tdegd
-    
+to-report degree-days-index [degdays-input degd-min-input degd-max-input]  
+  let tdegd (4 * (degdays-input - degd-min-input) * (degd-max-input - degdays-input) / ((degd-max-input - degd-min-input) ^ 2)) 
+  report max list 0 tdegd    
 end
 
-to-report saturation-index [wt-dist-min-input]
-  
-  let wefi (1 - (wt-dist-min-input / wt-dist))
-  
-  report max list 0 wefi
-  
+to-report saturation-index [wt-input wt-dist-min-input]  
+  let wefi (1 - (wt-dist-min-input / wt-input))  
+  report max list 0 wefi  
 end
 
 
-to-report nitrogen-index [N-tol-input]  
+to-report nitrogen-index [N-input N-tol-input]  
   if N-tol-input = "intolerant" [
     let a1 2.99 let a2 0.00175 let a3 207.43 let a4 -5 let a5 2.9 let a6 3.671
-    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (available-N + a3))))
+    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (N-input + a3))))
     report (a4 + a5 * lambdaN) / a6
     ]
   if N-tol-input = "intermediate" [
     let a1 2.94 let a2 0.00234 let a3 117.52 let a4 -1.2 let a5 1.3 let a6 2.622
-    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (available-N + a3))))
+    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (N-input + a3))))
     report (a4 + a5 * lambdaN) / a6
     ]
   if N-tol-input = "tolerant" [
     let a1 2.79 let a2 0.00179 let a3 219.77 let a4 -0.6 let a5 1.0 let a6 2.190
-    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (available-N + a3))))
+    let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (N-input + a3))))
     report (a4 + a5 * lambdaN) / a6
     ]  
 end
 
+to-report wilt-index [wilt-input wilt-max]
+  ;wilt is difference between potential and actual evapotranspiration divided by potential evapotranspiration
+  let wifi (1 - (wilt-input / wilt-max) ^ 2)
+  report max list 0 wifi
+end
+
+to calc-site-quality
+  ;based bon Botkin 1993 and Holm 2012 with some guesses
+  ;oak
+  let fT degree-days-index DegDays 1977 5894 
+  let fWT saturation-index wt-dist 0.933
+  let fN nitrogen-index available-N "intermediate"
+  let fWL wilt-index wilt 0.45
+  set sitequal-oak fT * fWT * fN * fWL
+  ;maple
+  set fT degree-days-index DegDays 2000 6300 
+  set fWT saturation-index wt-dist 0.567
+  set fN nitrogen-index available-N "intermediate"
+  set fWL wilt-index wilt 0.35
+  set sitequal-maple fT * fWT * fN * fWL
+  ;poplar
+  set fT degree-days-index DegDays 2171 6363 
+  set fWT saturation-index wt-dist 0.544 ;;based on white spruce/red maple (similar moisture tolerance) ??
+  set fN nitrogen-index available-N "intermediate"
+  set fWL wilt-index wilt 0.245 ;;based on white spruce/red maple (similar moisture tolerance) ??
+  set sitequal-poplar fT * fWT * fN * fWL
+end
 
 to grow
 
   let max-growth (max-growth-increment (dbh * 100) (height * 100))
   
   set fAL light-growth-index light light-tol  
-  set fT degree-days-index degd-min degd-max 
-  set fWT saturation-index wt-dist-min 
-  set fN nitrogen-index N-tol
+  let sitequal 1
+  ifelse breed = oaks [set sitequal sitequal-oak] 
+  [ifelse breed = maples [set sitequal sitequal-maple] 
+    [set sitequal sitequal-poplar]]
   
-  set actual-growth (max-growth * fAL * fT * fWT * fN) 
+  set actual-growth (max-growth * fAL * sitequal) 
   set dbh (dbh * 100 + actual-growth) / 100 
   allometerize dbh
   
@@ -288,23 +307,18 @@ to regenerate
   if count turtles-here with [seedling = FALSE] > 0 [stop]  
   let AL light-growth-index ((1 - shade) / max list 1 stem-dens ) "high"
   let Al-pop light-growth-index ((1 - shade) / max list 1 stem-dens ) "low"
-  let T 0.8
-  let WT 0.8 
-  let N 0.8
-  let max-maple-saplings 1 let max-poplar-saplings 1
+  let max-maple-saplings 3 let max-poplar-saplings 10
   
-  if random-float 1 < (0.01 * max-maple-saplings * AL * T * WT * N)[
+  if random-float 1 < (0.01 * max-maple-saplings * AL * sitequal-maple)[
     sprout-maples 1 [ 
       set dbh 0.01   
       init-params
-      if breed = maples [set newsaps-maple (newsaps-maple + 1)]
     ]]
   
-  if random-float 1 < (0.01 * max-poplar-saplings * AL-pop * T * WT * N)[
+  if shade < 0.25 and random-float 1 < (0.01 * max-poplar-saplings * AL-pop * sitequal-poplar)[
     sprout-poplars 1 [  
       set dbh 0.01  
       init-params
-      if breed = poplars [set newsaps-poplar (newsaps-poplar + 1)]
     ]]
         
 end
@@ -332,7 +346,6 @@ to grow-seedling
   if height > 2.039 [ ;When seedling reaches dbh 0.01, height = 2.039
     set dbh 0.01
     init-params ;Convert to sapling
-    set newsaps-oak (newsaps-oak + 1)    
   ]
 end
 
@@ -512,11 +525,7 @@ to init-params
     set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)
     set C 1.75
     set G 104
-    set degd-min 1977 set degd-max 5894
-    set wt-dist-min 0.933
-    set wlmax 0.45
     set light-tol "intermediate"
-    set N-tol "intermediate" 
     set acorn-mean random-exponential 10 ;;mean oak production / m2 based on HEE histogram
   ]
   if breed = maples [ ;Sugar maple based bon Botkin 1993 and Holm 2012
@@ -526,12 +535,7 @@ to init-params
     set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)
     set C 1.57
     set G 118.7
-    set degd-min 2000 set degd-max 6300
-    set wt-dist-min 0.567
-    set wlmax 0.35
     set light-tol "high"
-    set N-tol "intermediate"
-    ;set max-saplings 1 
   ]
   if breed = poplars [ ;Tulip poplar based on Holm 2012 with some guesses
     set color red  
@@ -540,12 +544,7 @@ to init-params
     set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)  
     set C 1.75 ;assumed to be similar to oak
     set G 140
-    set degd-min 2171 set degd-max 6363
-    set wt-dist-min 0.544 ;;based on white spruce/red maple (similar moisture tolerance)
-    set wlmax 0.245
     set light-tol "low"
-    set N-tol "intermediate"
-    ;set max-saplings 1
   ]
   allometerize dbh
     
@@ -561,9 +560,6 @@ to calc-global-vars ;;Calculate global reporter values
   set prop-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
   set prop-tol (sum [ba] of turtles with [dbh >= 0.01 and breed = maples and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
   set prop-intol (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
-  set repro-oak (newsaps-oak / (max list 1 count oaks with [dbh >= 0.2]))
-  set repro-maple (newsaps-maple / (max list 1 count maples with [dbh >= 0.2]))
-  set repro-poplar (newsaps-poplar / (max list 1 count poplars with [dbh >= 0.2]))
 end
 
 to color-patches
@@ -576,6 +572,91 @@ to color-patches
   if shade > 0.9 [set pcolor green - 2]
   if shade > 0.95 [set pcolor green - 3]
 end
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;                    Harvesting Procedures                        ;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+to setup-harvest
+  if harvest-type = "clearcut" [set harvest-year 10]
+  if harvest-type = "single-tree" [set harvest-year 10]
+  if harvest-type = "shelterwood" [set harvest-year 10]
+  set shelter-phase 1
+end
+
+to conduct-harvest
+  
+  if harvest-type = "none" [stop]
+  
+  if (ticks + 1) != harvest-year [stop]
+  
+  if harvest-type = "clearcut" [
+    ask turtles with [dbh > 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [create-sprout]
+    set harvest-year harvest-year + 100
+  ]
+  
+  if harvest-type = "single-tree" [
+    set basal-area sum [ba] of turtles with [dbh >= 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50]
+    set harvest-year harvest-year + 20 
+    if basal-area >= 25 [
+      loop [
+        let potential one-of turtles with [dbh >= 0.10 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50]
+        ask potential [create-sprout]
+        set basal-area sum [ba] of turtles with [dbh >= 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50]
+        if basal-area <= 25 [stop]
+        ]
+    ]
+  ]
+  
+  if harvest-type = "shelterwood" [
+    ifelse shelter-phase = 1 [
+      set shelter-phase 2
+      ask turtles with [breed != oaks and dbh <= 0.254 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [die] ;treated with herbicide
+      set harvest-year (harvest-year + 7)
+    ] 
+    [
+      ifelse shelter-phase = 2 [
+        set shelter-phase 3
+        set harvest-year (harvest-year + 8)
+        if basal-area >= 16.1 [
+          loop [
+            ;this code is broken
+            ;let potential min-one-of turtles with [breed != oaks and dbh >= 0.10 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [dbh]
+            let potential min-one-of turtles with [age > 20 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [light]
+            ask potential [ifelse breed = oaks [create-sprout][die]]
+            set basal-area sum [ba] of turtles with [dbh >= 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50]
+            if basal-area <= 16.1 [stop]
+          ]
+        ]      
+      ] 
+      [
+        ask turtles with [age > 20 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [create-sprout]
+        set shelter-phase 1
+        set harvest-year (harvest-year + 85)
+      ]
+       
+  ]]
+  
+end
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -654,10 +735,10 @@ NIL
 0
 
 SLIDER
-1039
-168
-1214
-201
+1029
+229
+1204
+262
 DegDays
 DegDays
 1980
@@ -669,10 +750,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1040
-206
-1212
-239
+1030
+267
+1202
+300
 wt-dist
 wt-dist
 0.1
@@ -684,10 +765,10 @@ m
 HORIZONTAL
 
 SLIDER
-1040
-246
-1212
-279
+1030
+307
+1202
+340
 available-N
 available-N
 0
@@ -699,10 +780,10 @@ kg/ha/yr
 HORIZONTAL
 
 MONITOR
-29
-232
-97
-277
+28
+264
+96
+309
 BA (m2/ha)
 basal-area
 2
@@ -710,10 +791,10 @@ basal-area
 11
 
 SLIDER
-1039
-13
-1211
-46
+1031
+36
+1203
+69
 weevil-probability
 weevil-probability
 0
@@ -725,10 +806,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1038
-54
-1210
-87
+1030
+77
+1202
+110
 germ-prob
 germ-prob
 0
@@ -740,10 +821,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1038
-96
-1210
-129
+1030
+119
+1202
+152
 seedling-growth
 seedling-growth
 0
@@ -753,17 +834,6 @@ seedling-growth
 1
 m
 HORIZONTAL
-
-MONITOR
-1045
-297
-1109
-342
-seedlings
-count oaks with [seedling = TRUE]
-0
-1
-11
 
 SLIDER
 103
@@ -796,10 +866,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-29
-283
-96
-328
+28
+315
+95
+360
 qDBH (cm)
 qdbh
 2
@@ -807,10 +877,10 @@ qdbh
 11
 
 MONITOR
-104
-232
-178
-277
+103
+264
+177
+309
 BA (ft2/ac)
 basal-area-ft
 2
@@ -818,10 +888,10 @@ basal-area-ft
 11
 
 MONITOR
-107
-283
-172
-328
+106
+315
+171
+360
 qDBH (in)
 qdbh-in
 2
@@ -829,10 +899,10 @@ qdbh-in
 11
 
 MONITOR
-31
-335
-95
-380
+30
+367
+94
+412
 Trees/Ha
 dens
 2
@@ -840,10 +910,10 @@ dens
 11
 
 MONITOR
-108
-335
-171
-380
+107
+367
+170
+412
 Trees/Ac
 dens-ac
 2
@@ -851,10 +921,10 @@ dens-ac
 11
 
 PLOT
-1043
-359
-1243
-509
+3
+418
+203
+568
 Basal Area
 Years
 m2/ha
@@ -868,33 +938,11 @@ false
 PENS
 "default" 1.0 0 -16777216 true "" "plot basal-area"
 
-MONITOR
-1067
-692
-1132
-737
-Oak Repro
-repro-oak
-2
-1
-11
-
-MONITOR
-1142
-692
-1213
-737
-Maple Repro
-repro-maple
-2
-1
-11
-
 PLOT
-1044
-518
-1244
-668
+4
+577
+204
+727
 Prop Oak
 Years
 NIL
@@ -924,17 +972,6 @@ mature-poplar
 1
 NIL
 HORIZONTAL
-
-MONITOR
-1067
-745
-1139
-790
-Poplar Repro
-repro-poplar
-2
-1
-11
 
 SLIDER
 103
@@ -967,10 +1004,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-27
-773
-144
-806
+1054
+543
+1171
+576
 Harvest Center
 ask turtles with [dbh > 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [create-sprout]
 NIL
@@ -995,14 +1032,112 @@ HEE-mean
 -1000
 
 TEXTBOX
-66
-63
-216
-81
+61
+61
+211
+79
 Initial Forest\n
-11
+14
 0.0
 1
+
+SLIDER
+1031
+345
+1203
+378
+wilt
+wilt
+0
+0.4
+0.1
+0.01
+1
+NIL
+HORIZONTAL
+
+MONITOR
+998
+180
+1066
+225
+NIL
+sitequal-oak
+2
+1
+11
+
+MONITOR
+1070
+180
+1147
+225
+NIL
+sitequal-maple
+2
+1
+11
+
+MONITOR
+1149
+180
+1229
+225
+NIL
+sitequal-poplar
+2
+1
+11
+
+TEXTBOX
+1069
+160
+1219
+178
+Site Conditions
+14
+0.0
+1
+
+TEXTBOX
+1043
+16
+1193
+34
+Oak Regen Parameters
+14
+0.0
+1
+
+TEXTBOX
+78
+245
+228
+263
+Output
+14
+0.0
+1
+
+TEXTBOX
+1066
+395
+1216
+413
+Harvest Controls
+14
+0.0
+1
+
+CHOOSER
+1053
+419
+1191
+464
+harvest-type
+harvest-type
+"none" "clearcut" "shelterwood" "single-tree"
+2
 
 @#$#@#$#@
 ## WHAT IS IT?
