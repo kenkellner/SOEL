@@ -1,11 +1,12 @@
 extensions [profiler]
 globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   prop-oak prop-tol prop-intol
-  sitequal-oak sitequal-maple sitequal-poplar
-  harvest-year shelter-phase]
+  sitequal-boak sitequal-woak sitequal-maple sitequal-poplar
+  harvest-year shelter-phase
+  ]
 
 breed [oaks oak]
-oaks-own [light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL
+oaks-own [species light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL
   Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality density  
   ]
 
@@ -20,7 +21,7 @@ poplars-own [light age dbh height canopy-radius canopy-density actual-growth ba 
   ]
 
 breed [acorns acorn]
-acorns-own [weevil cached germ]
+acorns-own [species weevil cached germ]
 
 patches-own [stem-dens shade in-layer1 in-layer2]
 
@@ -109,7 +110,8 @@ to allometerize [dbh-input]
   let PHI 1
   ;let k 0.0000756 ;Based on QuabbinPlot206, seems far too small
   ;let k 1 / 6000 ;Based on Botkin 1993, allows too much light under big trees
-  let k 1 / 4000 ;Happy medium
+  ;let k 1 / 3000 ;Happy medium
+  let k light-extinct
   set canopy-density min list 0.98 (1 - (PHI * exp(-1 * k * SLA)))
   
   set ba (pi * (dbh / 2) ^ 2) ;Basal area 
@@ -181,7 +183,7 @@ to grow
   
   set fAL light-growth-index light light-tol  
   let sitequal 1
-  ifelse breed = oaks [set sitequal sitequal-oak] 
+  ifelse breed = oaks [ifelse species = "WO" [set sitequal sitequal-woak] [set sitequal sitequal-boak]] 
   [ifelse breed = maples [set sitequal sitequal-maple] 
     [set sitequal sitequal-poplar]]
   
@@ -263,8 +265,10 @@ end
 to produce-acorns
   let acorns-produced (light * 3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
   let tree-radius canopy-radius
+  let temp species
   hatch-acorns acorns-produced [
-  ;;drop produced acorns under canopy randomly 
+  ;;drop produced acorns under canopy randomly
+    set species temp 
     set hidden? TRUE
     right random 360
     forward (random-float (tree-radius - 0.5)) + 0.5
@@ -292,6 +296,7 @@ end
 
 
 to germinate-mast
+  let temp species
   ifelse cached = TRUE [
     set germ germ-prob]
   ;;placeholder
@@ -299,6 +304,7 @@ to germinate-mast
     [set germ germ-prob * 0.1]]  
   if random-float 1 < germ [
       hatch-oaks 1 [
+        set species temp
         set age 1
         set size 1
         set seedling TRUE   
@@ -345,7 +351,7 @@ to calc-light
       let temp canopy-density
       set light (1 - mean [shade] of patches in-radius max list 3 canopy-radius)
       set density [stem-dens] of patch-here ;Stem density will penalize growth
-      ask patches in-radius 3.5 [set stem-dens stem-dens + 1] ;Radius calibrated to prevent giant overshot in basal area over time
+      ask patches in-radius density-dep [set stem-dens stem-dens + 1] ;Radius calibrated to prevent giant overshot in basal area over time
       
       ;draw initial canopy
       ;Shape of shade projection based on ShadeMotion simulation for 39 degrees latitude
@@ -425,12 +431,18 @@ end
 
 to calc-site-quality
   ;based bon Botkin 1993 and Holm 2012 with some guesses
-  ;oak
+  ;white oak
   let fT degree-days-index DegDays 1977 5894 
   let fWT saturation-index wt-dist 0.933
   let fN nitrogen-index available-N "intermediate"
   let fWL wilt-index wilt 0.45
-  set sitequal-oak fT * fWT * fN * fWL
+  set sitequal-woak fT * fWT * fN * fWL
+  ;black oak
+  set fT degree-days-index DegDays 2068 5421 
+  set fWT saturation-index wt-dist 0.933
+  set fN nitrogen-index available-N "tolerant"
+  set fWL wilt-index wilt 0.45
+  set sitequal-boak fT * fWT * fN * fWL
   ;maple
   set fT degree-days-index DegDays 2000 6300 
   set fWT saturation-index wt-dist 0.567
@@ -440,7 +452,7 @@ to calc-site-quality
   ;poplar
   set fT degree-days-index DegDays 2171 6363 
   set fWT saturation-index wt-dist 0.544 ;;based on white spruce/red maple (similar moisture tolerance) ??
-  set fN nitrogen-index available-N "intermediate"
+  set fN nitrogen-index available-N "intolerant"
   set fWL wilt-index wilt 0.245 ;;based on white spruce/red maple (similar moisture tolerance) ??
   set sitequal-poplar fT * fWT * fN * fWL
 end
@@ -449,6 +461,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   
   ;;Create adult trees
   create-oaks dens-adjust * n-oak [ ;dens-adjust adds more trees when there is a buffer
+    ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
     set dbh (random-normal 45.75 5) / 100
     init-params  
     set age round (Amax * (dbh * 100) / Dmax)   
@@ -516,16 +529,25 @@ to init-params
   set growth-mortality 0.368
   set age 1
   set seedling FALSE
-  if breed = oaks [ ;White oak based on Botkin 1993 and Holm 2012
-    set color black
-    set Dmax 100 set Hmax 3800 ;based on HEE data
-    set Amax 400 set intrinsic-mortality 4.0 / Amax ;Based on 2% reaching max age; common to all species
-    set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)
-    set C 1.75
-    set G 104
-    set light-tol "intermediate"
-    set acorn-mean random-exponential 10 ;;mean oak production / m2 based on HEE histogram
-  ]
+  if breed = oaks [ 
+    ifelse species = "WO" [;White oak based on Botkin 1993 and Holm 2012
+      set color white
+      set Dmax 100 set Hmax 3800 ;based on HEE data
+      set Amax 400 set intrinsic-mortality 4.0 / Amax ;Based on 2% reaching max age; common to all species
+      set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)
+      set C 1.75
+      set G 104
+      set light-tol "intermediate"
+      set acorn-mean random-exponential 10 ;;mean oak production / m2 based on HEE histogram
+    ][set color black ;Black oak based on Botkin 1993 and Holm 2012
+      set Dmax 100 set Hmax 3800 ;based on HEE data
+      set Amax 300 set intrinsic-mortality 4.0 / Amax ;Based on 2% reaching max age; common to all species
+      set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)
+      set C 1.75
+      set G 122
+      set light-tol "intermediate"
+      set acorn-mean random-exponential 10 ;;mean oak production / m2 based on HEE histogram
+    ]]
   if breed = maples [ ;Sugar maple based bon Botkin 1993 and Holm 2012
     set color sky
     set Dmax 100 set Hmax 3350 ;set Dmax 170
@@ -1026,20 +1048,20 @@ NIL
 HORIZONTAL
 
 MONITOR
-998
-180
-1066
-225
+995
+181
+1072
+226
 NIL
-sitequal-oak
+sitequal-woak
 2
 1
 11
 
 MONITOR
-1070
+1074
 180
-1147
+1151
 225
 NIL
 sitequal-maple
@@ -1048,9 +1070,9 @@ sitequal-maple
 11
 
 MONITOR
-1149
+1153
 180
-1229
+1233
 225
 NIL
 sitequal-poplar
@@ -1114,6 +1136,46 @@ TEXTBOX
 215
 33
 Start Model
+14
+0.0
+1
+
+SLIDER
+1028
+605
+1200
+638
+light-extinct
+light-extinct
+0.00016667
+0.00033333
+2.5E-4
+0.00001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1029
+643
+1201
+676
+density-dep
+density-dep
+0.5
+8
+3.5
+0.5
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+1055
+584
+1205
+602
+Tuning Parameters
 14
 0.0
 1
