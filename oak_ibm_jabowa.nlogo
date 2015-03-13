@@ -3,6 +3,7 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   prop-oak prop-tol prop-intol
   sitequal-boak sitequal-woak sitequal-maple sitequal-poplar
   harvest-year shelter-phase
+  mast-mean-bo mast-mean-wo
   ]
 
 breed [oaks oak]
@@ -35,6 +36,15 @@ to setup
   reset-ticks
   
   calc-site-quality
+  
+  ;set mast-mean-wo 0.04475 ;mast year
+  ;set mast-mean-wo 0.11657 ;mast failure
+  set mast-mean-wo 0.08518 ;average
+  
+  ;set mast-mean-bo 0.06030 ;mast year
+  ;set mast-mean-bo 0.26672 ;mast failure
+  set mast-mean-bo 0.09033 ;average
+  
  
   ifelse HEE-mean = TRUE [
     init-stand 2.25 TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
@@ -262,8 +272,13 @@ end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-to produce-acorns
-  let acorns-produced (light * 3.1415 * canopy-radius * canopy-radius * random-poisson acorn-mean) ;per meter squared
+to produce-acorns 
+  ;let acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-poisson acorn-mean) ;per meter squared
+  
+  let acorns-produced 0
+  ifelse species = "WO" [
+    set acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo))][ ;per meter squared
+    set acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]  
   let tree-radius canopy-radius
   let temp species
   hatch-acorns acorns-produced [
