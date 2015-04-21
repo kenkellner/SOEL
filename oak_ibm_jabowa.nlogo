@@ -541,7 +541,7 @@ to init-params
   set hidden? FALSE
   set actual-growth 0.02
   set min-increment 0.01
-  set growth-mortality 0.368
+  set growth-mortality 0.369
   set age 1
   set seedling FALSE
   if breed = oaks [ 
