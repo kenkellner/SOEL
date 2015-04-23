@@ -72,15 +72,6 @@ fit = nls(yint ~ a*(1 - exp(b*(light - 0.05))),
 #Equation for intermediate tolerance
 yint.fit <- 1.371*(1 - exp(-2.227*(light-0.05)))
 
-#Check on plot - it works!
-
-plot(light,ylow,type='l',col='blue')
-
-lines(light,yhigh,type='l',col='red')
-
-lines(light,yint.fit,type='l',col='green')
-
-
 ##########Stump sprouting
 
 ##yellow poplar
@@ -121,20 +112,9 @@ light.method2 <- 1 - (PHI * exp(-1 * k * (SLA1 + SLA2)))
 light.method1
 light.method2
 
-#Selecting a value for k and the exponent
-dbh.input <- seq(1,100,1)
-k1 = 0.0000756
-k2 = 1/6000
-k3 = 1/4000
-approach1 <- 1 - (PHI * exp(-1 * k1 * C * dbh.input ^ 2.4))
-approach2 <- 1 - (PHI * exp(-1 * k2 * C *dbh.input ^ 2))
-approach3 <- 1 - (PHI * exp(-1 * k3 * C *dbh.input ^ 2))
-approach4 <- 1 - (PHI * exp(-1 * k1 * C * dbh.input ^ 2))
 
-plot(dbh.input,approach1,type='l',col='red')
 
-lines(dbh.input,approach2,type='l',col='blue')
 
-lines(dbh.input,approach3,type='l',col='green')
 
-lines(dbh.input,approach4, type='l',col='orange')
+
+
