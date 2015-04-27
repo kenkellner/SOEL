@@ -76,3 +76,107 @@ lines(light,yint.fit,type='l',lty=2,lwd=2)
 lines(light,yhigh,type='l',lty=3,lwd=2)
 legend("topleft",legend=c('Low','Intermediate','High'),lty=c(1,2,3),lwd=2,title="Shade Tolerance")
 
+################################################################################
+
+##Density Figure
+
+par(mfrow=c(1,2),
+    mar=c(4.1,5.1,1.6,0),
+    oma=c(0,0,1,1),
+    mgp=c(2.5,1,0))
+
+yearly <- read.csv('data/densityfigure_yearly_ba.csv',header=F)
+#in row 2, 1 = total basal area, 2 = ba-oak, 3 = ba-maple, 4 = ba-pop
+yearly <- yearly[,yearly[2,]==1]
+
+values <- c(1,2,3,3.5,4,5)
+
+yearly.mean <- matrix(NA,nrow=161,ncol=6)
+
+for (i in 1:length(values)){
+  
+  hold <- yearly[,yearly[1,]==values[i]]
+  
+  for (j in 1:161){
+    
+    yearly.mean[j,i] = mean(as.numeric(hold[j+2,]))
+    
+  }
+}
+
+plot(yearly.mean[,1],type='l',lty=1,
+     ylab=expression('Mean Basal Area'~(m^{2}/ha)),
+     xlab="Year",xlim=c(0,185))
+lines(yearly.mean[,2],type='l',lty=1)
+lines(yearly.mean[,3],type='l',lty=1)
+lines(yearly.mean[,4],type='l',lty=1,lwd=3)
+lines(yearly.mean[,5],type='l',lty=1)
+lines(yearly.mean[,6],type='l',lty=1)
+abline(h=mean(as.numeric(yearly[3,])),lty=2)
+text(77,73,expression(italic(d)~'= 1'))
+text(95,49,expression(italic(d)~'= 2'))
+#text(113,33.5,'D=3')
+#text(123,29,'D=3.5')
+
+#text(170,yearly.mean[161,1]+1,'d=1')
+#text(170,yearly.mean[161,2],'d=2')
+text(173,yearly.mean[161,3]+1,expression(italic(d)~'= 3'))
+text(176.5,yearly.mean[161,4]+1,expression(bolditalic(d)~bold('= 3.5')),font=2)
+text(150,24.5,expression(italic(d)~'= 4'))
+text(125,15,expression(italic(d)~'= 5'))
+arrows(x0=10,y0=50,x1=10,y1=31)
+text(13,53,'Harvest')
+text(10,80,'(a)',font=2,cex=1.5)
+
+final <- read.csv('data/densityfigure_final_ba.csv',header=T)
+
+bardata <- as.matrix(final[c(2,3,1),2:7])
+
+
+barplot(bardata,ylim=c(0,45),ylab=expression('Mean Final Basal Area'~(m^{2}/ha)),
+        xlab=expression("Density Parameter Value"~italic(d)),
+        names.arg=c('1','2','3',expression(bold('3.5')),'4','5'),
+        legend.text=c('Oak','Tulip Poplar','Sugar Maple'))
+#abline(h=29.2,lty=2)
+#abline(h=27.91,lty=2)
+abline(h=mean(as.numeric(yearly[3,])),lty=2)
+ht <- 28.464876
+segments(x0=3.8,y0=0,x1=3.8,y1=ht,lwd=4)
+segments(x0=4.8,y0=0,x1=4.8,y1=ht,lwd=4)
+segments(x0=3.8,y0=0,x1=4.8,y1=0,lwd=4)
+segments(x0=3.8,y0=ht,x1=4.8,y1=ht,lwd=4)
+text(0.5,42.5,'(b)',cex=1.5,font=2)
+
+################################################################################
+
+#Stump sprout figure
+
+dbh <- seq(0.05,0.8,0.01)
+dbhcm <- dbh*100
+age <- (400 * dbh * 100) / 100
+sindex <- 22
+
+p.woak.pred <- (-53.6225 - 1.7003*log(dbh*100) - 0.00534*age*log(dbh*100) + 25.7155*log(sindex) 
+                - 0.2913*sindex*log(sindex))
+p.woak <- (1 + exp(-1*p.woak.pred))^(-1)
+
+p.boak.pred <- -8.1468 - 0.00055*age*(dbh*100) + 3.1679*log(sindex)
+p.boak <- (1 + exp(-1*p.boak.pred))^(-1)
+
+p.maple <- -0.341 * log(dbh) + 0.0877
+p.poplar <- 1.1832 - 1.36638 * dbh
+
+for (i in 1:length(p.oak)){if(p.oak[i]>1){p.oak[i] = 1}}
+for (i in 1:length(p.maple)){if(p.maple[i]>1){p.maple[i] = 1}}
+for (i in 1:length(p.poplar)){if(p.poplar[i]>1){p.poplar[i] = 1}}
+
+plot(dbhcm,p.boak,type='l',lty=1,ylim=c(0,1),xlim=c(0,80),lwd=2,
+     ylab="Probability of Stump Sprouting",
+     xlab="Tree DBH (cm)")
+lines(dbhcm,p.woak,type='l',lty=1,lwd=2,col='darkgray')
+lines(dbhcm,p.maple,type='l',lty=2,lwd=2)
+lines(dbhcm,p.poplar,type='l',lty=3,lwd=2)
+legend('topright',legend=c('Black Oak','White Oak','Sugar Maple','Tulip Poplar'),
+       lwd=2,col=c('black','darkgray','black','black'),lty=c(1,1,2,3))
+
+
