@@ -4,6 +4,7 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   sitequal-boak sitequal-woak sitequal-maple sitequal-poplar
   harvest-year shelter-phase
   mast-mean-bo mast-mean-wo
+  ba-oak ba-map ba-pop
   ]
 
 breed [oaks oak]
@@ -592,9 +593,12 @@ to calc-global-vars ;;Calculate global reporter values
   set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37] / pi)) * 39.37
   set dens (count turtles with [dbh >= 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50])
   set dens-ac dens * 0.40477
-  set prop-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
-  set prop-tol (sum [ba] of turtles with [dbh >= 0.01 and breed = maples and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
-  set prop-intol (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] / basal-area)
+  set ba-oak sum [ba] of turtles with [dbh >= 0.01 and breed = oaks and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50]
+  set ba-map sum [ba] of turtles with [dbh >= 0.01 and breed = maples and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50]
+  set ba-pop sum [ba] of turtles with [dbh >= 0.01 and breed = poplars and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50]
+  set prop-oak (ba-oak / basal-area)
+  set prop-tol (ba-map / basal-area)
+  set prop-intol (ba-pop / basal-area)
 end
 
 to color-patches
@@ -634,7 +638,7 @@ to conduct-harvest
   
   if harvest-type = "clearcut" [
     ask turtles with [dbh > 0.01 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [create-sprout]
-    set harvest-year harvest-year + 100
+    ;set harvest-year harvest-year + 100
   ]
   
   if harvest-type = "single-tree" [
@@ -1179,7 +1183,7 @@ density-dep
 density-dep
 0.5
 8
-3.5
+1
 0.5
 1
 NIL
@@ -1542,6 +1546,73 @@ NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="densitytest" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="160"/>
+    <metric>basal-area</metric>
+    <metric>ba-oak</metric>
+    <metric>ba-map</metric>
+    <metric>ba-pop</metric>
+    <enumeratedValueSet variable="mature-poplar">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-maple">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="weevil-probability">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-oak">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DegDays">
+      <value value="4444"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="available-N">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-oak">
+      <value value="6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="density-dep">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
+      <value value="3.5"/>
+      <value value="4"/>
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wilt">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-poplar">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="light-extinct">
+      <value value="2.5E-4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-maple">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="germ-prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="HEE-mean">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wt-dist">
+      <value value="8.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seedling-growth">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="harvest-type">
+      <value value="&quot;clearcut&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
