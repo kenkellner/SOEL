@@ -228,7 +228,13 @@ end
 to create-sprout
   let prob 0
   if dbh < 0.8 [  
-    if breed = oaks [set prob (1 + exp(-1 * (5.9991 - 0.2413 * (dbh * 39.3701) - 0.0475 * age))) ^ (-1)] ;From Dey 2002
+    ;if breed = oaks [set prob (1 + exp(-1 * (5.9991 - 0.2413 * (dbh * 39.3701) - 0.0475 * age))) ^ (-1)] ;From Dey 2002    
+    if breed = oaks [ ;From Weigel and Peng 2002
+      if species = "WO" [
+        set prob (1 + exp(-1 * (-53.6225 - 1.7003 * ln(dbh * 100) - 0.00534 * age * ln(dbh * 100) + 25.7155 * ln(22) - 0.2913 * 22 * ln(22)))) ^ (-1)]
+      if species = "BO" [
+        set prob (1 + exp(-1 * (-8.1468 - 0.00055 * age * (dbh * 100) + 3.1678 * ln(22)))) ^ (-1)]
+    ]   
     if breed = maples [set prob -0.314 * ln(dbh) + 0.0877] ;Based on Powell 1983
     if breed = poplars [set prob 1.1832 - 1.3638 * dbh] ;based on Wendel 1975, True 1953, Beck & Della-Bianca 1981
     if prob > 1 [set prob 1]
