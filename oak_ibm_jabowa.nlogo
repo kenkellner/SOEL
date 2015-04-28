@@ -1153,7 +1153,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "single-tree"
-1
+3
 
 TEXTBOX
 65
@@ -1189,7 +1189,7 @@ density-dep
 density-dep
 0.5
 8
-1
+3.5
 0.5
 1
 NIL
@@ -1616,6 +1616,65 @@ NetLogo 5.1.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="harvest-type">
       <value value="&quot;clearcut&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="harvestexample" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="120"/>
+    <metric>basal-area</metric>
+    <enumeratedValueSet variable="sapling-maple">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seedling-growth">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-maple">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-oak">
+      <value value="6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="HEE-mean">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="available-N">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wilt">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wt-dist">
+      <value value="8.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="germ-prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-poplar">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="density-dep">
+      <value value="3.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DegDays">
+      <value value="4444"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-oak">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="light-extinct">
+      <value value="2.5E-4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="harvest-type">
+      <value value="&quot;clearcut&quot;"/>
+      <value value="&quot;shelterwood&quot;"/>
+      <value value="&quot;single-tree&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-poplar">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="weevil-probability">
+      <value value="0.5"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
