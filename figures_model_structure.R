@@ -179,4 +179,32 @@ lines(dbhcm,p.poplar,type='l',lty=3,lwd=2)
 legend('topright',legend=c('Black Oak','White Oak','Sugar Maple','Tulip Poplar'),
        lwd=2,col=c('black','darkgray','black','black'),lty=c(1,1,2,3))
 
+################################################################################
+
+#Harvest Comparison Figure
+
+comp <- read.csv('data/figuredata_compareharvest.csv',header=TRUE)
+
+par(mgp=c(2.5,1,0))
+
+plot(comp$clearcut,type='l',lwd=2,lty=1,xlab="Years",
+     ylab=expression('Basal Area'~(m^{2}/ha)),ylim=c(0,42))
+lines(comp$shelterwood,type='l',lwd=2,lty=2)
+lines(comp$singletree,type='l',lwd=2,lty=3)
+legend('topleft',c('Clearcut','Shelterwood','Single-tree'),lwd=2,lty=1:3)
+
+arrows(x0=20,y0=32,x1=10,y1=29,length=0.1)
+text(33,32,'Initial Harvest',cex=0.8)
+
+arrows(x0=40,y0=28.5,x1=32,y1=26.5,length=0.1)
+text(58,28.5,'2nd Selection Cut',cex=0.8)
+
+arrows(x0=27,y0=21,x1=19,y1=20,length=0.1)
+text(40,21,'Shelterwood\n2nd Phase',cex=0.8)
+
+arrows(x0=38,y0=17,x1=28,y1=16,length=0.1)
+text(49,17,'3rd Phase',cex=0.8)
+
+
+
 
