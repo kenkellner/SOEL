@@ -280,7 +280,6 @@ end
 
 
 to produce-acorns 
-  ;let acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-poisson acorn-mean) ;per meter squared
   
   let acorns-produced 0
   ifelse species = "WO" [
@@ -304,9 +303,17 @@ to disperse-mast
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
   ifelse random-float 1 < 0.41 and weevil = FALSE [
-    right random 360
-    ;;based on HEE data
-    forward random-exponential 5.185
+    
+    ;;new approach to dispersal to avoid openings
+    let startx xcor let starty ycor    
+    loop [
+      right random 360
+      ;;based on HEE data
+      forward random-exponential 5.185
+      ifelse [shade] of patch-here > 0.2 [stop]
+      [set xcor startx set ycor starty]      
+      ]
+
     ;;probability of being eaten
     ifelse random-float 1 > 0.704 [
       ;;probability of being cached
@@ -1043,7 +1050,7 @@ SWITCH
 442
 HEE-mean
 HEE-mean
-0
+1
 1
 -1000
 
