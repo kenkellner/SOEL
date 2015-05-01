@@ -327,10 +327,14 @@ end
 to germinate-mast
   let temp species
   ifelse cached = TRUE [
+    ;Based on Haas and Heske 2005 (0.77 for buried)
     set germ germ-prob]
-  ;;placeholder
-  [ifelse weevil = TRUE [set germ germ-prob * 0.1 * 0.1] 
-    [set germ germ-prob * 0.1]]  
+  ;;Based on:
+  ;;Lombardo & McCarthy 2009 (0.26 germ for weeviled) 
+  ;;and Haas and Heske 2005 (0.19 for surfaced)
+  [ifelse weevil = TRUE [set germ 0.19 * 0.26] 
+    ;[set germ germ-prob * 0.1]]
+    [set germ 0.19]]  
   if random-float 1 < germ [
       hatch-oaks 1 [
         set species temp
@@ -839,8 +843,8 @@ weevil-probability
 weevil-probability
 0
 1
-0.5
-0.1
+0.31
+0.01
 1
 NIL
 HORIZONTAL
@@ -854,8 +858,8 @@ germ-prob
 germ-prob
 0
 1
-0.9
-0.1
+0.77
+0.01
 1
 NIL
 HORIZONTAL
@@ -1050,7 +1054,7 @@ SWITCH
 442
 HEE-mean
 HEE-mean
-1
+0
 1
 -1000
 
