@@ -37,15 +37,6 @@ to setup
   reset-ticks
   
   calc-site-quality
-  
-  ;set mast-mean-wo 0.04475 ;mast year
-  ;set mast-mean-wo 0.11657 ;mast failure
-  set mast-mean-wo 0.08518 ;average
-  
-  ;set mast-mean-bo 0.06030 ;mast year
-  ;set mast-mean-bo 0.26672 ;mast failure
-  set mast-mean-bo 0.09033 ;average
-  
  
   ifelse HEE-mean = TRUE [
     init-stand 2.25 TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
@@ -63,26 +54,15 @@ end
 
 to go
 
-  calc-light
+  ask turtles [
+    calc-light
+  ]
   
-  ask turtles with [seedling = FALSE] [
+  ask turtles [
     grow
     check-survival
-    if breed = oaks and dbh >= 0.20 and oak-seedlings = TRUE [produce-acorns] ;based on Downs and McQuilkin 1944
   ]
-   
-  ask acorns [
-   disperse-mast
-   germinate-mast 
-  ]
-  
-  if oak-seedlings = TRUE [
-    ask oaks with [seedling = TRUE] [
-      grow-seedling
-      check-seedling-survival
-    ]
-  ]
-  
+    
   ask patches [
     regenerate
     color-patches   
@@ -110,22 +90,9 @@ to allometerize [dbh-input]
   ;b2 = 2*(Hmax - 137) / Dmax and b3 = (Hmax - 137) / Dmax ^2
   set height (137 + b2 * (dbh-input * 100) - b3 * ((dbh-input * 100) ^ 2)) / 100
   
-  ;Based on Kenefic and Nyland 1999 and others
-  ;range reported is 0.376 - 0.393; going with .5 for now 
-  set canopy-radius max list 1 (0.385 * height / 2)
-  
   ;leaf weight based on dbh with C species-specific
   ;Exponent can be anywhere from 1.5 to 3 (Botkin 1993)
-  ;let SLA (C * (dbh-input * 100) ^ (2.4))
   let SLA (C * (dbh-input * 100) ^ (2))
-  
-  ;Beer-Lambert law where light above canopy = 1
-  let PHI 1
-  ;let k 0.0000756 ;Based on QuabbinPlot206, seems far too small
-  ;let k 1 / 6000 ;Based on Botkin 1993, allows too much light under big trees
-  ;let k 1 / 3000 ;Happy medium
-  let k light-extinct
-  set canopy-density min list 0.98 (1 - (PHI * exp(-1 * k * SLA)))
   
   set ba (pi * (dbh / 2) ^ 2) ;Basal area 
 end
@@ -227,29 +194,6 @@ to check-survival
 end
 
 
-to create-sprout
-  let prob 0
-  if dbh < 0.8 [  
-    ;if breed = oaks [set prob (1 + exp(-1 * (5.9991 - 0.2413 * (dbh * 39.3701) - 0.0475 * age))) ^ (-1)] ;From Dey 2002    
-    if breed = oaks [ ;From Weigel and Peng 2002
-      if species = "WO" [
-        set prob (1 + exp(-1 * (-53.6225 - 1.7003 * ln(dbh * 100) - 0.00534 * age * ln(dbh * 100) + 25.7155 * ln(22) - 0.2913 * 22 * ln(22)))) ^ (-1)]
-      if species = "BO" [
-        set prob (1 + exp(-1 * (-8.1468 - 0.00055 * age * (dbh * 100) + 3.1678 * ln(22)))) ^ (-1)]
-    ]   
-    if breed = maples [set prob -0.314 * ln(dbh) + 0.0877] ;Based on Powell 1983
-    if breed = poplars [set prob 1.1832 - 1.3638 * dbh] ;based on Wendel 1975, True 1953, Beck & Della-Bianca 1981
-    if prob > 1 [set prob 1]
-  ]
-  ifelse random-float 1 < prob [
-    set sprout? TRUE
-    set dbh 0.01
-    init-params
-    set size 2
-  ]
-  [die]  
-end
-
 
 to regenerate
   if count turtles-here with [seedling = FALSE] > 0 [stop]  
@@ -263,212 +207,36 @@ to regenerate
       init-params
     ]]
   
-  if shade < 0.01 and random-float 1 < (0.01 * max-poplar-saplings * AL-pop * sitequal-poplar)[
+  if shade < 0.01 and random-float 1 < (max-poplar-saplings * AL-pop * sitequal-poplar)[
     sprout-poplars 1 [  
       set dbh 0.01  
       init-params
     ]]
   
-  if oak-seedlings = FALSE [
     let Al-oak light-growth-index ((1 - shade) / max list 1 stem-dens ) "intermediate"
     let max-oak-saplings 10
     let sitequal-oak 1
     ifelse random-float 1 < 0.5 [set sitequal-oak sitequal-woak][set sitequal-oak sitequal-boak]
     
     ;arbitrary value here
-    if shade < 0.50 and random-float 1 < (0.01 * max-oak-saplings * AL-oak * sitequal-oak)[
+    if shade < 0.50 and random-float 1 < (max-oak-saplings * AL-oak * sitequal-oak)[
     sprout-oaks 1 [  
-      set dbh 0.01 
-      ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
+      set dbh 0.01  
       init-params
     ]]
     
-  ]
         
 end
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;                Early Oak Lifecycle Procedures                   ;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-to produce-acorns 
-  
-  let acorns-produced 0
-  ifelse species = "WO" [
-    set acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo))][ ;per meter squared
-    set acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]  
-  let tree-radius canopy-radius
-  let temp species
-  hatch-acorns acorns-produced [
-  ;;drop produced acorns under canopy randomly
-    set species temp 
-    set hidden? TRUE
-    right random 360
-    forward (random-float (tree-radius - 0.5)) + 0.5
-    ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
-  ]
-  
+to calc-light
+  let currh height
+  let k light-extinct
+  set canopy turtles-here with [height > currh]
+  set light Exp (-1 * sum [SLA * k] of canopy);]
 end
 
 
-to disperse-mast
-  ;;move mast via "dispersers"
-  ;;removal probability - HEE dispersal data for WO
-  ifelse random-float 1 < 0.41 and weevil = FALSE [
-    
-    ;;new approach to dispersal to avoid openings
-    let startx xcor let starty ycor    
-    loop [
-      right random 360
-      ;;based on HEE data
-      forward random-exponential 5.185
-      ifelse [shade] of patch-here > 0.2 [stop]
-      [set xcor startx set ycor starty]      
-      ]
-
-    ;;probability of being eaten
-    ifelse random-float 1 > 0.704 [
-      ;;probability of being cached
-      ifelse random-float 1 < 0.288 [set cached TRUE] [set cached FALSE]]
-    [die]]
-  ;;check if eaten
-  [if random-float 1 < 0.538 [die]]
-end
-
-
-to germinate-mast
-  let temp species
-  ifelse cached = TRUE [
-    ;Based on Haas and Heske 2005 (0.77 for buried)
-    set germ germ-prob]
-  ;;Based on:
-  ;;Lombardo & McCarthy 2009 (0.26 germ for weeviled) 
-  ;;and Haas and Heske 2005 (0.19 for surfaced)
-  [ifelse weevil = TRUE [set germ 0.19 * 0.26] 
-    ;[set germ germ-prob * 0.1]]
-    [set germ 0.19]]  
-  if random-float 1 < germ [
-      hatch-oaks 1 [
-        set species temp
-        set age 1
-        set size 1
-        set seedling TRUE   
-        set hidden? TRUE
-      ]]
-    die
-end
-
-
-to grow-seedling
-  let max-growth seedling-growth  ;growth is height-based
-  set light (1 - mean [shade] of patches in-radius 2)
-  set fAL light-growth-index light "intermediate"
-  set actual-growth (max-growth * fAL)
-  set height (height + actual-growth)
-
-  if height > 2.039 [ ;When seedling reaches dbh 0.01, height = 2.039
-    set dbh 0.01
-    init-params ;Convert to sapling
-  ]
-end
-
-
-to check-seedling-survival ;Placeholders 
-  if random-float 1 < 0.1 [die] ;Intrinsic seedling mortality 
-  if actual-growth < (0.5 * seedling-growth) and random-float 1 < 0.393 [die] ;Growth-based mortality 
-  set age age + 1
-end
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;                Light Calculation Procedures                     ;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-to calc-light 
- ask patches [set pcolor brown set stem-dens 0 set shade 0] 
- foreach sort-by [[height] of ?1 > [height] of ?2] turtles with [seedling = FALSE] [
-    ask ? [
-      let start-ycor ycor
-      let temp canopy-density
-      set light (1 - mean [shade] of patches in-radius max list 3 canopy-radius)
-      set density [stem-dens] of patch-here ;Stem density will penalize growth
-      ask patches in-radius density-dep [set stem-dens stem-dens + 1] ;Radius calibrated to prevent giant overshot in basal area over time
-      
-      ;draw initial canopy
-      ;Shape of shade projection based on ShadeMotion simulation for 39 degrees latitude
-      ifelse canopy-radius < 2 [
-        ;Calculate overlapping shade instead of summing up leaf-weight; mathematically equivalent and fewer calculations to make.
-        ask patches in-radius canopy-radius [set shade (shade + (1 - shade) * temp) ]]
-      [
-        set ycor (ycor + canopy-radius / 2)
-        ask patches in-radius canopy-radius [
-        ;Interior circle  
-        set in-layer1 TRUE
-        set shade (shade + (1 - shade) * temp)]
-      
-      ;smaller ellipse (minus the initial canopy)
-      set ycor (ycor + canopy-radius / 2.5)
-      let test1 in-ellipse (canopy-radius * 2) (canopy-radius * 1.1) 1
-      ask test1 [ 
-        set in-layer2 TRUE
-        set shade (shade + (1 - shade) * temp * 0.5)]
-      
-      ;larger ellipse (minus the smaller ellipse)
-      set ycor (ycor + canopy-radius / 4.5)
-      let test2 in-ellipse (canopy-radius * 3) (canopy-radius * 1.5) 2
-      ask test2 [ 
-        set shade (shade + (1 - shade) * temp * 0.25)] 
-       
-      ;reset layering 
-      let test3 in-ellipse (canopy-radius * 3) (canopy-radius * 1.5) 3
-      ask test3 [set in-layer1 FALSE set in-layer2 FALSE]
-      ] 
-      
-      ;move tree back to starting location
-      set ycor start-ycor
-
-      
- ]]
-end
-
-;Modified from Wilensky, U. (2003) Netlogo Fur Model
-to-report in-ellipse [x-radius y-radius layer]  ;; patch procedure
-  
-  if layer = 1 [
-    report other patches in-radius (max list x-radius y-radius)
-           with [1.0 >= ((xdistance myself ^ 2) / (x-radius ^ 2)) +
-                        ((ydistance myself ^ 2) / (y-radius ^ 2)) and in-layer1 = FALSE]]
-  if layer = 2 [
-    report other patches in-radius (max list x-radius y-radius)
-           with [1.0 >= ((xdistance myself ^ 2) / (x-radius ^ 2)) +
-                        ((ydistance myself ^ 2) / (y-radius ^ 2)) 
-                        and in-layer2 = FALSE and in-layer1 = FALSE]]
-  if layer = 3 [
-    report other patches in-radius (max list x-radius y-radius)
-           with [1.0 >= ((xdistance myself ^ 2) / (x-radius ^ 2)) +
-                        ((ydistance myself ^ 2) / (y-radius ^ 2))]]
-end
-
-
-to-report xdistance [other-patch]  ;; patch procedure
-  let xdiff abs (pxcor - [pxcor] of other-patch)
-  report min (list xdiff (world-width - xdiff))
-end
-
-to-report ydistance [other-patch]  ;; patch procedure
-  let ydiff abs (pycor - [pycor] of other-patch)
-  report min (list ydiff (world-height - ydiff))
-end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
