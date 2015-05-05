@@ -68,7 +68,7 @@ to go
   ask turtles with [seedling = FALSE] [
     grow
     check-survival
-    if breed = oaks and dbh >= 0.20 [produce-acorns] ;based on Downs and McQuilkin 1944
+    if breed = oaks and dbh >= 0.20 and oak-seedlings = TRUE [produce-acorns] ;based on Downs and McQuilkin 1944
   ]
    
   ask acorns [
@@ -76,9 +76,11 @@ to go
    germinate-mast 
   ]
   
-  ask oaks with [seedling = TRUE] [
-    grow-seedling
-    check-seedling-survival
+  if oak-seedlings = TRUE [
+    ask oaks with [seedling = TRUE] [
+      grow-seedling
+      check-seedling-survival
+    ]
   ]
   
   ask patches [
@@ -266,6 +268,21 @@ to regenerate
       set dbh 0.01  
       init-params
     ]]
+  
+  if oak-seedlings = FALSE [
+    let Al-oak light-growth-index ((1 - shade) / max list 1 stem-dens ) "intermediate"
+    let max-oak-saplings 10
+    let sitequal-oak 1
+    ifelse random-float 1 < 0.5 [set sitequal-oak sitequal-woak][set sitequal-oak sitequal-boak]
+    
+    ;arbitrary value here
+    if shade < 0.50 and random-float 1 < (0.01 * max-oak-saplings * AL-oak * sitequal-oak)[
+    sprout-oaks 1 [  
+      set dbh 0.01  
+      init-params
+    ]]
+    
+  ]
         
 end
 
@@ -747,10 +764,10 @@ NIL
 1
 
 SLIDER
-1018
-449
-1112
-482
+1021
+496
+1115
+529
 mature-oak
 mature-oak
 0
@@ -779,10 +796,10 @@ NIL
 0
 
 SLIDER
-1029
-229
-1204
-262
+1032
+276
+1207
+309
 DegDays
 DegDays
 1980
@@ -794,10 +811,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1030
-267
-1202
-300
+1033
+314
+1205
+347
 wt-dist
 wt-dist
 0.1
@@ -809,10 +826,10 @@ m
 HORIZONTAL
 
 SLIDER
-1030
-307
-1202
-340
+1033
+354
+1205
+387
 available-N
 available-N
 0
@@ -835,10 +852,10 @@ basal-area
 11
 
 SLIDER
-1031
-36
-1203
-69
+1034
+83
+1206
+116
 weevil-probability
 weevil-probability
 0
@@ -850,10 +867,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1030
-77
-1202
-110
+1033
+124
+1205
+157
 germ-prob
 germ-prob
 0
@@ -865,10 +882,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1030
-119
-1202
-152
+1033
+166
+1205
+199
 seedling-growth
 seedling-growth
 0
@@ -880,10 +897,10 @@ m
 HORIZONTAL
 
 SLIDER
-1114
-449
-1210
-482
+1117
+496
+1213
+529
 sapling-oak
 sapling-oak
 0
@@ -895,10 +912,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1019
-485
-1112
-518
+1022
+532
+1115
+565
 mature-maple
 mature-maple
 0
@@ -1003,10 +1020,10 @@ PENS
 "Poplar" 1.0 0 -2674135 true "" "plot prop-intol"
 
 SLIDER
-1019
-521
-1112
-554
+1022
+568
+1115
+601
 mature-poplar
 mature-poplar
 0
@@ -1018,10 +1035,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1114
-485
-1211
-518
+1117
+532
+1214
+565
 sapling-maple
 sapling-maple
 0
@@ -1033,10 +1050,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1114
-521
-1211
-554
+1117
+568
+1214
+601
 sapling-poplar
 sapling-poplar
 0
@@ -1048,10 +1065,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-1051
-409
-1163
-442
+1054
+456
+1166
+489
 HEE-mean
 HEE-mean
 0
@@ -1059,20 +1076,20 @@ HEE-mean
 -1000
 
 TEXTBOX
-1072
-391
-1222
-409
+1075
+438
+1225
+456
 Initial Forest\n
 14
 0.0
 1
 
 SLIDER
-1031
-345
-1203
-378
+1034
+392
+1206
+425
 wilt
 wilt
 0
@@ -1084,10 +1101,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-995
-181
-1072
-226
+997
+227
+1074
+272
 NIL
 sitequal-woak
 2
@@ -1095,10 +1112,10 @@ sitequal-woak
 11
 
 MONITOR
-1074
-180
-1151
-225
+1077
+227
+1154
+272
 NIL
 sitequal-maple
 2
@@ -1106,10 +1123,10 @@ sitequal-maple
 11
 
 MONITOR
-1153
-180
-1233
-225
+1156
+227
+1236
+272
 NIL
 sitequal-poplar
 2
@@ -1117,10 +1134,10 @@ sitequal-poplar
 11
 
 TEXTBOX
-1069
-160
-1219
-178
+1072
+207
+1222
+225
 Site Conditions
 14
 0.0
@@ -1164,7 +1181,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "single-tree"
-3
+1
 
 TEXTBOX
 65
@@ -1177,10 +1194,10 @@ Start Model
 1
 
 SLIDER
-1028
-605
-1200
-638
+1031
+652
+1203
+685
 light-extinct
 light-extinct
 0.00016667
@@ -1192,10 +1209,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1029
-643
-1201
-676
+1032
+690
+1204
+723
 density-dep
 density-dep
 0.5
@@ -1207,14 +1224,25 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-1055
-584
-1205
-602
+1058
+631
+1208
+649
 Tuning Parameters
 14
 0.0
 1
+
+SWITCH
+1035
+45
+1206
+78
+oak-seedlings
+oak-seedlings
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
