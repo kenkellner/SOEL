@@ -259,13 +259,13 @@ to regenerate
   
   if random-float 1 < (0.01 * max-maple-saplings * AL * sitequal-maple)[
     sprout-maples 1 [ 
-      set dbh 0.01   
+      set dbh random-float 0.00468   
       init-params
     ]]
   
   if shade < 0.01 and random-float 1 < (0.01 * max-poplar-saplings * AL-pop * sitequal-poplar)[
     sprout-poplars 1 [  
-      set dbh 0.01  
+      set dbh random-float 0.0039  
       init-params
     ]]
   
@@ -278,7 +278,7 @@ to regenerate
     ;arbitrary value here
     if shade < 0.50 and random-float 1 < (0.01 * max-oak-saplings * AL-oak * sitequal-oak)[
     sprout-oaks 1 [  
-      set dbh 0.01 
+      set dbh random-float 0.0041 
       ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
       init-params
     ]]
@@ -372,8 +372,9 @@ to grow-seedling
   set actual-growth (max-growth * fAL)
   set height (height + actual-growth)
 
-  if height > 2.039 [ ;When seedling reaches dbh 0.01, height = 2.039
-    set dbh 0.01
+  if height > 1.37 [ ;When seedling reaches dbh 0.01, height = 2.039
+    
+    set dbh max list 0 ((-1.88 + 0.01372 * (height * 100)) / 100)
     init-params ;Convert to sapling
   ]
 end
@@ -805,7 +806,7 @@ DegDays
 DegDays
 1980
 5500
-4444
+4840
 1
 1
 NIL
@@ -820,7 +821,7 @@ wt-dist
 wt-dist
 0.1
 10
-8.4
+9.3
 0.1
 1
 m
@@ -835,7 +836,7 @@ available-N
 available-N
 0
 350
-300
+325
 25
 1
 kg/ha/yr
@@ -891,7 +892,7 @@ seedling-growth
 seedling-growth
 0
 1.37
-1
+0.6
 0.01
 1
 m
