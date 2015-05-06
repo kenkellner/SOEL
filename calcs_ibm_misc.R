@@ -112,7 +112,66 @@ light.method2 <- 1 - (PHI * exp(-1 * k * (SLA1 + SLA2)))
 light.method1
 light.method2
 
+#############################################
 
+#H-Dbh relationship
+
+#for oaks
+dbhinput = seq(0,1,0.001)
+#dbhinput = 0.41
+Hmax = 3800
+Dmax = 100
+b2 = 2*(Hmax - 137) / Dmax
+b3 = (Hmax - 137) / Dmax ^ 2
+
+height = (137 + b2 * (dbhinput) - b3 * ((dbhinput) ^ 2))
+plot(dbhinput, height)
+
+summary(lm(dbhinput ~ height))
+
+#equation: dbh in cm = -1.88 + 0.01372*height in cm
+
+#137-167 cm height = 0 - 0.41 cm dbh
+#or 0 - 0.0041 m dbh
+
+###################
+#for maples
+dbhinput = seq(0,1,0.001)
+#dbhinput = 0.41
+Hmax = 3350
+Dmax = 100
+b2 = 2*(Hmax - 137) / Dmax
+b3 = (Hmax - 137) / Dmax ^ 2
+
+height = (137 + b2 * (dbhinput) - b3 * ((dbhinput) ^ 2))
+plot(dbhinput, height)
+
+summary(lm(dbhinput ~ height))
+
+#equation: dbh in cm = -2.144 + 0.01564*height in cm
+
+#137-167 cm height = 0 - 0.468 cm dbh
+#or 0 - 0.00468 m dbh
+
+
+###################
+#for poplars
+dbhinput = seq(0,1,0.001)
+#dbhinput = 0.41
+Hmax = 4000
+Dmax = 100
+b2 = 2*(Hmax - 137) / Dmax
+b3 = (Hmax - 137) / Dmax ^ 2
+
+height = (137 + b2 * (dbhinput) - b3 * ((dbhinput) ^ 2))
+plot(dbhinput, height)
+
+summary(lm(dbhinput ~ height))
+
+#equation: dbh in cm = -1.783 + 0.01301*height in cm
+
+#137-167 cm height = 0 - 0.39 cm dbh
+#or 0 - 0.0039 m dbh
 
 
 
