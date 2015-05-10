@@ -18,3 +18,18 @@ hist(data.bo, breaks=15,xlim=c(0,40),main="Black Oak", col="gray38", xlab="DBH",
 abline(v=median(data.bo,na.rm=TRUE),lwd=3)
 hist(data.sm, breaks=15,xlim=c(0,40), main="Sugar Maple", col="gray75", xlab="DBH", freq=FALSE)
 abline(v=median(data.sm),lwd=3)
+
+#Dissertation Version using Computer Modern Font
+#install.packages('extrafont')
+library(extrafont)
+font_install('fontcm')
+loadfonts()
+
+setEPS()
+postscript("ch1_fig1.eps",family="CM Roman")
+par(mfrow=c(2,1),mar=c(4,4,3,2))
+hist(data.bo, breaks=15,xlim=c(0,40),main="Black Oak", col="gray38", xlab="DBH", freq=FALSE)
+abline(v=median(data.bo,na.rm=TRUE),lwd=3)
+hist(data.sm, breaks=15,xlim=c(0,40), main="Sugar Maple", col="gray75", xlab="DBH", freq=FALSE)
+abline(v=median(data.sm),lwd=3)
+dev.off()
