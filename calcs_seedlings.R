@@ -22,7 +22,7 @@ for (i in 1:237){
       rand <- rnorm(1,0,9.151)
       y[i,j] = max(-100, 4.485 + ymean[i] - 3.014*shade + 1.730*wo 
                 + -4.892*browsed + rand)
-    } else {y[i,j] <- rexp(1,rate=taillambda)}
+    } else {y[i,j] <- min(rexp(1,rate=taillambda),150)}
   }
 }
 

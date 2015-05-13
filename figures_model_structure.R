@@ -205,6 +205,75 @@ text(40,21,'Shelterwood\n2nd Phase',cex=0.8)
 arrows(x0=38,y0=17,x1=28,y1=16,length=0.1)
 text(49,17,'3rd Phase',cex=0.8)
 
+#############################################################
 
+#Seedling growth figure
 
+setwd('../seedling-survival')
+
+source('format_data.R')
+
+#Initial formatting on raw data
+seedling <- format.seedling('data/seedlingmaster.csv')
+
+#Only keep seedlings that "established"
+keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$age==1)
+ht <- seedling$htgrowth[keep,]
+
+end <- numeric(dim(ht)[1])
+for (i in 1:dim(ht)[1]){
+  hold <- ht[i,]
+  if(length(which(!is.na(hold)&hold!=0))<4){
+    firstNA <- min(which(is.na(hold)),4,na.rm=TRUE)
+    first0 <- min(which(hold==0),4,na.rm=TRUE)
+    end[i] <- min(firstNA,first0) - 1
+  } else {end[i]=4}
+}
+#Only keep seedlings which have at least one recorded growth in height
+#(i.e., did not die in period 2)
+keep2 <- which(end>0)
+age <- seedling$seedling.data$age[keep][keep2]
+growth <- seedling$htgrowth[keep,]
+growth <- growth[keep2,]
+
+sprout.raw <- seedling$sprout[keep,]
+
+#Keep track of when seedlings became sprouts
+for (i in 1:dim(sprout.raw)[1]){
+  hold <- sprout.raw[i,]
+  if(1%in%hold){
+    start <- min(which(hold==1),na.rm=TRUE)
+    sprout.raw[i,start:dim(sprout.raw)[2]] <- 1
+  }
+}
+sprout.raw <- sprout.raw[,c(2,4,6,8)]
+is.sprout <- sprout.raw[keep2,]
+keep3 <- which(rowSums(is.sprout)<1&age==1)
+growth <- growth[keep3,]
+
+setwd('../oak-lifecycle')
+
+y = matrix(NA,nrow=237,ncol=4)
+shade = 0
+wo = 1
+browsed = 0
+ymean = rnorm(237,0,1.934)
+cutoff <- length(which(growth>30))/472 #- should be based on seedlings in openings
+taillambda <- 1/mean(growth[which(growth>30)])
+
+for (i in 1:237){
+  for (j in 1:4){
+    if(runif(1,0,1)>cutoff&shade<0.2){
+      rand <- rnorm(1,0,9.151)
+      y[i,j] = max(-100, 4.485 + ymean[i] - 3.014*shade + 1.730*wo 
+                   + -4.892*browsed + rand)
+    } else {y[i,j] <- min(rexp(1,rate=taillambda),150)}
+  }
+}
+
+par(mfrow=c(2,1))
+hist(y[y>-10],freq=F,xlim=c(-20,120),ylim=c(0,0.065),
+     xlab="Yearly Growth (cm)",main="Predicted Seedling Growth",col='gray',breaks=15)
+hist(growth[growth>-10],freq=F,xlim=c(-20,120),ylim=c(0,0.065),
+     xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
 
