@@ -9,7 +9,7 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
 
 breed [oaks oak]
 oaks-own [species light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL
-  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality density  
+  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality density browsed  
   ]
 
 breed [maples maple]
@@ -360,18 +360,36 @@ to germinate-mast
         set size 1
         set seedling TRUE   
         set hidden? TRUE
+        set height 0.092 ;based on HEE seedlings
       ]]
     die
 end
 
 
 to grow-seedling
-  let max-growth seedling-growth  ;growth is height-based
-  set light (1 - mean [shade] of patches in-radius 2)
+  set light (1 - [shade] of patch-here)
+  
+  ifelse hee-seedlings = TRUE [
+    ifelse random-float 1 < 0.0699 and light > 0.8 [
+      set actual-growth (min list 150 random-exponential 52.18) / 100
+    ][
+    let sp-ef 0
+    if species = "WO" [set sp-ef 1.73]
+    set actual-growth max list 0 (4.485 + random-normal 0 1.934 - 3.014 * (1 - light) 
+      + sp-ef - 4.892 * browsed + random-normal 0 9.151) / 100
+    ]
+    
+  ][
+  
+  let max-growth seedling-growth  ;growth is height-based 
   set fAL light-growth-index light "intermediate"
   set actual-growth (max-growth * fAL)
+  
+  ]
+  
   set height (height + actual-growth)
 
+  
   if height > 1.37 [ ;When seedling reaches dbh 0.01, height = 2.039
     
     set dbh max list 0 ((-1.88 + 0.01372 * (height * 100)) / 100)
@@ -381,8 +399,15 @@ end
 
 
 to check-seedling-survival ;Placeholders 
-  if random-float 1 < 0.1 [die] ;Intrinsic seedling mortality 
-  if actual-growth < (0.5 * seedling-growth) and random-float 1 < 0.393 [die] ;Growth-based mortality 
+  ;if random-float 1 < 0.1 [die] ;Intrinsic seedling mortality 
+  ;if actual-growth < (0.5 * seedling-growth) and random-float 1 < 0.393 [die] ;Growth-based mortality 
+  
+  let sp-ef 0
+  if species = "WO" [set sp-ef 0.086]
+  let survpred (-0.587 + sp-ef + 0.37 * (1 - light) * 0.37 + 0.589 * (min list 5 age))  
+  let psurv (1 + exp(-1 * survpred)) ^ (-1) 
+  if random-float 1 > psurv [die]
+  
   set age age + 1
 end
 
@@ -766,10 +791,10 @@ NIL
 1
 
 SLIDER
-1021
-496
-1115
-529
+1024
+548
+1118
+581
 mature-oak
 mature-oak
 0
@@ -798,10 +823,10 @@ NIL
 0
 
 SLIDER
-1032
-276
-1207
-309
+1035
+328
+1210
+361
 DegDays
 DegDays
 1980
@@ -813,10 +838,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1033
-314
-1205
-347
+1036
+366
+1208
+399
 wt-dist
 wt-dist
 0.1
@@ -828,10 +853,10 @@ m
 HORIZONTAL
 
 SLIDER
-1033
-354
-1205
-387
+1036
+406
+1208
+439
 available-N
 available-N
 0
@@ -854,10 +879,10 @@ basal-area
 11
 
 SLIDER
-1034
-83
-1206
-116
+1036
+86
+1208
+119
 weevil-probability
 weevil-probability
 0
@@ -869,10 +894,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1033
-124
-1205
-157
+1035
+127
+1207
+160
 germ-prob
 germ-prob
 0
@@ -884,25 +909,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-1033
-166
-1205
-199
+1036
+218
+1208
+251
 seedling-growth
 seedling-growth
 0
 1.37
-0.6
+0.4
 0.01
 1
 m
 HORIZONTAL
 
 SLIDER
-1117
-496
-1213
-529
+1120
+548
+1216
+581
 sapling-oak
 sapling-oak
 0
@@ -914,10 +939,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1022
-532
-1115
-565
+1025
+584
+1118
+617
 mature-maple
 mature-maple
 0
@@ -1022,10 +1047,10 @@ PENS
 "Poplar" 1.0 0 -2674135 true "" "plot prop-intol"
 
 SLIDER
-1022
-568
-1115
-601
+1025
+620
+1118
+653
 mature-poplar
 mature-poplar
 0
@@ -1037,10 +1062,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1117
-532
-1214
-565
+1120
+584
+1217
+617
 sapling-maple
 sapling-maple
 0
@@ -1052,10 +1077,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1117
-568
-1214
-601
+1120
+620
+1217
+653
 sapling-poplar
 sapling-poplar
 0
@@ -1067,10 +1092,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-1054
-456
-1166
-489
+1057
+508
+1169
+541
 HEE-mean
 HEE-mean
 0
@@ -1078,20 +1103,20 @@ HEE-mean
 -1000
 
 TEXTBOX
-1075
-438
-1225
-456
+1078
+490
+1228
+508
 Initial Forest\n
 14
 0.0
 1
 
 SLIDER
-1034
-392
-1206
-425
+1037
+444
+1209
+477
 wilt
 wilt
 0
@@ -1103,10 +1128,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-997
-227
-1074
-272
+1000
+279
+1077
+324
 NIL
 sitequal-woak
 2
@@ -1114,10 +1139,10 @@ sitequal-woak
 11
 
 MONITOR
-1077
-227
-1154
-272
+1080
+279
+1157
+324
 NIL
 sitequal-maple
 2
@@ -1125,10 +1150,10 @@ sitequal-maple
 11
 
 MONITOR
-1156
-227
-1236
-272
+1159
+279
+1239
+324
 NIL
 sitequal-poplar
 2
@@ -1136,10 +1161,10 @@ sitequal-poplar
 11
 
 TEXTBOX
-1072
-207
-1222
-225
+1075
+259
+1225
+277
 Site Conditions
 14
 0.0
@@ -1196,10 +1221,10 @@ Start Model
 1
 
 SLIDER
-1031
-652
-1203
-685
+1034
+704
+1206
+737
 light-extinct
 light-extinct
 0.00016667
@@ -1211,10 +1236,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1032
-690
-1204
-723
+1035
+742
+1207
+775
 density-dep
 density-dep
 0.5
@@ -1226,10 +1251,10 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-1058
-631
-1208
-649
+1061
+683
+1211
+701
 Tuning Parameters
 14
 0.0
@@ -1242,9 +1267,31 @@ SWITCH
 78
 oak-seedlings
 oak-seedlings
-0
+1
 1
 -1000
+
+SWITCH
+1052
+181
+1184
+214
+hee-seedlings
+hee-seedlings
+1
+1
+-1000
+
+MONITOR
+43
+688
+100
+733
+sdht
+mean [height] of oaks with [seedling = TRUE]
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
