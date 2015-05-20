@@ -253,8 +253,8 @@ end
 
 to regenerate
   if count turtles-here with [seedling = FALSE] > 0 [stop]  
-  let AL light-growth-index ((1 - shade) / max list 1 stem-dens ) "high"
-  let Al-pop light-growth-index ((1 - shade) / max list 1 stem-dens ) "low"
+  let AL light-growth-index ((1 - shade)) "high"
+  let Al-pop light-growth-index ((1 - shade)) "low"
   let max-maple-saplings 3 let max-poplar-saplings 10
   
   if random-float 1 < (0.01 * max-maple-saplings * AL * sitequal-maple)[
@@ -263,7 +263,7 @@ to regenerate
       init-params
     ]]
   
-  if shade < 0.01 and random-float 1 < (0.01 * max-poplar-saplings * AL-pop * sitequal-poplar)[
+  if shade <= 0.01 and random-float 1 < (0.01 * max-poplar-saplings * AL-pop * sitequal-poplar)[
     sprout-poplars 1 [  
       set dbh random-float 0.0039  
       init-params
@@ -507,6 +507,14 @@ end
 
 
 to calc-site-quality
+  ifelse manual-site-qual = TRUE [
+    
+    set sitequal-woak sqwoak
+    set sitequal-boak sqboak
+    set sitequal-maple sqmap
+    set sitequal-poplar sqpop
+    
+  ][
   ;based bon Botkin 1993 and Holm 2012 with some guesses
   ;white oak
   let fT degree-days-index DegDays 1977 5894 
@@ -532,6 +540,7 @@ to calc-site-quality
   set fN nitrogen-index available-N "intolerant"
   set fWL wilt-index wilt 0.245 ;;based on white spruce/red maple (similar moisture tolerance) ??
   set sitequal-poplar fT * fWT * fN * fWL
+  ]
 end
 
 to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-maple n-sap-poplar]
@@ -791,10 +800,10 @@ NIL
 1
 
 SLIDER
-1024
-548
-1118
-581
+1027
+669
+1121
+702
 mature-oak
 mature-oak
 0
@@ -823,10 +832,10 @@ NIL
 0
 
 SLIDER
-1035
-328
-1210
-361
+1038
+449
+1213
+482
 DegDays
 DegDays
 1980
@@ -838,10 +847,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1036
-366
-1208
-399
+1039
+487
+1211
+520
 wt-dist
 wt-dist
 0.1
@@ -853,10 +862,10 @@ m
 HORIZONTAL
 
 SLIDER
-1036
-406
-1208
-439
+1039
+527
+1211
+560
 available-N
 available-N
 0
@@ -917,17 +926,17 @@ seedling-growth
 seedling-growth
 0
 1.37
-0.4
+0.6
 0.01
 1
 m
 HORIZONTAL
 
 SLIDER
-1120
-548
-1216
-581
+1123
+669
+1219
+702
 sapling-oak
 sapling-oak
 0
@@ -939,10 +948,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1025
-584
-1118
-617
+1028
+705
+1121
+738
 mature-maple
 mature-maple
 0
@@ -1047,10 +1056,10 @@ PENS
 "Poplar" 1.0 0 -2674135 true "" "plot prop-intol"
 
 SLIDER
-1025
-620
-1118
-653
+1028
+741
+1121
+774
 mature-poplar
 mature-poplar
 0
@@ -1062,10 +1071,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1120
-584
-1217
-617
+1123
+705
+1220
+738
 sapling-maple
 sapling-maple
 0
@@ -1077,10 +1086,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1120
-620
-1217
-653
+1123
+741
+1220
+774
 sapling-poplar
 sapling-poplar
 0
@@ -1092,10 +1101,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-1057
-508
-1169
-541
+1060
+629
+1172
+662
 HEE-mean
 HEE-mean
 0
@@ -1103,20 +1112,20 @@ HEE-mean
 -1000
 
 TEXTBOX
-1078
-490
-1228
-508
+1081
+611
+1231
+629
 Initial Forest\n
 14
 0.0
 1
 
 SLIDER
-1037
-444
-1209
-477
+1040
+565
+1212
+598
 wilt
 wilt
 0
@@ -1128,10 +1137,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-1000
-279
-1077
-324
+1003
+400
+1080
+445
 NIL
 sitequal-woak
 2
@@ -1139,10 +1148,10 @@ sitequal-woak
 11
 
 MONITOR
-1080
-279
-1157
-324
+1083
+400
+1160
+445
 NIL
 sitequal-maple
 2
@@ -1150,10 +1159,10 @@ sitequal-maple
 11
 
 MONITOR
-1159
-279
-1239
-324
+1162
+400
+1242
+445
 NIL
 sitequal-poplar
 2
@@ -1221,10 +1230,10 @@ Start Model
 1
 
 SLIDER
-1034
-704
-1206
-737
+20
+691
+192
+724
 light-extinct
 light-extinct
 0.00016667
@@ -1236,10 +1245,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1035
-742
-1207
-775
+21
+729
+193
+762
 density-dep
 density-dep
 0.5
@@ -1251,10 +1260,10 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-1061
-683
-1211
-701
+47
+670
+197
+688
 Tuning Parameters
 14
 0.0
@@ -1267,7 +1276,7 @@ SWITCH
 78
 oak-seedlings
 oak-seedlings
-1
+0
 1
 -1000
 
@@ -1282,16 +1291,76 @@ hee-seedlings
 1
 -1000
 
-MONITOR
-43
-688
-100
-733
-sdht
-mean [height] of oaks with [seedling = TRUE]
-2
+SWITCH
+1049
+280
+1196
+313
+manual-site-qual
+manual-site-qual
+0
 1
-11
+-1000
+
+SLIDER
+1026
+317
+1118
+350
+sqwoak
+sqwoak
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1124
+316
+1216
+349
+sqboak
+sqboak
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1026
+352
+1118
+385
+sqmap
+sqmap
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1123
+352
+1215
+385
+sqpop
+sqpop
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -1636,7 +1705,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.1.0
+NetLogo 5.2.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
