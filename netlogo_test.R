@@ -8,6 +8,7 @@ system('export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64:$JAVA_HOME/jre/lib/amd64
 library(RNetLogo)
 nl.path <- "/home/kkellner/programs/netlogo-5.2.0"
 
+#Example proof-of-concept
 nlheadless1 <- "nlheadless1"
 NLStart(nl.path, gui=F, nl.obj=nlheadless1)
 model.path <- "/models/Sample Models/Earth Science/Fire.nlogo"
@@ -18,3 +19,16 @@ burned1 <- NLDoReport(20, "go", c("ticks","burned-trees"),
                       nl.obj=nlheadless1)
 print(burned1)
 NLQuit(nlheadless1)
+
+#Simple JABOWA example
+jabowa1 <- 'jabowa1'
+NLStart(nl.path, gui=F, nl.obj=jabowa1)
+model.path <- "/home/kkellner/analysis/oak-lifecycle/oak_ibm_jabowa.nlogo"
+NLLoadModel(model.path, nl.obj=jabowa1)
+NLCommand("setup", nl.obj=jabowa1)
+baclearcut <- NLDoReport(50, "go", c("ticks","basal-area"), 
+                      as.data.frame=TRUE,df.col.names=c("tick","BA"), 
+                      nl.obj=jabowa1)
+plot(baclearcut$tick,baclearcut$BA,type='l')
+
+NLQuit(jabowa1)
