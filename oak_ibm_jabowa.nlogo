@@ -34,15 +34,15 @@ to setup
   
   calc-site-quality
  
-  ;ifelse HEE-mean = TRUE [
-  ;  init-stand 2.25 TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
-  ;  init-stand 2.25 FALSE mature-oak mature-maple mature-poplar sapling-oak sapling-maple sapling-poplar] ;User defined
+  if HEE-mean = TRUE [
+    init-stand 2.25 TRUE 89 11 9 95 499 163 
+    calc-global-vars 
+    setup-plots  
+  ] 
   
   ask patches [color-patches]
-  ;calc-global-vars
-  ;setup-harvest
-  ;setup-plots
- 
+  setup-harvest
+  
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -64,7 +64,7 @@ to go
     check-survival
   ]
     
-  ;conduct-harvest
+  conduct-harvest
   
   calc-global-vars
   
@@ -182,21 +182,23 @@ to check-survival
   
 end
 
-
-
-to regenerate
-
+to-report patch-light
+  
   let k light-extinct
   let canopy turtles-here
-  set plight Exp (-1 * sum [lai * k] of canopy);]
+  report Exp (-1 * sum [lai * k] of canopy);]
+  
+end
+
+to regenerate
+  
+  set plight patch-light
   
   let AL light-growth-index plight "high"
   let Al-pop light-growth-index plight "low"
   let Al-oak light-growth-index plight "intermediate"
   let max-maple-saplings 3 let max-poplar-saplings 10 let max-oak-saplings 10
   
-  
-
   ;Shade intermediate-tolerant species
   if plight >= 0.5 and plight < 0.99 [    
     let rw random-float 1
@@ -259,6 +261,14 @@ end
 
 
 to calc-site-quality
+    ifelse manual-site-qual = TRUE [
+    
+    set sitequal-woak sqwoak
+    set sitequal-boak sqboak
+    set sitequal-maple sqmap
+    set sitequal-poplar sqpop
+    
+  ][  
   ;based bon Botkin 1993 and Holm 2012 with some guesses
   ;white oak
   let fT degree-days-index DegDays 1977 5894 
@@ -284,6 +294,76 @@ to calc-site-quality
   set fN nitrogen-index available-N "intolerant"
   set fWL wilt-index wilt 0.245 ;;based on white spruce/red maple (similar moisture tolerance) ??
   set sitequal-poplar fT * fWT * fN * fWL
+  ]
+end
+
+
+to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-maple n-sap-poplar]
+  
+  ;;Create adult trees
+  create-oaks dens-adjust * n-oak [ ;dens-adjust adds more trees when there is a buffer
+    ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
+    set dbh (random-normal 45.75 5) / 100
+    init-params  
+    set age round (Amax * (dbh * 100) / Dmax)   
+    ifelse space-adjust = TRUE [
+      loop [
+        setxy random-pxcor random-pycor
+        if count turtles-here < 2 [stop]]]
+    [setxy random-pxcor random-pycor]
+  ]  
+  create-maples dens-adjust * n-maple [
+    set dbh (random-normal 40.8 5) / 100
+    init-params
+    set age round (Amax * (dbh * 100) / Dmax)      
+    ifelse space-adjust = TRUE [
+      loop [
+        setxy random-pxcor random-pycor
+        if count turtles-here < 2 [stop]]]
+    [setxy random-pxcor random-pycor]
+  ] 
+  create-poplars dens-adjust * n-poplar [
+    set dbh (random-normal 45.07 5) / 100
+    init-params
+    set age round (Amax * (dbh * 100) / Dmax)
+    ifelse space-adjust = TRUE [
+      loop [
+        setxy random-pxcor random-pycor
+        if count turtles-here < 2 [stop]]]
+    [setxy random-pxcor random-pycor]
+  ]
+  
+  ask turtles [calc-light]
+  ask patches [set plight patch-light]
+  
+  ;;Create saplings
+  create-oaks dens-adjust * n-sap-oak [
+    ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
+    set dbh max list 0.015 ((random-normal 14.9 5) / 100)
+    init-params
+    set age round (Amax * (dbh * 100) / Dmax)
+    loop [
+      setxy random-pxcor random-pycor
+      if [plight] of patch-here > 0.6 [stop]]
+  ]  
+  create-maples dens-adjust * n-sap-maple [
+    set dbh max list 0.015 ((random-normal 10.3 5) / 100)
+    init-params
+    set age round (Amax * (dbh * 100) / Dmax)
+    setxy random-pxcor random-pycor
+  ] 
+  create-poplars dens-adjust * n-sap-poplar [
+    set dbh max list 0.015 ((random-normal 14.9 5) / 100)
+    init-params
+    set age round (Amax * (dbh * 100) / Dmax)
+    loop [
+      setxy random-pxcor random-pycor
+      if [plight] of patch-here > 0.6 [stop]]
+  ]
+  
+  ask turtles [calc-light]
+  ask patches [set plight patch-light]
+   
 end
 
 
@@ -436,10 +516,10 @@ to conduct-harvest
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-221
-15
-871
-686
+228
+21
+878
+692
 -1
 -1
 40.0
@@ -479,21 +559,6 @@ NIL
 NIL
 1
 
-SLIDER
-949
-326
-1043
-359
-mature-oak
-mature-oak
-0
-300
-6
-1
-1
-NIL
-HORIZONTAL
-
 BUTTON
 104
 40
@@ -512,10 +577,10 @@ NIL
 0
 
 SLIDER
-960
-106
-1135
-139
+944
+239
+1119
+272
 DegDays
 DegDays
 1980
@@ -527,10 +592,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-961
-144
-1133
-177
+945
+277
+1117
+310
 wt-dist
 wt-dist
 0.1
@@ -542,10 +607,10 @@ m
 HORIZONTAL
 
 SLIDER
-961
-184
-1133
-217
+945
+317
+1117
+350
 available-N
 available-N
 0
@@ -566,36 +631,6 @@ basal-area
 2
 1
 11
-
-SLIDER
-1045
-326
-1141
-359
-sapling-oak
-sapling-oak
-0
-300
-0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-950
-362
-1043
-395
-mature-maple
-mature-maple
-0
-300
-0
-1
-1
-NIL
-HORIZONTAL
 
 MONITOR
 28
@@ -690,56 +725,11 @@ PENS
 "Maple" 1.0 0 -13791810 true "" "plot prop-tol"
 "Poplar" 1.0 0 -2674135 true "" "plot prop-intol"
 
-SLIDER
-950
-398
-1043
-431
-mature-poplar
-mature-poplar
-0
-300
-0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1045
-362
-1142
-395
-sapling-maple
-sapling-maple
-0
-500
-0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1045
-398
-1142
-431
-sapling-poplar
-sapling-poplar
-0
-500
-0
-1
-1
-NIL
-HORIZONTAL
-
 SWITCH
-982
-286
-1094
-319
+966
+419
+1078
+452
 HEE-mean
 HEE-mean
 0
@@ -747,20 +737,20 @@ HEE-mean
 -1000
 
 TEXTBOX
-1003
-268
-1153
-286
+987
+401
+1137
+419
 Initial Forest\n
 14
 0.0
 1
 
 SLIDER
-962
-222
-1134
-255
+946
+355
+1118
+388
 wilt
 wilt
 0
@@ -772,10 +762,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-925
-57
-1002
-102
+909
+190
+986
+235
 NIL
 sitequal-woak
 2
@@ -783,10 +773,10 @@ sitequal-woak
 11
 
 MONITOR
-1005
-57
-1082
-102
+989
+190
+1066
+235
 NIL
 sitequal-maple
 2
@@ -794,10 +784,10 @@ sitequal-maple
 11
 
 MONITOR
-1085
-57
-1165
-102
+1069
+190
+1149
+235
 NIL
 sitequal-poplar
 2
@@ -805,9 +795,9 @@ sitequal-poplar
 11
 
 TEXTBOX
-967
+980
 39
-1117
+1130
 57
 Site Conditions
 14
@@ -855,10 +845,10 @@ Start Model
 1
 
 SLIDER
-959
-482
-1131
-515
+943
+489
+1115
+522
 light-extinct
 light-extinct
 0.00016667
@@ -870,14 +860,85 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-986
-461
-1136
-479
+970
+468
+1120
+486
 Tuning Parameters
 14
 0.0
 1
+
+SWITCH
+958
+64
+1093
+97
+manual-site-qual
+manual-site-qual
+0
+1
+-1000
+
+SLIDER
+936
+106
+1028
+139
+sqwoak
+sqwoak
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1032
+106
+1124
+139
+sqboak
+sqboak
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+937
+143
+1029
+176
+sqmap
+sqmap
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1032
+143
+1124
+176
+sqpop
+sqpop
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -1222,7 +1283,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.1.0
+NetLogo 5.2.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
