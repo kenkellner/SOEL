@@ -229,7 +229,7 @@ end
 
 to create-sprout
   let prob 0
-  if dbh < 0.8 [  
+  if dbh < 0.8 and dbh > 0.05 [  
     ;if breed = oaks [set prob (1 + exp(-1 * (5.9991 - 0.2413 * (dbh * 39.3701) - 0.0475 * age))) ^ (-1)] ;From Dey 2002    
     if breed = oaks [ ;From Weigel and Peng 2002
       if species = "WO" [
@@ -1217,7 +1217,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "single-tree"
-1
+2
 
 TEXTBOX
 65
