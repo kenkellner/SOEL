@@ -32,10 +32,17 @@ to setup
   clear-all
   reset-ticks
   
+  let xcutoff (x-core / 2)
+  let ycutoff (y-core / 2)
+  
+  let adjust (x-core + buffer * 2) * (y-core + buffer * 2) / 100
+  
+  resize-world (-1 * (xcutoff + buffer)) (xcutoff + buffer) (-1 * (ycutoff + buffer)) (ycutoff + buffer)
+  
   calc-site-quality
  
   if HEE-mean = TRUE [
-    init-stand 2.25 TRUE 89 11 9 95 499 163 
+    init-stand adjust TRUE 89 11 9 95 499 163 
     calc-global-vars 
     setup-plots  
   ] 
@@ -415,15 +422,27 @@ to init-params
 end
 
 to calc-global-vars ;;Calculate global reporter values
-  set basal-area sum [ba] of turtles with [dbh >= 0.01 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
+  
+  let xcutoff (x-core / 2)
+  let ycutoff (y-core / 2)
+  
+  let adjust (x-core * y-core) / 100
+  
+  set basal-area (sum [ba] of turtles with [dbh >= 0.01 
+      and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
   set basal-area-ft basal-area * 4.356
-  set qdbh sqrt(basal-area / (0.0000785 * count turtles with [height > 1.37]))
-  set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37] / pi)) * 39.37
-  set dens (count turtles with [dbh >= 0.01 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2])
+  set qdbh sqrt(basal-area * adjust / (0.0000785 * count turtles with [height > 1.37 
+        and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]))
+  set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37 
+        and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)] / pi)) * 39.37
+  set dens (count turtles with [dbh >= 0.01 and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
   set dens-ac dens * 0.40477
-  set ba-oak sum [ba] of turtles with [dbh >= 0.01 and breed = oaks and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
-  set ba-map sum [ba] of turtles with [dbh >= 0.01 and breed = maples and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
-  set ba-pop sum [ba] of turtles with [dbh >= 0.01 and breed = poplars and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
+  set ba-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks 
+      and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
+  set ba-map (sum [ba] of turtles with [dbh >= 0.01 and breed = maples 
+      and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
+  set ba-pop (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars 
+      and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
   if basal-area > 0 [
     set prop-oak (ba-oak / basal-area)
     set prop-tol (ba-map / basal-area)
@@ -465,20 +484,27 @@ to conduct-harvest
   if harvest-type = "none" [stop]
   
   if (ticks + 1) != harvest-year [stop]
+   
+  let xcutoff (x-core / 2)
+  let ycutoff (y-core / 2)
+  
+  let adjust (x-core * y-core) / 100
   
   if harvest-type = "clearcut" [
-    ask turtles with [dbh > 0.01 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2] [die]
+    ask turtles with [dbh > 0.01 and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)] [die]
     ;set harvest-year harvest-year + 100
   ]
   
   if harvest-type = "single-tree" [
-    set basal-area sum [ba] of turtles with [dbh >= 0.01 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
+    set basal-area (sum [ba] of turtles with [dbh >= 0.01 
+        and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
     set harvest-year harvest-year + 20 
     if basal-area >= 25 [
       loop [
-        let potential one-of turtles with [dbh >= 0.10 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
+        let potential one-of turtles with [dbh >= 0.10 and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]
         ask potential [die]
-        set basal-area sum [ba] of turtles with [dbh >= 0.01 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
+        set basal-area (sum [ba] of turtles with [dbh >= 0.01 
+            and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
         if basal-area <= 25 [stop]
         ]
     ]
@@ -487,7 +513,8 @@ to conduct-harvest
   if harvest-type = "shelterwood" [
     ifelse shelter-phase = 1 [
       set shelter-phase 2
-      ask turtles with [breed != oaks and dbh <= 0.254 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2] [die] ;treated with herbicide
+      ask turtles with [breed != oaks and dbh <= 0.254 
+        and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)] [die] ;treated with herbicide
       set harvest-year (harvest-year + 7)
     ] 
     [
@@ -498,17 +525,19 @@ to conduct-harvest
           loop [
             ;this code is broken
             ;let potential min-one-of turtles with [breed != oaks and dbh >= 0.10 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [dbh]
-            let potential min-one-of turtles with [age > 20 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2] [light]
+            let potential min-one-of turtles with [age > 20 
+              and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)] [light]
             ask potential [ifelse breed = oaks [die][die]]
-            set basal-area sum [ba] of turtles with [dbh >= 0.01 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2]
+            set basal-area (sum [ba] of turtles with [dbh >= 0.01 
+              and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)]) / adjust
             if basal-area <= 16.1 [stop]
           ]
         ]      
       ] 
       [
-        ask turtles with [age > 20 and xcor < 13 and xcor > 2 and ycor < 13 and ycor > 2] [die]
+        ask turtles with [age > 20 and xcor <= xcutoff and xcor >= (-1 * xcutoff) and ycor <= ycutoff and ycor >= (-1 * ycutoff)] [die]
         set shelter-phase 1
-        set harvest-year (harvest-year + 100)
+        ;set harvest-year (harvest-year + 100)
       ]
        
   ]]
@@ -518,10 +547,10 @@ end
 GRAPHICS-WINDOW
 228
 21
-878
-692
--1
--1
+838
+652
+7
+7
 40.0
 1
 10
@@ -532,10 +561,10 @@ GRAPHICS-WINDOW
 1
 1
 1
-0
-15
-0
-15
+-7
+7
+-7
+7
 1
 1
 1
@@ -938,6 +967,51 @@ sqpop
 0.01
 1
 NIL
+HORIZONTAL
+
+SLIDER
+246
+61
+418
+94
+x-core
+x-core
+1
+25
+10
+1
+1
+cells
+HORIZONTAL
+
+SLIDER
+246
+98
+418
+131
+y-core
+y-core
+1
+25
+10
+1
+1
+cells
+HORIZONTAL
+
+SLIDER
+246
+134
+418
+167
+buffer
+buffer
+0
+5
+2
+1
+1
+cells
 HORIZONTAL
 
 @#$#@#$#@
