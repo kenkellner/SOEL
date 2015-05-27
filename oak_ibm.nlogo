@@ -60,7 +60,8 @@ to setup
   
   ask patches [color-patches]
   calc-global-vars
-  setup-harvest
+  set harvest-year burnin
+  set shelter-phase 1
   setup-plots
  
 end
@@ -75,7 +76,7 @@ to go
   ask turtles with [seedling = FALSE] [
     grow
     check-survival
-    if breed = oaks and dbh >= 0.20 and oak-seedlings = TRUE [produce-acorns] ;based on Downs and McQuilkin 1944
+    if breed = oaks and dbh >= 0.20 and seedlings != "none" [produce-acorns] ;based on Downs and McQuilkin 1944
   ]
    
   ask acorns [
@@ -83,7 +84,7 @@ to go
    germinate-mast 
   ]
   
-  if oak-seedlings = TRUE [
+  if seedlings = "simple" OR seedlings = "hee" [
     ask oaks with [seedling = TRUE] [
       grow-seedling
       check-seedling-survival
@@ -276,7 +277,7 @@ to regenerate
       init-params
     ]]
   
-  if oak-seedlings = FALSE [
+  if seedlings = "none" [
     let Al-oak light-growth-index ((1 - shade) / max list 1 stem-dens ) "intermediate"
     let max-oak-saplings 10
     let sitequal-oak 1
@@ -376,7 +377,7 @@ end
 to grow-seedling
   set light (1 - [shade] of patch-here)
   
-  ifelse hee-seedlings = TRUE [
+  ifelse seedlings = "hee" [
     ifelse random-float 1 < 0.0699 and light > 0.8 [
       set actual-growth (min list 150 random-exponential 52.18) / 100
     ][
@@ -712,13 +713,6 @@ end
 ;;;;;;;;                    Harvesting Procedures                        ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-to setup-harvest
-  if harvest-type = "clearcut" [set harvest-year 10]
-  if harvest-type = "single-tree" [set harvest-year 10]
-  if harvest-type = "shelterwood" [set harvest-year 10]
-  set shelter-phase 1
-end
-
 to conduct-harvest
   
   if harvest-type = "none" [stop]
@@ -824,10 +818,10 @@ NIL
 1
 
 SLIDER
-1027
-669
-1121
-702
+1021
+630
+1115
+663
 mature-oak
 mature-oak
 0
@@ -856,10 +850,10 @@ NIL
 0
 
 SLIDER
-1038
-449
-1213
-482
+1032
+410
+1207
+443
 DegDays
 DegDays
 1980
@@ -871,10 +865,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1039
-487
-1211
-520
+1033
+448
+1205
+481
 wt-dist
 wt-dist
 0.1
@@ -886,10 +880,10 @@ m
 HORIZONTAL
 
 SLIDER
-1039
-527
-1211
-560
+1033
+488
+1205
+521
 available-N
 available-N
 0
@@ -901,10 +895,10 @@ kg/ha/yr
 HORIZONTAL
 
 MONITOR
-28
-191
-96
-236
+33
+203
+101
+248
 BA (m2/ha)
 basal-area
 2
@@ -912,10 +906,10 @@ basal-area
 11
 
 SLIDER
-1036
-86
-1208
-119
+1028
+91
+1200
+124
 weevil-probability
 weevil-probability
 0
@@ -927,10 +921,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1035
-127
-1207
-160
+1027
+132
+1199
+165
 germ-prob
 germ-prob
 0
@@ -942,10 +936,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1036
-218
-1208
-251
+1028
+173
+1200
+206
 seedling-growth
 seedling-growth
 0
@@ -957,10 +951,10 @@ m
 HORIZONTAL
 
 SLIDER
-1123
-669
-1219
-702
+1117
+630
+1213
+663
 sapling-oak
 sapling-oak
 0
@@ -972,10 +966,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1028
-705
-1121
-738
+1022
+666
+1115
+699
 mature-maple
 mature-maple
 0
@@ -987,10 +981,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-28
-242
-95
-287
+33
+254
+100
+299
 qDBH (cm)
 qdbh
 2
@@ -998,10 +992,10 @@ qdbh
 11
 
 MONITOR
-103
-191
-171
-236
+108
+203
+176
+248
 BA (ft2/ac)
 basal-area-ft
 2
@@ -1009,10 +1003,10 @@ basal-area-ft
 11
 
 MONITOR
-106
-242
-171
-287
+111
+254
+176
+299
 qDBH (in)
 qdbh-in
 2
@@ -1020,10 +1014,10 @@ qdbh-in
 11
 
 MONITOR
-30
-294
-94
-339
+35
+306
+99
+351
 Trees/Ha
 dens
 2
@@ -1031,10 +1025,10 @@ dens
 11
 
 MONITOR
-107
-294
-170
-339
+112
+306
+175
+351
 Trees/Ac
 dens-ac
 2
@@ -1042,10 +1036,10 @@ dens-ac
 11
 
 PLOT
-3
-345
-203
-495
+8
+357
+208
+507
 Basal Area
 Years
 m2/ha
@@ -1060,10 +1054,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot basal-area"
 
 PLOT
-4
-504
-204
-654
+9
+516
+209
+666
 BA Proportion
 Years
 NIL
@@ -1080,10 +1074,10 @@ PENS
 "Poplar" 1.0 0 -2674135 true "" "plot prop-intol"
 
 SLIDER
-1028
-741
-1121
-774
+1022
+702
+1115
+735
 mature-poplar
 mature-poplar
 0
@@ -1095,10 +1089,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1123
-705
-1220
-738
+1117
+666
+1214
+699
 sapling-maple
 sapling-maple
 0
@@ -1110,10 +1104,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1123
-741
-1220
-774
+1117
+702
+1214
+735
 sapling-poplar
 sapling-poplar
 0
@@ -1125,10 +1119,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-1060
-629
-1172
-662
+1054
+590
+1166
+623
 HEE-mean
 HEE-mean
 0
@@ -1136,20 +1130,20 @@ HEE-mean
 -1000
 
 TEXTBOX
-1081
-611
-1231
-629
+1075
+572
+1225
+590
 Initial Forest\n
 14
 0.0
 1
 
 SLIDER
-1040
-565
-1212
-598
+1034
+526
+1206
+559
 wilt
 wilt
 0
@@ -1161,10 +1155,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-1003
-400
-1080
-445
+997
+361
+1074
+406
 NIL
 sitequal-woak
 2
@@ -1172,10 +1166,10 @@ sitequal-woak
 11
 
 MONITOR
-1083
-400
-1160
-445
+1077
+361
+1154
+406
 NIL
 sitequal-maple
 2
@@ -1183,10 +1177,10 @@ sitequal-maple
 11
 
 MONITOR
-1162
-400
-1242
-445
+1156
+361
+1236
+406
 NIL
 sitequal-poplar
 2
@@ -1194,10 +1188,10 @@ sitequal-poplar
 11
 
 TEXTBOX
-1075
-259
-1225
-277
+1069
+220
+1219
+238
 Site Conditions
 14
 0.0
@@ -1241,7 +1235,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "single-tree"
-0
+1
 
 TEXTBOX
 65
@@ -1254,10 +1248,10 @@ Start Model
 1
 
 SLIDER
-20
-691
-192
-724
+25
+703
+197
+736
 light-extinct
 light-extinct
 0.00016667
@@ -1269,10 +1263,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-21
-729
-193
-762
+26
+741
+198
+774
 density-dep
 density-dep
 0.5
@@ -1284,83 +1278,61 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-47
-670
-197
-688
+52
+682
+202
+700
 Tuning Parameters
 14
 0.0
 1
 
 SWITCH
-1035
-45
-1206
-78
-oak-seedlings
-oak-seedlings
+1043
+241
+1190
+274
+manual-site-qual
+manual-site-qual
 0
 1
 -1000
 
-SWITCH
-1052
-181
-1184
-214
-hee-seedlings
-hee-seedlings
+SLIDER
+1020
+278
+1112
+311
+sqwoak
+sqwoak
+0
 1
+0.5
+0.01
 1
--1000
+NIL
+HORIZONTAL
 
-SWITCH
-1049
-280
-1196
+SLIDER
+1118
+277
+1210
+310
+sqboak
+sqboak
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1020
 313
-manual-site-qual
-manual-site-qual
-0
-1
--1000
-
-SLIDER
-1026
-317
-1118
-350
-sqwoak
-sqwoak
-0
-1
-0.5
-0.01
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1124
-316
-1216
-349
-sqboak
-sqboak
-0
-1
-0.5
-0.01
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1026
-352
-1118
-385
+1112
+346
 sqmap
 sqmap
 0
@@ -1372,10 +1344,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1123
-352
-1215
-385
+1117
+313
+1209
+346
 sqpop
 sqpop
 0
@@ -1430,6 +1402,31 @@ buffer
 1
 m
 HORIZONTAL
+
+SLIDER
+19
+157
+191
+190
+burnin
+burnin
+0
+100
+10
+1
+1
+years
+HORIZONTAL
+
+CHOOSER
+1046
+43
+1184
+88
+seedlings
+seedlings
+"none" "simple" "hee"
+2
 
 @#$#@#$#@
 ## WHAT IS IT?

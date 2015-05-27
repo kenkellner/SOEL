@@ -6,7 +6,9 @@ system('export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre')
 system('export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64:$JAVA_HOME/jre/lib/amd64/client')
 
 library(RNetLogo)
-nl.path <- "/home/kkellner/programs/netlogo-5.2.0"
+#Path to NetLogo installation based on OS
+if(Sys.info()[['sysname']] == "Windows"){nl.path <- "C:/Program Files (x86)/Netlogo 5.2.0"}
+if(Sys.info()[['sysname']] == "Linux"){nl.path <- paste('/home/',Sys.info()[['user']],'/programs/netlogo-5.2.0',sep="")}
 
 #Example proof-of-concept
 nlheadless1 <- "nlheadless1"
