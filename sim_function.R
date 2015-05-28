@@ -42,7 +42,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        maxgrowth = 0.9,
                        #More regen parameters here later
                        #Absolute path to NetLogo directory
-                       nl.path = "/home/kkellner/programs/netlogo-5.2.0"
+                       netlogo.path = nl.path
                        ){
   
   #Get path to appropriate model
@@ -57,17 +57,19 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   }
   
   #Setup each parallel process
-  processors <- detectCores()
+  #processors <- detectCores()
+  processors <- 2
   cl <- makeCluster(processors)
+  clusterExport(cl = cl, ls(), envir = environment())
   invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
-                      nl.path=nl.path, model.path=model.path))
+                      nl.path=netlogo.path, model.path=model.path))
   
   #Internal function to set variables and run NetLogo in each process
   runNL <- function(i,harvest) {
     #Select harvest type, seedling type, etc.
     NLCommand(paste('set harvest-type',harvest))
     NLCommand(paste('set burnin',burnin))
-    NLCommand(paste('set extinct',extinct))
+    NLCommand(paste('set light-extinct',extinct))
     
     #Setup site quality
     if(!is.null(manual.site.quality)){
@@ -85,8 +87,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     }
     
     #Variables specific to IBM variant
-    if(model = 'ibm'){
-      NLCommand(paste('set density-dep',density-dep))
+    if(model == 'ibm'){
+      NLCommand(paste('set density-dep',density.dep))
       NLCommand(paste('set seedlings',seedlings))
       if(seedlings == "simple"){NLCommand(paste('set seedling-growth',maxgrowth))}
     }
@@ -102,12 +104,44 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     return(temp[,2:5])  
   }
   
+  out = list()
   
+  if('clearcut'%in%harvests){
+    par.clear <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"clearcut\"')
+    out$clearcut <- list(BA=sapply(par.clear, function(x) x[[1]]),
+                         oak=sapply(par.clear, function(x) x[[2]]),
+                         tol=sapply(par.clear, function(x) x[[3]]),
+                         intol=sapply(par.clear, function(x) x[[4]]))
+  }
+  if('shelterwood'%in%harvests){
+    par.shelter <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"shelterwood\"')
+    out$shelterwood <- list(BA=sapply(par.shelter, function(x) x[[1]]),
+                            oak=sapply(par.shelter, function(x) x[[2]]),
+                            tol=sapply(par.shelter, function(x) x[[3]]),
+                            intol=sapply(par.shelter, function(x) x[[4]]))
+  }
+  if('single-tree'%in%harvests){
+    par.single <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"single-tree\"')
+    out$singletree <- list(BA=sapply(par.single, function(x) x[[1]]),
+                           oak=sapply(par.single, function(x) x[[2]]),
+                           tol=sapply(par.single, function(x) x[[3]]),
+                           intol=sapply(par.single, function(x) x[[4]]))
+  }
+  if('none'%in%harvests){
+    par.none <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"none\"')
+    out$none <- list(BA=sapply(par.none, function(x) x[[1]]),
+                     oak=sapply(par.none, function(x) x[[2]]),
+                     tol=sapply(par.none, function(x) x[[3]]),
+                     intol=sapply(par.none, function(x) x[[4]]))
+  }
   
+  #Stop netlogo instances and cluster
+  stopNL <- function(i){NLQuit()}
+  invisible(parLapply(cl, 1:processors, stopNL))
+  stopCluster(cl)
   
-  
-  
-  
+  return(out)
+ 
 }
 
 
