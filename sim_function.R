@@ -57,8 +57,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   }
   
   #Setup each parallel process
-  #processors <- detectCores()
-  processors <- 2
+  processors <- detectCores()
   cl <- makeCluster(processors)
   clusterExport(cl = cl, ls(), envir = environment())
   invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
@@ -89,7 +88,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     #Variables specific to IBM variant
     if(model == 'ibm'){
       NLCommand(paste('set density-dep',density.dep))
-      NLCommand(paste('set seedlings',seedlings))
+      NLCommand(paste('set seedlings \"',seedlings,'\"',sep=""))
       if(seedlings == "simple"){NLCommand(paste('set seedling-growth',maxgrowth))}
     }
     
