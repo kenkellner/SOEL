@@ -52,7 +52,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   } else {model.path <- paste(getwd(),"/oak_ibm_jabowa.nlogo",sep="")}
   
   #Set list of resporters to save
-  if(model == 'ibm'){
+  if(model == 'ibm' & seedlings != 'none'){
     reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
                    "total-acorns","total-seedlings","new-seedlings","pct-germ")
     rep.names <- c("tick","BA","oak","tol","intol","totacorns","totseedlings",
