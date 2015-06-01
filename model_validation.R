@@ -6,19 +6,19 @@ source('sim_function.R')
 
 #Stock JABOWA 3 model
 jabowa.out <- forest.sim(model='jabowa', nreps=4, nyears=150, 
-                         harvests=c('clearcut','shelterwood','single-tree','none'))
+                         harvests=c('clearcut','shelterwood','singletree','none'))
 
 #Spatially-explicit IBM with JABOWA regeneration process for all species
 noseedlings.out <- forest.sim(model='ibm', nreps=4, nyears=150, 
-                              harvests=c('clearcut','shelterwood','single-tree','none'),seedlings='none')
+                              harvests=c('clearcut','shelterwood','singletree','none'),seedlings='none')
 
 #IBM with oak seed/seedling processes; seedling growth simplified based on lit
 seedlingslit.out <- forest.sim(model='ibm', nreps=4, nyears=150, 
-                               harvests=c('clearcut','shelterwood','single-tree','none'),seedlings='simple')
+                               harvests=c('clearcut','shelterwood','singletree','none'),seedlings='simple')
 
 #Same as above but with seedling growth based on HEE data
 seedlings.out <- forest.sim(model='ibm', nreps=4, nyears=150, 
-                               harvests=c('clearcut','shelterwood','single-tree','none'),seedlings='hee')
+                               harvests=c('clearcut','shelterwood','singletree','none'),seedlings='hee')
 
 #Basal area comparison plots
 plot(rowMeans(jabowa.out$clear$BA),type='l',col='red',xlab="Year",ylab="Basal Area",lwd=2,

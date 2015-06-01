@@ -23,7 +23,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Size of simulation in m (ibm) or cells (jabowa, e.g. 10,10,2)
                        xcorewidth = 100, ycorewidth = 100, buffer = 20, 
                        #Harvest types to include in run; default is all
-                       harvests = c('none','clearcut', 'shelterwood', 'single-tree'),
+                       harvests = c('none','clearcut', 'shelterwood', 'singletree'),
                        #Number of reps per harvest type
                        nreps = 1, 
                        #Burn-in ticks and total length of each rep
@@ -42,12 +42,25 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        maxgrowth = 0.9,
                        #More regen parameters here later
                        #Absolute path to NetLogo directory
-                       netlogo.path = nl.path
+                       netlogo.path = nl.path,
+                       #Force a certain number of cores to be used (otherwise all cores are used)
+                       force.processors = NULL
                        ){
   
   #Get path to appropriate model
   if(model == 'ibm'){model.path <- paste(getwd(),"/oak_ibm.nlogo",sep="")
   } else {model.path <- paste(getwd(),"/oak_ibm_jabowa.nlogo",sep="")}
+  
+  #Set list of resporters to save
+  if(model == 'ibm'){
+    reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
+                   "total-acorns","total-seedlings","new-seedlings","pct-germ")
+    rep.names <- c("tick","BA","oak","tol","intol","totacorns","totseedlings",
+                   "newseedlings","pctgerm")
+  } else {
+    reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol")
+    rep.names <- c("tick","BA","oak","tol","intol")
+  }
   
   #Internal function to setup NetLogo in each parallel subprocess
   initNL <- function(dummy, gui, nl.path, model.path) {
@@ -57,7 +70,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   }
   
   #Setup each parallel process
-  processors <- detectCores()
+  if(!is.null(force.processors)){processors <- force.processors
+  } else {processors <- detectCores()}
   cl <- makeCluster(processors)
   clusterExport(cl = cl, ls(), envir = environment())
   invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
@@ -96,45 +110,25 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     NLCommand("setup")
     
     #Run and save output
-    temp <- NLDoReport(nyears, "go", c("ticks","basal-area","prop-oak","prop-tol","prop-intol"), 
-                       as.data.frame=TRUE,df.col.names=c("tick","BA","oak","tol","intol"))
+    temp <- NLDoReport(nyears, "go", reporters, as.data.frame=TRUE, df.col.names=rep.names)
     
     #Return output
-    return(temp[,2:5])  
+    if(model == 'ibm'){return(temp[,2:9])
+    } else {return(temp[,2:5])}
+      
   }
   
-  out = list()
-  
-  if('clearcut'%in%harvests){
-    par.clear <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"clearcut\"')
-    out$clearcut <- list(BA=sapply(par.clear, function(x) x[[1]]),
-                         oak=sapply(par.clear, function(x) x[[2]]),
-                         tol=sapply(par.clear, function(x) x[[3]]),
-                         intol=sapply(par.clear, function(x) x[[4]]))
-  }
-  if('shelterwood'%in%harvests){
-    par.shelter <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"shelterwood\"')
-    out$shelterwood <- list(BA=sapply(par.shelter, function(x) x[[1]]),
-                            oak=sapply(par.shelter, function(x) x[[2]]),
-                            tol=sapply(par.shelter, function(x) x[[3]]),
-                            intol=sapply(par.shelter, function(x) x[[4]]))
-  }
-  if('single-tree'%in%harvests){
-    par.single <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"single-tree\"')
-    out$singletree <- list(BA=sapply(par.single, function(x) x[[1]]),
-                           oak=sapply(par.single, function(x) x[[2]]),
-                           tol=sapply(par.single, function(x) x[[3]]),
-                           intol=sapply(par.single, function(x) x[[4]]))
-  }
-  if('none'%in%harvests){
-    par.none <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest='\"none\"')
-    out$none <- list(BA=sapply(par.none, function(x) x[[1]]),
-                     oak=sapply(par.none, function(x) x[[2]]),
-                     tol=sapply(par.none, function(x) x[[3]]),
-                     intol=sapply(par.none, function(x) x[[4]]))
+  #Generate and format output
+  out <- sapply(harvests,function(x) NULL)
+  for (i in 1:length(harvests)){
+    sim <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest= paste('\"',harvests[i],'\"',sep=""))
+    out[[i]] <- sapply(rep.names[-1],function(x) NULL)
+    for (j in 1:(length(rep.names)-1)){
+      out[[i]][[j]] <- sapply(sim, function(x) x[[j]])
+    }
   }
   
-  #Stop netlogo instances and cluster
+  #Stop NetLogo instances and cluster
   stopNL <- function(i){NLQuit()}
   invisible(parLapply(cl, 1:processors, stopNL))
   stopCluster(cl)
@@ -142,10 +136,4 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   return(out)
  
 }
-
-
-
-
-
-
 

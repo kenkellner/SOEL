@@ -5,11 +5,13 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   harvest-year shelter-phase
   mast-mean-bo mast-mean-wo
   ba-oak ba-map ba-pop
+  ;fia-oak-seedlings fia-map-seedlings fia-pop-seedlings
+  acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters
   ]
 
 breed [oaks oak]
 oaks-own [species light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL
-  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality density browsed  
+  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality density browsed 
   ]
 
 breed [maples maple]
@@ -23,7 +25,7 @@ poplars-own [light age dbh height canopy-radius canopy-density actual-growth ba 
   ]
 
 breed [acorns acorn]
-acorns-own [species weevil cached germ]
+acorns-own [species weevil cached germ incore]
 
 patches-own [stem-dens shade in-layer1 in-layer2]
 
@@ -70,15 +72,16 @@ end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 to go
-
+    
   calc-light
   
+  set acorn-count 0
   ask turtles with [seedling = FALSE] [
     grow
     check-survival
     if breed = oaks and dbh >= 0.20 and seedlings != "none" [produce-acorns] ;based on Downs and McQuilkin 1944
   ]
-   
+  
   ask acorns [
    disperse-mast
    germinate-mast 
@@ -313,6 +316,9 @@ to produce-acorns
     set acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]  
   let tree-radius canopy-radius
   let temp species
+  let xcutoff (x-core / 2)
+  let ycutoff (y-core / 2)
+  if xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)[set acorn-count (acorn-count + acorns-produced)]
   hatch-acorns acorns-produced [
   ;;drop produced acorns under canopy randomly
     set species temp 
@@ -362,14 +368,14 @@ to germinate-mast
     ;[set germ germ-prob * 0.1]]
     [set germ 0.19]]  
   if random-float 1 < germ [
-      hatch-oaks 1 [
-        set species temp
-        set age 1
-        set size 1
-        set seedling TRUE   
-        set hidden? TRUE
-        set height 0.092 ;based on HEE seedlings
-      ]]
+    hatch-oaks 1 [
+      set species temp
+      set age 0
+      set size 1
+      set seedling TRUE   
+      set hidden? TRUE
+      set height 0.092 ;based on HEE seedlings
+    ]]
     die
 end
 
@@ -689,6 +695,14 @@ to calc-global-vars ;;Calculate global reporter values
   set prop-oak (ba-oak / basal-area)
   set prop-tol (ba-map / basal-area)
   set prop-intol (ba-pop / basal-area)
+  
+  set total-seedlings (count turtles with [seedling = TRUE 
+      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+  set new-seedlings (count turtles with [seedling = TRUE and age = 1 
+      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+  set total-acorns round (acorn-count / adjust)
+  ifelse total-acorns > 0 [set pct-germ (new-seedlings / total-acorns)][set pct-germ 0]
+  
 end
 
 to color-patches
@@ -729,7 +743,7 @@ to conduct-harvest
     ;set harvest-year harvest-year + 100
   ]
   
-  if harvest-type = "single-tree" [
+  if harvest-type = "singletree" [
     set basal-area (sum [ba] of turtles with [dbh >= 0.01 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
     set harvest-year harvest-year + 20 
     if basal-area >= 25 [
@@ -774,10 +788,10 @@ to conduct-harvest
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-221
-15
-936
-751
+220
+10
+935
+746
 70
 70
 5.0
@@ -1234,7 +1248,7 @@ CHOOSER
 152
 harvest-type
 harvest-type
-"none" "clearcut" "shelterwood" "single-tree"
+"none" "clearcut" "shelterwood" "singletree"
 1
 
 TEXTBOX

@@ -495,7 +495,7 @@ to conduct-harvest
     ;set harvest-year harvest-year + 100
   ]
   
-  if harvest-type = "single-tree" [
+  if harvest-type = "singletree" [
     set basal-area (sum [ba] of turtles with [dbh >= 0.01 
         and xcor <= xmax and xcor >= xmin and ycor <= ymax and ycor >= ymin]) / adjust
     set harvest-year harvest-year + 20 
@@ -860,7 +860,7 @@ CHOOSER
 152
 harvest-type
 harvest-type
-"none" "clearcut" "shelterwood" "single-tree"
+"none" "clearcut" "shelterwood" "singletree"
 1
 
 TEXTBOX
