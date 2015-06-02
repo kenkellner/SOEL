@@ -34,13 +34,20 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        site.chars = list(degdays = 4840, wtdist = 9.3, availableN = 325, wilt = 0.10),
                        #Tuning parameters; density.dep is used only for ibm, not jabowa
                        extinct = 0.00025, density.dep = 3.5,
+                       #Toggle stump sprouting
+                       sprouting = TRUE,
                        #Seedling handling method; 'none' for no seedlings, 
                        #'simple' for simple growth based on literature,
                        #'hee' for growth based on HEE data
-                       seedlings = 'hee', 
+                       seedlings = 'hee',
+                       #Masting cycle control; 'fixedaverage', 'fixedgood', fixedbad' for constant values
+                       #'hee' for cycling through each year of HEE data repeatedly
+                       #'random' for randomly selecting a year of HEE data
+                       mastscenario = 'fixedaverage',
+                       #If 'hee', where to start in the cycle (0-8)
+                       mastcyclestart = 0,
                        #Maximum yearly seedling growth if 'simple' is selected
                        maxgrowth = 0.9,
-                       #More regen parameters here later
                        #Absolute path to NetLogo directory
                        netlogo.path = nl.path,
                        #Force a certain number of cores to be used (otherwise all cores are used)
@@ -103,6 +110,12 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     if(model == 'ibm'){
       NLCommand(paste('set density-dep',density.dep))
       NLCommand(paste('set seedlings \"',seedlings,'\"',sep=""))
+      if(sprouting == TRUE){NLCommand('set sprouting TRUE')
+      } else {NLCommand('set sprouting FALSE')}
+      if(seedlings != "none"){
+        NLCommand(paste('set mast-scenario ','\"',mastscenario,'\"',sep=""))
+        NLCommand(paste('set mast-cycle-start',mastcyclestart))
+      }
       if(seedlings == "simple"){NLCommand(paste('set seedling-growth',maxgrowth))}
     }
     

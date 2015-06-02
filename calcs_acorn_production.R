@@ -11,6 +11,8 @@ bo <- com[com$species==0,]
 
 ###WO
 
+1 / (colMeans(wo,na.rm=T)/0.34) # yearly
+
 #Mast year
 hist(unlist(wo[,c(3,6,10)])/0.34)
 
@@ -49,6 +51,8 @@ lines(0:200,dexp(0:200,lambda.all),col='red',lwd=3)
 text(100,0.02,expression(lambda*" = 0.08518"),cex=2)
 
 ####BO
+
+1 / (colMeans(bo,na.rm=T)/0.34) # yearly
 
 #Mast year
 hist(unlist(bo[,c(3,6,8,10)])/0.34)

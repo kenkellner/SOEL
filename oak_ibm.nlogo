@@ -7,6 +7,7 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   ba-oak ba-map ba-pop
   ;fia-oak-seedlings fia-map-seedlings fia-pop-seedlings
   acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters
+  wo-mast-list bo-mast-list mast-year-index
   ]
 
 breed [oaks oak]
@@ -47,15 +48,10 @@ to setup
   
   calc-site-quality
   
-  ;set mast-mean-wo 0.04475 ;mast year
-  ;set mast-mean-wo 0.11657 ;mast failure
-  set mast-mean-wo 0.08518 ;average
-  
-  ;set mast-mean-bo 0.06030 ;mast year
-  ;set mast-mean-bo 0.26672 ;mast failure
-  set mast-mean-bo 0.09033 ;average
-  
- 
+  set bo-mast-list [0.0827 0.0489 2.975 0.8809 0.0757 0.1153 0.0661 0.1415 0.05667]
+  set wo-mast-list [0.1355 0.0665 0.1092 2.720 0.0367 0.136 0.1070 0.238 0.0406]
+  set mast-year-index mast-cycle-start
+   
   ifelse HEE-mean = TRUE [
     init-stand adjust TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
     init-stand adjust FALSE mature-oak mature-maple mature-poplar sapling-oak sapling-maple sapling-poplar] ;User defined
@@ -75,7 +71,9 @@ to go
     
   calc-light
   
+  set-mast-scenario
   set acorn-count 0
+  
   ask turtles with [seedling = FALSE] [
     grow
     check-survival
@@ -239,6 +237,7 @@ end
 
 
 to create-sprout
+  ifelse sprouting = FALSE [die][
   let prob 0
   if dbh < 0.8 and dbh > 0.05 [  
     ;if breed = oaks [set prob (1 + exp(-1 * (5.9991 - 0.2413 * (dbh * 39.3701) - 0.0475 * age))) ^ (-1)] ;From Dey 2002    
@@ -258,7 +257,8 @@ to create-sprout
     init-params
     set size 2
   ]
-  [die]  
+  [die] 
+  ] 
 end
 
 
@@ -307,6 +307,34 @@ end
 ;;;;;;;;                Early Oak Lifecycle Procedures                   ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+to set-mast-scenario
+  
+  if mast-scenario = "fixedaverage" [
+    set mast-mean-wo 0.08518
+    set mast-mean-bo 0.09033
+  ]
+  if mast-scenario = "fixedbad" [
+    set mast-mean-wo 0.11657
+    set mast-mean-bo 0.26672
+  ]
+  if mast-scenario = "fixedgood" [
+    set mast-mean-wo 0.04475
+    set mast-mean-bo 0.06030
+  ]
+  if mast-scenario = "random" [
+    set mast-mean-wo one-of wo-mast-list
+    set mast-mean-bo one-of bo-mast-list
+  ]
+  if mast-scenario = "hee" [
+    set mast-mean-wo item mast-year-index wo-mast-list
+    set mast-mean-bo item mast-year-index bo-mast-list
+    set mast-year-index (mast-year-index + 1)
+    if mast-year-index = 9 [set mast-year-index 0]
+  ]
+  
+  
+  
+end
 
 to produce-acorns 
   
@@ -692,10 +720,11 @@ to calc-global-vars ;;Calculate global reporter values
       and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
   set ba-pop (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars 
       and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
-  set prop-oak (ba-oak / basal-area)
-  set prop-tol (ba-map / basal-area)
-  set prop-intol (ba-pop / basal-area)
-  
+  ifelse basal-area > 0 [
+    set prop-oak (ba-oak / basal-area)
+    set prop-tol (ba-map / basal-area)
+    set prop-intol (ba-pop / basal-area)
+  ][set prop-oak 0 set prop-tol 0 set prop-intol 0]  
   set total-seedlings (count turtles with [seedling = TRUE 
       and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
   set new-seedlings (count turtles with [seedling = TRUE and age = 1 
@@ -832,10 +861,10 @@ NIL
 1
 
 SLIDER
-1021
-630
-1115
-663
+1017
+718
+1111
+751
 mature-oak
 mature-oak
 0
@@ -864,10 +893,10 @@ NIL
 0
 
 SLIDER
-1032
-410
-1207
-443
+1028
+498
+1203
+531
 DegDays
 DegDays
 1980
@@ -879,10 +908,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1033
-448
-1205
-481
+1029
+536
+1201
+569
 wt-dist
 wt-dist
 0.1
@@ -894,10 +923,10 @@ m
 HORIZONTAL
 
 SLIDER
-1033
-488
-1205
-521
+1029
+576
+1201
+609
 available-N
 available-N
 0
@@ -920,10 +949,10 @@ basal-area
 11
 
 SLIDER
-1028
-91
-1200
-124
+1034
+185
+1206
+218
 weevil-probability
 weevil-probability
 0
@@ -935,10 +964,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1027
-132
-1199
-165
+1033
+226
+1205
+259
 germ-prob
 germ-prob
 0
@@ -950,10 +979,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1028
-173
-1200
-206
+1034
+267
+1206
+300
 seedling-growth
 seedling-growth
 0
@@ -965,10 +994,10 @@ m
 HORIZONTAL
 
 SLIDER
-1117
-630
-1213
-663
+1113
+718
+1209
+751
 sapling-oak
 sapling-oak
 0
@@ -980,10 +1009,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1022
-666
-1115
-699
+1018
+754
+1111
+787
 mature-maple
 mature-maple
 0
@@ -1088,10 +1117,10 @@ PENS
 "Poplar" 1.0 0 -2674135 true "" "plot prop-intol"
 
 SLIDER
-1022
-702
-1115
-735
+1018
+790
+1111
+823
 mature-poplar
 mature-poplar
 0
@@ -1103,10 +1132,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1117
-666
-1214
-699
+1113
+754
+1210
+787
 sapling-maple
 sapling-maple
 0
@@ -1118,10 +1147,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1117
-702
-1214
-735
+1113
+790
+1210
+823
 sapling-poplar
 sapling-poplar
 0
@@ -1133,10 +1162,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-1054
-590
-1166
-623
+1050
+678
+1162
+711
 HEE-mean
 HEE-mean
 0
@@ -1144,20 +1173,20 @@ HEE-mean
 -1000
 
 TEXTBOX
-1075
-572
-1225
-590
+1071
+660
+1221
+678
 Initial Forest\n
 14
 0.0
 1
 
 SLIDER
-1034
-526
-1206
-559
+1030
+614
+1202
+647
 wilt
 wilt
 0
@@ -1169,10 +1198,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-997
-361
-1074
-406
+993
+449
+1070
+494
 NIL
 sitequal-woak
 2
@@ -1180,10 +1209,10 @@ sitequal-woak
 11
 
 MONITOR
-1077
-361
-1154
-406
+1073
+449
+1150
+494
 NIL
 sitequal-maple
 2
@@ -1191,10 +1220,10 @@ sitequal-maple
 11
 
 MONITOR
-1156
-361
-1236
-406
+1152
+449
+1232
+494
 NIL
 sitequal-poplar
 2
@@ -1202,10 +1231,10 @@ sitequal-poplar
 11
 
 TEXTBOX
-1069
-220
-1219
-238
+1065
+308
+1215
+326
 Site Conditions
 14
 0.0
@@ -1302,10 +1331,10 @@ Tuning Parameters
 1
 
 SWITCH
-1043
-241
-1190
-274
+1039
+329
+1186
+362
 manual-site-qual
 manual-site-qual
 0
@@ -1313,10 +1342,10 @@ manual-site-qual
 -1000
 
 SLIDER
-1020
-278
-1112
-311
+1016
+366
+1108
+399
 sqwoak
 sqwoak
 0
@@ -1328,10 +1357,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1118
-277
-1210
-310
+1114
+365
+1206
+398
 sqboak
 sqboak
 0
@@ -1343,10 +1372,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1020
-313
-1112
-346
+1016
+401
+1108
+434
 sqmap
 sqmap
 0
@@ -1358,10 +1387,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1117
-313
-1209
-346
+1113
+401
+1205
+434
 sqpop
 sqpop
 0
@@ -1441,6 +1470,42 @@ seedlings
 seedlings
 "none" "simple" "hee"
 2
+
+CHOOSER
+1046
+97
+1184
+142
+mast-scenario
+mast-scenario
+"random" "hee" "fixedaverage" "fixedgood" "fixedbad"
+0
+
+SLIDER
+1032
+147
+1204
+180
+mast-cycle-start
+mast-cycle-start
+0
+8
+0
+1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+974
+83
+1082
+116
+sprouting
+sprouting
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
