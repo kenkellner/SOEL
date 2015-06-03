@@ -50,7 +50,7 @@ to setup
   
   set bo-mast-list [0.0827 0.0489 2.975 0.8809 0.0757 0.1153 0.0661 0.1415 0.05667]
   set wo-mast-list [0.1355 0.0665 0.1092 2.720 0.0367 0.136 0.1070 0.238 0.0406]
-  set mast-year-index mast-cycle-start
+  set mast-year-index 0
    
   ifelse HEE-mean = TRUE [
     init-stand adjust TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
@@ -331,9 +331,24 @@ to set-mast-scenario
     set mast-year-index (mast-year-index + 1)
     if mast-year-index = 9 [set mast-year-index 0]
   ]
-  
-  
-  
+  if mast-scenario = "priorgood" [
+    ifelse ticks = (harvest-year - 1) OR ticks = (harvest-year - 2) [
+      set mast-mean-wo 0.04475
+      set mast-mean-bo 0.06030
+      ][
+      set mast-mean-wo one-of wo-mast-list
+      set mast-mean-bo one-of bo-mast-list
+      ]    
+  ]
+  if mast-scenario = "priorbad" [
+    ifelse ticks = (harvest-year - 1) OR ticks = (harvest-year - 2) [
+      set mast-mean-wo 0.11567
+      set mast-mean-bo 0.26672
+      ][
+      set mast-mean-wo one-of wo-mast-list
+      set mast-mean-bo one-of bo-mast-list
+      ]    
+  ] 
 end
 
 to produce-acorns 
@@ -362,25 +377,25 @@ end
 to disperse-mast
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
-  ifelse random-float 1 < 0.41 and weevil = FALSE [
+  ifelse random-float 1 < disperse-prob and weevil = FALSE [ ;default disperse-prob 0.41
     
     ;;new approach to dispersal to avoid openings
     let startx xcor let starty ycor    
     loop [
       right random 360
       ;;based on HEE data
-      forward random-exponential 5.185
+      forward random-exponential disperse-dist ;default 5.185
       ifelse [shade] of patch-here > 0.2 [stop]
       [set xcor startx set ycor starty]      
       ]
 
     ;;probability of being eaten
-    ifelse random-float 1 > 0.704 [
+    ifelse random-float 1 > disperse-eaten-prob [ ;default 0.704
       ;;probability of being cached
-      ifelse random-float 1 < 0.288 [set cached TRUE] [set cached FALSE]]
+      ifelse random-float 1 < cache-prob [set cached TRUE] [set cached FALSE]] ; 0.288 default
     [die]]
   ;;check if eaten
-  [if random-float 1 < 0.538 [die]]
+  [if random-float 1 < undisp-eaten-prob [die]] ;0.538 default
 end
 
 
@@ -410,6 +425,7 @@ end
 
 to grow-seedling
   set light (1 - [shade] of patch-here)
+  ifelse random-float 1 < prob-browsed [set browsed 1][set browsed 0]
   
   ifelse seedlings = "hee" [
     ifelse random-float 1 < 0.0699 and light > 0.8 [
@@ -708,10 +724,12 @@ to calc-global-vars ;;Calculate global reporter values
   set basal-area (sum [ba] of turtles with [dbh >= 0.01 
       and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
   set basal-area-ft basal-area * 4.356
+  if basal-area > 0 [
   set qdbh sqrt(basal-area * adjust / (0.0000785 * count turtles with [height > 1.37 
         and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]))
   set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37 
         and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)] / pi)) * 39.37
+  ]
   set dens (count turtles with [dbh >= 0.01 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
   set dens-ac dens * 0.40477
   set ba-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks 
@@ -861,15 +879,15 @@ NIL
 1
 
 SLIDER
-1017
-718
-1111
-751
+345
+759
+439
+792
 mature-oak
 mature-oak
 0
 300
-6
+0
 1
 1
 NIL
@@ -893,10 +911,10 @@ NIL
 0
 
 SLIDER
-1028
-498
-1203
-531
+1019
+641
+1194
+674
 DegDays
 DegDays
 1980
@@ -908,10 +926,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1029
-536
-1201
-569
+1020
+679
+1192
+712
 wt-dist
 wt-dist
 0.1
@@ -923,10 +941,10 @@ m
 HORIZONTAL
 
 SLIDER
-1029
-576
-1201
-609
+1020
+719
+1192
+752
 available-N
 available-N
 0
@@ -949,10 +967,10 @@ basal-area
 11
 
 SLIDER
-1034
-185
-1206
-218
+1027
+90
+1199
+123
 weevil-probability
 weevil-probability
 0
@@ -964,10 +982,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1033
-226
-1205
-259
+1024
+241
+1196
+274
 germ-prob
 germ-prob
 0
@@ -979,10 +997,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1034
-267
-1206
-300
+1025
+376
+1197
+409
 seedling-growth
 seedling-growth
 0
@@ -994,10 +1012,10 @@ m
 HORIZONTAL
 
 SLIDER
-1113
-718
-1209
-751
+441
+759
+537
+792
 sapling-oak
 sapling-oak
 0
@@ -1009,10 +1027,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1018
-754
-1111
-787
+346
+795
+439
+828
 mature-maple
 mature-maple
 0
@@ -1117,10 +1135,10 @@ PENS
 "Poplar" 1.0 0 -2674135 true "" "plot prop-intol"
 
 SLIDER
-1018
-790
-1111
-823
+346
+831
+439
+864
 mature-poplar
 mature-poplar
 0
@@ -1132,10 +1150,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1113
-754
-1210
-787
+441
+795
+538
+828
 sapling-maple
 sapling-maple
 0
@@ -1147,10 +1165,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1113
-790
-1210
-823
+441
+831
+538
+864
 sapling-poplar
 sapling-poplar
 0
@@ -1162,10 +1180,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-1050
-678
-1162
-711
+222
+779
+334
+812
 HEE-mean
 HEE-mean
 0
@@ -1173,20 +1191,20 @@ HEE-mean
 -1000
 
 TEXTBOX
-1071
-660
-1221
-678
+228
+753
+378
+771
 Initial Forest\n
 14
 0.0
 1
 
 SLIDER
-1030
-614
-1202
-647
+1021
+757
+1193
+790
 wilt
 wilt
 0
@@ -1198,10 +1216,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-993
-449
-1070
-494
+984
+592
+1061
+637
 NIL
 sitequal-woak
 2
@@ -1209,10 +1227,10 @@ sitequal-woak
 11
 
 MONITOR
-1073
-449
-1150
-494
+1064
+592
+1141
+637
 NIL
 sitequal-maple
 2
@@ -1220,10 +1238,10 @@ sitequal-maple
 11
 
 MONITOR
-1152
-449
-1232
-494
+1144
+591
+1224
+636
 NIL
 sitequal-poplar
 2
@@ -1231,10 +1249,10 @@ sitequal-poplar
 11
 
 TEXTBOX
-1065
-308
-1215
-326
+1056
+451
+1206
+469
 Site Conditions
 14
 0.0
@@ -1278,7 +1296,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-1
+0
 
 TEXTBOX
 65
@@ -1331,10 +1349,10 @@ Tuning Parameters
 1
 
 SWITCH
-1039
-329
-1186
-362
+1030
+472
+1177
+505
 manual-site-qual
 manual-site-qual
 0
@@ -1342,60 +1360,60 @@ manual-site-qual
 -1000
 
 SLIDER
-1016
-366
-1108
-399
+1007
+509
+1099
+542
 sqwoak
 sqwoak
 0
 1
-0.5
+0.75
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1114
-365
-1206
-398
+1105
+508
+1197
+541
 sqboak
 sqboak
 0
 1
-0.5
+0.75
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1016
-401
-1108
-434
+1007
+544
+1099
+577
 sqmap
 sqmap
 0
 1
-0.5
+0.75
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1113
-401
-1205
-434
+1104
+544
+1196
+577
 sqpop
 sqpop
 0
 1
-0.5
+0.75
 0.01
 1
 NIL
@@ -1462,50 +1480,125 @@ years
 HORIZONTAL
 
 CHOOSER
-1046
-43
-1184
-88
+1045
+282
+1183
+327
 seedlings
 seedlings
 "none" "simple" "hee"
-2
+1
 
 CHOOSER
-1046
-97
-1184
-142
+1044
+39
+1182
+84
 mast-scenario
 mast-scenario
-"random" "hee" "fixedaverage" "fixedgood" "fixedbad"
-0
+"random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad"
+2
 
-SLIDER
-1032
-147
-1204
-180
-mast-cycle-start
-mast-cycle-start
-0
-8
+SWITCH
+1055
+413
+1163
+446
+sprouting
+sprouting
 0
 1
+-1000
+
+SLIDER
+992
+129
+1106
+162
+disperse-prob
+disperse-prob
+0
+1
+0.41
+0.01
 1
 NIL
 HORIZONTAL
 
-SWITCH
-974
-83
-1082
-116
-sprouting
-sprouting
+SLIDER
+1108
+129
+1220
+162
+disperse-dist
+disperse-dist
+0
+10
+5.185
+0.001
 1
+NIL
+HORIZONTAL
+
+SLIDER
+992
+166
+1108
+199
+disperse-eaten-prob
+disperse-eaten-prob
+0
 1
--1000
+0.704
+0.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1111
+166
+1235
+199
+cache-prob
+cache-prob
+0
+1
+0.288
+0.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1054
+204
+1168
+237
+undisp-eaten-prob
+undisp-eaten-prob
+0
+1
+0.538
+0.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1023
+333
+1195
+366
+prob-browsed
+prob-browsed
+0
+1
+0
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

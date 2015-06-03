@@ -43,9 +43,13 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Masting cycle control; 'fixedaverage', 'fixedgood', fixedbad' for constant values
                        #'hee' for cycling through each year of HEE data repeatedly
                        #'random' for randomly selecting a year of HEE data
+                       #'priorgood' or 'priorbad' for two good/bad mast years just before harvest
                        mastscenario = 'fixedaverage',
-                       #If 'hee', where to start in the cycle (0-8)
-                       mastcyclestart = 0,
+                       #Acorn transition probabilities (list)
+                       acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                    disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                       #Browse probability if 'hee' is selected
+                       browse = 0,
                        #Maximum yearly seedling growth if 'simple' is selected
                        maxgrowth = 0.9,
                        #Absolute path to NetLogo directory
@@ -90,6 +94,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     NLCommand(paste('set harvest-type',harvest))
     NLCommand(paste('set burnin',burnin))
     NLCommand(paste('set light-extinct',extinct))
+    NLCommand(paste('set HEE-mean TRUE'))
     
     #Setup site quality
     if(!is.null(manual.site.quality)){
@@ -114,8 +119,14 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       } else {NLCommand('set sprouting FALSE')}
       if(seedlings != "none"){
         NLCommand(paste('set mast-scenario ','\"',mastscenario,'\"',sep=""))
-        NLCommand(paste('set mast-cycle-start',mastcyclestart))
+        NLCommand(paste('set weevil-probability',acorn$weevil))
+        NLCommand(paste('set disperse-prob',acorn$disperse))
+        NLCommand(paste('set disperse-dist',acorn$disperse.eaten))
+        NLCommand(paste('set disperse-eaten-prob',acorn$cache.prob))
+        NLCommand(paste('set cache-prob',acorn$weevil))
+        NLCommand(paste('set undisp-eaten-prob',acorn$undisperse.eaten))
       }
+      if(seedlings == "hee"){NLCommand(paste('set prob-browsed',browse))}
       if(seedlings == "simple"){NLCommand(paste('set seedling-growth',maxgrowth))}
     }
     
