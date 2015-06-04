@@ -65,12 +65,14 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   #Set list of resporters to save
   if(model == 'ibm' & seedlings != 'none'){
     reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
-                   "total-acorns","total-seedlings","new-seedlings","pct-germ")
+                   "total-acorns","total-seedlings","new-seedlings","pct-germ",
+                   "regen-dens","regen-stump-dens")
     rep.names <- c("tick","BA","oak","tol","intol","totacorns","totseedlings",
-                   "newseedlings","pctgerm")
+                   "newseedlings","pctgerm","regen",'regenstump')
   } else {
-    reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol")
-    rep.names <- c("tick","BA","oak","tol","intol")
+    reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
+                   "regen-dens","regen-stump-dens")
+    rep.names <- c("tick","BA","oak","tol","intol","regen","regenstump")
   }
   
   #Internal function to setup NetLogo in each parallel subprocess
@@ -137,8 +139,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     temp <- NLDoReport(nyears, "go", reporters, as.data.frame=TRUE, df.col.names=rep.names)
     
     #Return output
-    if(model == 'ibm'){return(temp[,2:9])
-    } else {return(temp[,2:5])}
+    if(model == 'ibm'){return(temp[,2:11])
+    } else {return(temp[,2:7])}
       
   }
   

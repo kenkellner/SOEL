@@ -8,7 +8,11 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   ;fia-oak-seedlings fia-map-seedlings fia-pop-seedlings
   acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters
   wo-mast-list bo-mast-list mast-year-index
+  regen-dens regen-stump-dens
+  xcutoff ycutoff
   ]
+
+turtles-own [in-core]
 
 breed [oaks oak]
 oaks-own [species light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL
@@ -26,7 +30,7 @@ poplars-own [light age dbh height canopy-radius canopy-density actual-growth ba 
   ]
 
 breed [acorns acorn]
-acorns-own [species weevil cached germ incore]
+acorns-own [species weevil cached germ]
 
 patches-own [stem-dens shade in-layer1 in-layer2]
 
@@ -39,8 +43,8 @@ to setup
   clear-all
   reset-ticks
   
-  let xcutoff (x-core / 2)
-  let ycutoff (y-core / 2)
+  set xcutoff (x-core / 2)
+  set ycutoff (y-core / 2)
   
   let adjust (x-core + buffer * 2) * (y-core + buffer * 2) / 10000
   
@@ -269,13 +273,15 @@ to regenerate
   let max-maple-saplings 3 let max-poplar-saplings 10
   
   if random-float 1 < (0.01 * max-maple-saplings * AL * sitequal-maple)[
-    sprout-maples 1 [ 
+    sprout-maples 1 [
+      check-in-core
       set dbh random-float 0.00468   
       init-params
     ]]
   
   if shade <= 0.01 and random-float 1 < (0.01 * max-poplar-saplings * AL-pop * sitequal-poplar)[
-    sprout-poplars 1 [  
+    sprout-poplars 1 [
+      check-in-core  
       set dbh random-float 0.0039  
       init-params
     ]]
@@ -288,7 +294,8 @@ to regenerate
     
     ;arbitrary value here
     if shade < 0.50 and random-float 1 < (0.01 * max-oak-saplings * AL-oak * sitequal-oak)[
-    sprout-oaks 1 [  
+    sprout-oaks 1 [
+      check-in-core 
       set dbh random-float 0.0041 
       ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
       init-params
@@ -355,17 +362,18 @@ to produce-acorns
   
   let acorns-produced 0
   ifelse species = "WO" [
-    set acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo))][ ;per meter squared
-    set acorns-produced (light * 3.1415 * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]  
+    set acorns-produced (light * pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo))][ ;per meter squared
+    set acorns-produced (light * pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]
+  if in-core = TRUE [set acorn-count (acorn-count + acorns-produced)]  
   let tree-radius canopy-radius
   let temp species
-  let xcutoff (x-core / 2)
-  let ycutoff (y-core / 2)
-  if xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)[set acorn-count (acorn-count + acorns-produced)]
+  let coretemp in-core
+  
   hatch-acorns acorns-produced [
   ;;drop produced acorns under canopy randomly
-    set species temp 
-    set hidden? TRUE
+    set species temp
+    set in-core coretemp 
+    set hidden? FALSE
     right random 360
     forward (random-float (tree-radius - 0.5)) + 0.5
     ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
@@ -375,6 +383,10 @@ end
 
 
 to disperse-mast
+    
+  ;ifelse in-core = TRUE [let acorn-params core-acorn-params]
+  ;[let acorn-params buffer-acorn-params]
+    
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
   ifelse random-float 1 < disperse-prob and weevil = FALSE [ ;default disperse-prob 0.41
@@ -388,7 +400,8 @@ to disperse-mast
       ifelse [shade] of patch-here > 0.2 [stop]
       [set xcor startx set ycor starty]      
       ]
-
+    ;;check to see if still in core area after being dispersed
+    check-in-core
     ;;probability of being eaten
     ifelse random-float 1 > disperse-eaten-prob [ ;default 0.704
       ;;probability of being cached
@@ -563,6 +576,9 @@ end
 ;;;;;;;;                       Utility Procedures                        ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+to check-in-core
+  ifelse xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)[set in-core TRUE][set in-core FALSE]
+end
 
 to calc-site-quality
   ifelse manual-site-qual = TRUE [
@@ -662,7 +678,9 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
       if mean [shade] of patches in-radius 2 < 0.6 [stop]]
   ]
    
-  calc-light   
+  calc-light  
+  ask turtles [check-in-core]
+  
 end
 
 to init-params
@@ -715,40 +733,29 @@ to init-params
 end
 
 to calc-global-vars ;;Calculate global reporter values
-  
-  let xcutoff (x-core / 2)
-  let ycutoff (y-core / 2)
-  
+    
   let adjust (x-core * y-core) / 10000
   
-  set basal-area (sum [ba] of turtles with [dbh >= 0.01 
-      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+  set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
   set basal-area-ft basal-area * 4.356
-  if basal-area > 0 [
-  set qdbh sqrt(basal-area * adjust / (0.0000785 * count turtles with [height > 1.37 
-        and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]))
-  set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37 
-        and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)] / pi)) * 39.37
-  ]
-  set dens (count turtles with [dbh >= 0.01 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+  set dens (count turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
   set dens-ac dens * 0.40477
-  set ba-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks 
-      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
-  set ba-map (sum [ba] of turtles with [dbh >= 0.01 and breed = maples 
-      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
-  set ba-pop (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars 
-      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+  set ba-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks and in-core = TRUE]) / adjust
+  set ba-map (sum [ba] of turtles with [dbh >= 0.01 and breed = maples and in-core = TRUE]) / adjust
+  set ba-pop (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars and in-core = TRUE]) / adjust
   ifelse basal-area > 0 [
+    set qdbh sqrt(basal-area * adjust / (0.0000785 * count turtles with [height > 1.37 and in-core = TRUE]))
+    set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37 and in-core = TRUE] / pi)) * 39.37
     set prop-oak (ba-oak / basal-area)
     set prop-tol (ba-map / basal-area)
     set prop-intol (ba-pop / basal-area)
-  ][set prop-oak 0 set prop-tol 0 set prop-intol 0]  
-  set total-seedlings (count turtles with [seedling = TRUE 
-      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
-  set new-seedlings (count turtles with [seedling = TRUE and age = 1 
-      and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+  ][set qdbh 0 set qdbh-in 0 set prop-oak 0 set prop-tol 0 set prop-intol 0]  
+  set total-seedlings (count turtles with [seedling = TRUE and in-core = TRUE]) / adjust
+  set new-seedlings (count turtles with [seedling = TRUE and age = 1 and in-core = TRUE]) / adjust
   set total-acorns round (acorn-count / adjust)
   ifelse total-acorns > 0 [set pct-germ (new-seedlings / total-acorns)][set pct-germ 0]
+  set regen-dens (count oaks with [height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
+  set regen-stump-dens (count oaks with [sprout? = TRUE and height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
   
 end
 
@@ -780,24 +787,21 @@ to conduct-harvest
   
   if (ticks + 1) != harvest-year [stop]
   
-  let xcutoff (x-core / 2)
-  let ycutoff (y-core / 2)
-  
   let adjust (x-core * y-core) / 10000
   
   if harvest-type = "clearcut" [
-    ask turtles with [dbh > 0.01 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)] [create-sprout]
+    ask turtles with [dbh > 0.01 and in-core = TRUE] [create-sprout]
     ;set harvest-year harvest-year + 100
   ]
   
   if harvest-type = "singletree" [
-    set basal-area (sum [ba] of turtles with [dbh >= 0.01 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+    set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
     set harvest-year harvest-year + 20 
     if basal-area >= 25 [
       loop [
-        let potential one-of turtles with [dbh >= 0.10 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]
+        let potential one-of turtles with [dbh >= 0.10 and in-core = TRUE]
         ask potential [create-sprout]
-        set basal-area (sum [ba] of turtles with [dbh >= 0.01 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+        set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
         if basal-area <= 25 [stop]
         ]
     ]
@@ -806,7 +810,7 @@ to conduct-harvest
   if harvest-type = "shelterwood" [
     ifelse shelter-phase = 1 [
       set shelter-phase 2
-      ask turtles with [breed != oaks and dbh <= 0.254 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)] [die] ;treated with herbicide
+      ask turtles with [breed != oaks and dbh <= 0.254 and in-core = TRUE] [die] ;treated with herbicide
       set harvest-year (harvest-year + 7)
     ] 
     [
@@ -817,15 +821,15 @@ to conduct-harvest
           loop [
             ;this code is broken
             ;let potential min-one-of turtles with [breed != oaks and dbh >= 0.10 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [dbh]
-            let potential min-one-of turtles with [age > 20 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)] [light]
+            let potential min-one-of turtles with [age > 20 and in-core = TRUE] [light]
             ask potential [ifelse breed = oaks [create-sprout][die]]
-            set basal-area (sum [ba] of turtles with [dbh >= 0.01 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)]) / adjust
+            set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
             if basal-area <= 16.1 [stop]
           ]
         ]      
       ] 
       [
-        ask turtles with [age > 20 and xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)] [create-sprout]
+        ask turtles with [age > 20 and in-core = TRUE] [create-sprout]
         set shelter-phase 1
         ;set harvest-year (harvest-year + 100)
       ]
@@ -1296,7 +1300,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-0
+1
 
 TEXTBOX
 65
