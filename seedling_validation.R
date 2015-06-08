@@ -1,0 +1,89 @@
+
+seedling <- read.csv('data/hee_seedlings.csv',header=T)[,1:9]
+names(seedling) <- c('unit','plot','quad','class','species','class1','class2','class3','class4')
+
+unitplot <- paste(seedling$unit,seedling$plot,sep="")
+treat <- rep('matrix',length(unitplot))
+
+class123 <- rowSums(seedling[,6:8])
+
+seedling <- cbind(seedling,unitplot,treat,class123)
+seedling$unitplot <- as.character(seedling$unitplot)
+seedling$treat <- as.character(seedling$treat)
+
+clear <- c('3K3','3L3','3M3','3N3','3E6','3F6','3D6','3D7','3E7','3F7',
+           '6G2','6H2','6I2','6J2','6J3','6L6','6M6','6N6','6M7','6N7',
+           '9A6','9B6','9C6','9D6','9E6','9K5','9L5','9M5','9N5')
+  
+patch <- c('1J2','1J4','1K4','1H5','1I6','1O4','1P5',
+           '7D3','7E3','7J4','7M6','7L6','7J8','7N4','7O4',
+           '8G1','8G2','8E3','8F3','8E5','8D7','8J6','8K6','8O4')
+  
+shelter <- c('3G2','3H2','3H1','3T4','3U4','3S4',
+             '6B6','6C6','6D6','6D7','6I5','6H6','6I6','6H7','6I7',
+             '9B3','9A4','9B4','9M2','9L3','9M3')
+
+
+for (i in 1:nrow(seedling)){
+  if(seedling$unitplot[i]%in%clear){seedling$treat[i] <- 'clear'}
+  if(seedling$unitplot[i]%in%patch){seedling$treat[i] <- 'patch'}
+  if(seedling$unitplot[i]%in%shelter){seedling$treat[i] <- 'shelter'}
+}
+
+totalplots <- length(unique(seedling$unitplot))
+
+clearplots <- length(unique(seedling$unitplot[seedling$treat=='clear']))
+shelterplots <- length(unique(seedling$unitplot[seedling$treat=='shelter']))
+patchplots <- length(unique(seedling$unitplot[seedling$treat=='patch']))
+matrixplots <- length(unique(seedling$unitplot[seedling$treat=='matrix']))
+
+#16 m2 sampled per plot (4*4m2 quadrats)
+sum(seedling$class123,na.rm=T)/(totalplots*16) * 10000 # 42,220 seedlings < 1.4 m per ha
+
+sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')],
+    na.rm=T)/(totalplots*16) * 10000 # 3,836
+
+sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=='clear'],
+    na.rm=T)/(clearplots*16) * 10000 # 2350
+
+sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=='shelter'],
+    na.rm=T)/(shelterplots*16) * 10000 # 7678
+
+sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=='patch'],
+    na.rm=T)/(patchplots*16) * 10000 # 2500
+#Saplings
+
+sum(seedling$class4,na.rm=T)/(totalplots*16) * 10000 # 42,220 seedlings < 1.4 m per ha
+
+sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')],
+    na.rm=T)/(totalplots*16) * 10000 # 64
+
+####################################
+
+sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="matrix"],
+    na.rm=T)/(matrixplots*16) * 10000 # 64
+
+sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="shelter"],
+    na.rm=T)/(shelterplots*16) * 10000 # 64
+
+sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="clear"],
+    na.rm=T)/(clearplots*16) * 10000 # 64
+
+sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="shelter"],
+    na.rm=T)/(shelterplots*16) * 10000 # 29
+
+#Means and SD
+
+collapsed <- as.data.frame(matrix(NA,nrow=length(unique(seedling$unitplot)),ncol=7))
+collapsed[,1] <- as.character(unique(seedling$unitplot))
+names(collapsed) <- c('unitplot','treat','class1','class2','class3','class123','class4')
+
+for (i in 1:nrow(collapsed)){
+  
+  collapsed$treat[i] <- seedling[seedling$unitplot==collapsed$unitplot[i],][1,11]
+  
+  hold <- seedling[seedling$unitplot==collapsed$unitplot[i]&
+                     seedling$species%in%c('BLO','NRO','SCO','WHO','CHO'),]
+  if(nrow(hold)==0){collapsed[i,]}
+  
+}
