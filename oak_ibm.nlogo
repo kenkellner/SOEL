@@ -10,6 +10,7 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   wo-mast-list bo-mast-list mast-year-index
   regen-dens regen-stump-dens
   xcutoff ycutoff
+  seedlings-class1 seedlings-class2 seedlings-class3 seedlings-class123 seedlings-class4 acorns-pertree
   ]
 
 turtles-own [in-core]
@@ -752,7 +753,14 @@ to calc-global-vars ;;Calculate global reporter values
   ][set qdbh 0 set qdbh-in 0 set prop-oak 0 set prop-tol 0 set prop-intol 0]  
   set total-seedlings (count turtles with [seedling = TRUE and in-core = TRUE]) / adjust
   set new-seedlings (count turtles with [seedling = TRUE and age = 1 and in-core = TRUE]) / adjust
+  set seedlings-class1 (count turtles with [seedling = TRUE and height <= 0.3 and in-core = TRUE]) / adjust
+  set seedlings-class2 (count turtles with [seedling = TRUE and height > 0.3 and height <= 0.6 and in-core = TRUE]) / adjust
+  set seedlings-class3 (count turtles with [seedling = TRUE and height > 0.6 and height <= 1.4 and in-core = TRUE]) / adjust
+  set seedlings-class123 (count turtles with [seedling = TRUE and height <= 1.4 and in-core = TRUE]) / adjust
+  set seedlings-class4 (count turtles with [seedling = TRUE and height > 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
   set total-acorns round (acorn-count / adjust)
+  ifelse count oaks with [dbh > 0.2 and in-core = TRUE] > 0 [set acorns-pertree (total-acorns / count oaks with [dbh > 0.2 and in-core = TRUE])]
+  [set acorns-pertree 0]
   ifelse total-acorns > 0 [set pct-germ (new-seedlings / total-acorns)][set pct-germ 0]
   set regen-dens (count oaks with [height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
   set regen-stump-dens (count oaks with [sprout? = TRUE and height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
@@ -1501,7 +1509,7 @@ CHOOSER
 mast-scenario
 mast-scenario
 "random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad"
-2
+1
 
 SWITCH
 1055

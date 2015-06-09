@@ -84,6 +84,13 @@ for (i in 1:nrow(collapsed)){
   
   hold <- seedling[seedling$unitplot==collapsed$unitplot[i]&
                      seedling$species%in%c('BLO','NRO','SCO','WHO','CHO'),]
-  if(nrow(hold)==0){collapsed[i,]}
+  if(nrow(hold)==0){collapsed[i,3:7] <- 0
+  } else {
+    collapsed$class1[i] <- sum(hold$class1,na.rm=TRUE)
+    collapsed$class2[i] <- sum(hold$class2,na.rm=TRUE)
+    collapsed$class3[i] <- sum(hold$class3,na.rm=TRUE)
+    collapsed$class123[i] <- sum(collapsed[i,3:5],na.rm=TRUE)
+    collapsed$class4[i] <- sum(hold$class4,na.rm=TRUE)
+  }
   
 }

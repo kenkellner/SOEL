@@ -65,10 +65,13 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   #Set list of resporters to save
   if(model == 'ibm' & seedlings != 'none'){
     reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
-                   "total-acorns","total-seedlings","new-seedlings","pct-germ",
-                   "regen-dens","regen-stump-dens")
-    rep.names <- c("tick","BA","oak","tol","intol","totacorns","totseedlings",
-                   "newseedlings","pctgerm","regen",'regenstump')
+                   "total-acorns","acorns-pertree","total-seedlings","new-seedlings","pct-germ",
+                   "regen-dens","regen-stump-dens",
+                   "seedlings-class1","seedlings-class2","seedlings-class3",
+                   "seedlings-class123","seedlings-class4")
+    rep.names <- c("tick","BA","oak","tol","intol","totacorns","acornspertree","totseedlings",
+                   "newseedlings","pctgerm","regen",'regenstump',
+                   "seedclass1","seedclass2","seedclass3","seedclass123","seedclass4")
   } else {
     reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
                    "regen-dens","regen-stump-dens")
@@ -139,7 +142,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     temp <- NLDoReport(nyears, "go", reporters, as.data.frame=TRUE, df.col.names=rep.names)
     
     #Return output
-    if(model == 'ibm'){return(temp[,2:11])
+    if(model == 'ibm'){return(temp[,2:17])
     } else {return(temp[,2:7])}
       
   }
