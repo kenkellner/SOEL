@@ -363,8 +363,8 @@ to produce-acorns
   
   let acorns-produced 0
   ifelse species = "WO" [
-    set acorns-produced (light * pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo))][ ;per meter squared
-    set acorns-produced (light * pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]
+    set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo))][ ;per meter squared
+    set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]
   if in-core = TRUE [set acorn-count (acorn-count + acorns-produced)]  
   let tree-radius canopy-radius
   let temp species
@@ -420,10 +420,9 @@ to germinate-mast
     set germ germ-prob]
   ;;Based on:
   ;;Lombardo & McCarthy 2009 (0.26 germ for weeviled) 
-  ;;and Haas and Heske 2005 (0.19 for surfaced)
-  [ifelse weevil = TRUE [set germ 0.19 * 0.26] 
-    ;[set germ germ-prob * 0.1]]
-    [set germ 0.19]]  
+  ;;and Haas and Heske 2005 (0.09 for surfaced)
+   [ifelse weevil = TRUE [set germ 0.09 * 0.26]  
+    [set germ 0.09]]    
   if random-float 1 < germ [
     hatch-oaks 1 [
       set species temp
@@ -473,6 +472,8 @@ end
 to check-seedling-survival ;Placeholders 
   ;if random-float 1 < 0.1 [die] ;Intrinsic seedling mortality 
   ;if actual-growth < (0.5 * seedling-growth) and random-float 1 < 0.393 [die] ;Growth-based mortality 
+  
+  if age = 0 [if random-float 1 > 0.567 [die]]
   
   let sp-ef 0
   if species = "WO" [set sp-ef 0.086]
@@ -757,7 +758,7 @@ to calc-global-vars ;;Calculate global reporter values
   set seedlings-class2 (count turtles with [seedling = TRUE and height > 0.3 and height <= 0.6 and in-core = TRUE]) / adjust
   set seedlings-class3 (count turtles with [seedling = TRUE and height > 0.6 and height <= 1.4 and in-core = TRUE]) / adjust
   set seedlings-class123 (count turtles with [seedling = TRUE and height <= 1.4 and in-core = TRUE]) / adjust
-  set seedlings-class4 (count turtles with [seedling = TRUE and height > 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
+  set seedlings-class4 (count oaks with [height > 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
   set total-acorns round (acorn-count / adjust)
   ifelse count oaks with [dbh > 0.2 and in-core = TRUE] > 0 [set acorns-pertree (total-acorns / count oaks with [dbh > 0.2 and in-core = TRUE])]
   [set acorns-pertree 0]
@@ -1308,7 +1309,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-1
+0
 
 TEXTBOX
 65
@@ -1499,7 +1500,7 @@ CHOOSER
 seedlings
 seedlings
 "none" "simple" "hee"
-1
+2
 
 CHOOSER
 1044
