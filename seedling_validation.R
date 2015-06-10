@@ -37,41 +37,6 @@ shelterplots <- length(unique(seedling$unitplot[seedling$treat=='shelter']))
 patchplots <- length(unique(seedling$unitplot[seedling$treat=='patch']))
 matrixplots <- length(unique(seedling$unitplot[seedling$treat=='matrix']))
 
-#16 m2 sampled per plot (4*4m2 quadrats)
-sum(seedling$class123,na.rm=T)/(totalplots*16) * 10000 # 42,220 seedlings < 1.4 m per ha
-
-sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')],
-    na.rm=T)/(totalplots*16) * 10000 # 3,836
-
-sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=='clear'],
-    na.rm=T)/(clearplots*16) * 10000 # 2350
-
-sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=='shelter'],
-    na.rm=T)/(shelterplots*16) * 10000 # 7678
-
-sum(seedling$class123[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=='patch'],
-    na.rm=T)/(patchplots*16) * 10000 # 2500
-#Saplings
-
-sum(seedling$class4,na.rm=T)/(totalplots*16) * 10000 # 42,220 seedlings < 1.4 m per ha
-
-sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')],
-    na.rm=T)/(totalplots*16) * 10000 # 64
-
-####################################
-
-sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="matrix"],
-    na.rm=T)/(matrixplots*16) * 10000 # 64
-
-sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="shelter"],
-    na.rm=T)/(shelterplots*16) * 10000 # 64
-
-sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="clear"],
-    na.rm=T)/(clearplots*16) * 10000 # 64
-
-sum(seedling$class4[seedling$species%in%c('BLO','NRO','SCO','WHO','CHO')&seedling$treat=="shelter"],
-    na.rm=T)/(shelterplots*16) * 10000 # 29
-
 #Means and SD
 
 collapsed <- as.data.frame(matrix(NA,nrow=length(unique(seedling$unitplot)),ncol=7))
@@ -94,3 +59,46 @@ for (i in 1:nrow(collapsed)){
   }
   
 }
+
+#Data for figures
+
+means <- c(
+
+  mean(collapsed$class123[collapsed$treat=="matrix"]/16*10000),
+  mean(seedlingsval.out$none$seedclass123[10:30,1:30]),
+  
+  mean(collapsed$class4[collapsed$treat=="matrix"]/16*10000),
+  mean(seedlingsval.out$none$seedclass4[10:30,1:30])
+)
+
+se <- c(
+
+  sd(collapsed$class123[collapsed$treat=="matrix"]/16*10000)/sqrt(
+    length(collapsed$class123[collapsed$treat=='matrix'])),
+  sd(seedlingsval.out$none$seedclass123[10:30,1:30])/sqrt(630),
+  
+  sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
+    length(collapsed$class4[collapsed$treat=='matrix'])),
+  sd(seedlingsval.out$none$seedclass4[10:30,1:30])/sqrt(630)
+  
+)
+par(mfrow=c(2,1),
+    mar=c(4.1,5.1,1,0),
+    oma=c(0,0,1,1),
+    mgp=c(2.5,1,0))
+
+structure = c(0.7,1.9,0.7,1.9)
+
+barplot(means[1:2],ylim=c(0,4500),col=c('black','darkgrey'),names=c('HEE Data','Model Output'),
+        ylab=expression('Seedlings'~(ha^{-1})),main="Seedling Density")
+for (i in 1:2){
+  segments(x0=structure[i],y0=means[i],x1=structure[i],y1=means[i]+se[i])
+  segments(x0=structure[i]-0.1,y0=means[i]+se[i],x1=structure[i]+0.1,y1=means[i]+se[i])
+}
+barplot(means[3:4],ylim=c(0,30),col=c('black','darkgrey'),names=c('HEE Data','Model Output'),
+        ylab=expression('Saplings'~(ha^{-1})),main="Sapling Density")
+for (i in 3:4){
+  segments(x0=structure[i],y0=means[i],x1=structure[i],y1=means[i]+se[i])
+  segments(x0=structure[i]-0.1,y0=means[i]+se[i],x1=structure[i]+0.1,y1=means[i]+se[i])
+}
+
