@@ -60,9 +60,15 @@ for (i in 1:nrow(collapsed)){
   
 }
 
+seedlingsval.out <- forest.sim(model='ibm', nreps=30, nyears=40, 
+                               harvests=c('none'),seedlings='hee',
+                               acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                            disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                               mastscenario="hee")
+
 #Data for figures
 
-means <- c(
+means.n <- c(
 
   mean(collapsed$class123[collapsed$treat=="matrix"]/16*10000),
   mean(seedlingsval.out$none$seedclass123[10:30,1:30]),
@@ -71,11 +77,12 @@ means <- c(
   mean(seedlingsval.out$none$seedclass4[10:30,1:30])
 )
 
-se <- c(
-
+se.n <- c(
+  #Using SE for HEE data and SD for model data? not ideal
   sd(collapsed$class123[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class123[collapsed$treat=='matrix'])),
-  sd(seedlingsval.out$none$seedclass123[10:30,1:30])/sqrt(630),
+  #sd(seedlingsval.out$none$seedclass123[10:30,1:30])/sqrt(630),
+  sd(seedlingsval.out$none$seedclass123[10:30,1:30]),
   
   sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='matrix'])),
@@ -102,3 +109,67 @@ for (i in 3:4){
   segments(x0=structure[i]-0.1,y0=means[i]+se[i],x1=structure[i]+0.1,y1=means[i]+se[i])
 }
 
+######Clearcut
+
+
+seedlingsval.clear <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                               harvests=c('clearcut'),seedlings='hee',
+                                acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                mastscenario="hee")
+
+means.c <- c(
+  
+  mean(collapsed$class123[collapsed$treat=="clear"]/16*10000),
+  mean(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
+  
+  mean(collapsed$class4[collapsed$treat=="clear"]/16*10000),
+  mean(seedlingsval.clear$clearcut$seedclass4[26,1:30])
+)
+
+se.c <- c(
+  
+  sd(collapsed$class123[collapsed$treat=="clear"]/16*10000)/sqrt(
+    length(collapsed$class123[collapsed$treat=='clear'])),
+  #sd(seedlingsval.clear$clearcut$seedclass123[26,1:30])/sqrt(30),
+  sd(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
+  
+  sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
+    length(collapsed$class4[collapsed$treat=='clear'])),
+  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])/sqrt(30)
+  
+)
+
+comb1 <- c(means.n[1:2],means.c[1:2])
+comb1.se <- c(se.n[1:2],se.c[1:2])
+comb2 <- c(means.n[3:4],means.c[3:4])
+
+par(mfrow=c(2,1),
+    mar=c(4.1,4.1,2,0),
+    oma=c(0,0,1,1),
+    mgp=c(2.5,1,0))
+
+structure <- c(2,3,5,6)
+
+plot(structure,comb1,pch=c(21,19,21,19),cex=1,ylim=c(0,5000),xlim=c(1.5,6.5),xaxt='n',xlab=''
+     ,ylab=expression('Seedlings'~ha^{-1}),main='Seedling Density')
+axis(1,at=c(2.5,5.5),labels=c('Matrix','Clearcut'),tick=FALSE)
+box()
+legend('topright',pch=c(21,19),cex=1,legend=c('HEE Data','Model'))
+for (i in 1:4){
+  segments(x0=structure[i],y0=comb1[i]-comb1.se[i],x1=structure[i],y1=comb1[i]+comb1.se[i])
+  segments(x0=structure[i]-0.1,y0=comb1[i]+comb1.se[i],x1=structure[i]+0.1,y1=comb1[i]+comb1.se[i])
+  segments(x0=structure[i]-0.1,y0=comb1[i]-comb1.se[i],x1=structure[i]+0.1,y1=comb1[i]-comb1.se[i])
+}
+
+
+
+comb1 <- cbind(means.n[1:2],means.c[1:2])
+comb2 <- cbind(means.n[3:4],means.c[3:4])
+barplot(comb1,beside=T,names=c('Matrix','Clearcut'),main='Seedling Density',
+        ylab=expression('Seedlings'~ha^{-1}),legend.text=c('HEE Data','Model'),
+        ylim=c(0,5000))
+
+barplot(comb2,beside=T,names=c('Matrix','Clearcut'),main='Sapling Density',
+        ylab=expression('Saplings'~ha^{-1}),legend.text=c('HEE Data','Model'),
+        ylim=c(0,500),args.legend=list(x=3,y=450))
