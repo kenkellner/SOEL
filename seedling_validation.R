@@ -86,7 +86,8 @@ se.n <- c(
   
   sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='matrix'])),
-  sd(seedlingsval.out$none$seedclass4[10:30,1:30])/sqrt(630)
+  #sd(seedlingsval.out$none$seedclass4[10:30,1:30])/sqrt(630)
+  sd(seedlingsval.out$none$seedclass4[10:30,1:30])
   
 )
 par(mfrow=c(2,1),
@@ -136,13 +137,15 @@ se.c <- c(
   
   sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='clear'])),
-  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])/sqrt(30)
+ #sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])/sqrt(30)
+  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])
   
 )
 
 comb1 <- c(means.n[1:2],means.c[1:2])
 comb1.se <- c(se.n[1:2],se.c[1:2])
 comb2 <- c(means.n[3:4],means.c[3:4])
+comb2.se <- c(se.n[3:4],se.c[3:4])
 
 par(mfrow=c(2,1),
     mar=c(4.1,4.1,2,0),
@@ -152,7 +155,7 @@ par(mfrow=c(2,1),
 structure <- c(2,3,5,6)
 
 plot(structure,comb1,pch=c(21,19,21,19),cex=1,ylim=c(0,5000),xlim=c(1.5,6.5),xaxt='n',xlab=''
-     ,ylab=expression('Seedlings'~ha^{-1}),main='Seedling Density')
+     ,ylab=expression('Seedlings'~ha^{-1}),main='Oak Seedling Density')
 axis(1,at=c(2.5,5.5),labels=c('Matrix','Clearcut'),tick=FALSE)
 box()
 legend('topright',pch=c(21,19),cex=1,legend=c('HEE Data','Model'))
@@ -161,6 +164,21 @@ for (i in 1:4){
   segments(x0=structure[i]-0.1,y0=comb1[i]+comb1.se[i],x1=structure[i]+0.1,y1=comb1[i]+comb1.se[i])
   segments(x0=structure[i]-0.1,y0=comb1[i]-comb1.se[i],x1=structure[i]+0.1,y1=comb1[i]-comb1.se[i])
 }
+
+plot(structure,comb2,pch=c(21,19,21,19),cex=1,ylim=c(0,700),xlim=c(1.5,6.5),xaxt='n',xlab=''
+     ,ylab=expression('Saplings'~ha^{-1}),main='Oak Sapling Density')
+axis(1,at=c(2.5,5.5),labels=c('Matrix','Clearcut'),tick=FALSE)
+box()
+#legend('topright',pch=c(21,19),cex=1,legend=c('HEE Data','Model'))
+for (i in 1:4){
+  segments(x0=structure[i],y0=comb2[i]-comb2.se[i],x1=structure[i],y1=comb2[i]+comb2.se[i])
+  segments(x0=structure[i]-0.1,y0=comb2[i]+comb2.se[i],x1=structure[i]+0.1,y1=comb2[i]+comb2.se[i])
+  segments(x0=structure[i]-0.1,y0=comb2[i]-comb2.se[i],x1=structure[i]+0.1,y1=comb2[i]-comb2.se[i])
+}
+
+
+
+
 
 
 
