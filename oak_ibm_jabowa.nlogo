@@ -5,6 +5,7 @@ globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
   harvest-year shelter-phase
   ba-oak ba-map ba-pop
   xmin xmax ymin ymax
+  seedlings-class4
   ]
 
 turtles-own [in-core light age dbh height actual-growth ba lai fAL
@@ -443,6 +444,7 @@ to calc-global-vars ;;Calculate global reporter values
     set prop-tol (ba-map / basal-area)
     set prop-intol (ba-pop / basal-area)
   ]
+  set seedlings-class4 (count oaks with [height > 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
 end
 
 to color-patches
