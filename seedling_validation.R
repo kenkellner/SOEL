@@ -1,16 +1,24 @@
+#########################################
+## Code for Seedling Validation Figure ##
+#########################################
 
+#Read in/format raw HEE seedling density data
 seedling <- read.csv('data/hee_seedlings.csv',header=T)[,1:9]
 names(seedling) <- c('unit','plot','quad','class','species','class1','class2','class3','class4')
 
+#Generate new variable combining unit and plot
 unitplot <- paste(seedling$unit,seedling$plot,sep="")
 treat <- rep('matrix',length(unitplot))
 
+#Create a new class of all seedlings < 1.4 m height
 class123 <- rowSums(seedling[,6:8])
 
+#Bind new dataset together and format
 seedling <- cbind(seedling,unitplot,treat,class123)
 seedling$unitplot <- as.character(seedling$unitplot)
 seedling$treat <- as.character(seedling$treat)
 
+#Assign plots to harvest treatments (based on maps)
 clear <- c('3K3','3L3','3M3','3N3','3E6','3F6','3D6','3D7','3E7','3F7',
            '6G2','6H2','6I2','6J2','6J3','6L6','6M6','6N6','6M7','6N7',
            '9A6','9B6','9C6','9D6','9E6','9K5','9L5','9M5','9N5')
@@ -23,22 +31,13 @@ shelter <- c('3G2','3H2','3H1','3T4','3U4','3S4',
              '6B6','6C6','6D6','6D7','6I5','6H6','6I6','6H7','6I7',
              '9B3','9A4','9B4','9M2','9L3','9M3')
 
-
 for (i in 1:nrow(seedling)){
   if(seedling$unitplot[i]%in%clear){seedling$treat[i] <- 'clear'}
   if(seedling$unitplot[i]%in%patch){seedling$treat[i] <- 'patch'}
   if(seedling$unitplot[i]%in%shelter){seedling$treat[i] <- 'shelter'}
 }
 
-totalplots <- length(unique(seedling$unitplot))
-
-clearplots <- length(unique(seedling$unitplot[seedling$treat=='clear']))
-shelterplots <- length(unique(seedling$unitplot[seedling$treat=='shelter']))
-patchplots <- length(unique(seedling$unitplot[seedling$treat=='patch']))
-matrixplots <- length(unique(seedling$unitplot[seedling$treat=='matrix']))
-
-#Means and SD
-
+#Collapse quadrat-level measurements to plot-level measurements
 collapsed <- as.data.frame(matrix(NA,nrow=length(unique(seedling$unitplot)),ncol=7))
 collapsed[,1] <- as.character(unique(seedling$unitplot))
 names(collapsed) <- c('unitplot','treat','class1','class2','class3','class123','class4')
@@ -60,21 +59,41 @@ for (i in 1:nrow(collapsed)){
   
 }
 
+##############################################################
+#Run model(s) for no harvest treatment
+
 seedlingsval.out <- forest.sim(model='ibm', nreps=30, nyears=40, 
                                harvests=c('none'),seedlings='hee',
                                acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                             disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                mastscenario="hee")
+seedlingsval.none.simple <- forest.sim(model='ibm', nreps=30, nyears=40, 
+                               harvests=c('none'),seedlings='simple',
+                               acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                            disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                               mastscenario="hee")
+seedlingsval.none.simple6 <- forest.sim(model='ibm', nreps=30, nyears=40, 
+                                       harvests=c('none'),seedlings='simple',maxgrowth=0.6,
+                                       acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                    disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                       mastscenario="hee")
+seedlingsval.none.none <- forest.sim(model='ibm', nreps=30, nyears=40, 
+                                        harvests=c('none'),seedlings='none',
+                                        acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                        mastscenario="hee")
 
-#Data for figures
 
+#Format output for figures
 means.n <- c(
 
   mean(collapsed$class123[collapsed$treat=="matrix"]/16*10000),
   mean(seedlingsval.out$none$seedclass123[10:30,1:30]),
+  mean(seedlingsval.none.simple$none$seedclass123[10:30,1:30]),
   
   mean(collapsed$class4[collapsed$treat=="matrix"]/16*10000),
-  mean(seedlingsval.out$none$seedclass4[10:30,1:30])
+  mean(seedlingsval.out$none$seedclass4[10:30,1:30]),
+  mean(seedlingsval.none.simple$none$seedclass4[10:30,1:30])
 )
 
 se.n <- c(
@@ -83,49 +102,44 @@ se.n <- c(
     length(collapsed$class123[collapsed$treat=='matrix'])),
   #sd(seedlingsval.out$none$seedclass123[10:30,1:30])/sqrt(630),
   sd(seedlingsval.out$none$seedclass123[10:30,1:30]),
+  sd(seedlingsval.none.simple$none$seedclass123[10:30,1:30]),
   
   sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='matrix'])),
   #sd(seedlingsval.out$none$seedclass4[10:30,1:30])/sqrt(630)
-  sd(seedlingsval.out$none$seedclass4[10:30,1:30])
-  
+  sd(seedlingsval.out$none$seedclass4[10:30,1:30]),
+  sd(seedlingsval.none.simple$none$seedclass4[10:30,1:30])
 )
-par(mfrow=c(2,1),
-    mar=c(4.1,5.1,1,0),
-    oma=c(0,0,1,1),
-    mgp=c(2.5,1,0))
 
-structure = c(0.7,1.9,0.7,1.9)
 
-barplot(means[1:2],ylim=c(0,4500),col=c('black','darkgrey'),names=c('HEE Data','Model Output'),
-        ylab=expression('Seedlings'~(ha^{-1})),main="Seedling Density")
-for (i in 1:2){
-  segments(x0=structure[i],y0=means[i],x1=structure[i],y1=means[i]+se[i])
-  segments(x0=structure[i]-0.1,y0=means[i]+se[i],x1=structure[i]+0.1,y1=means[i]+se[i])
-}
-barplot(means[3:4],ylim=c(0,30),col=c('black','darkgrey'),names=c('HEE Data','Model Output'),
-        ylab=expression('Saplings'~(ha^{-1})),main="Sapling Density")
-for (i in 3:4){
-  segments(x0=structure[i],y0=means[i],x1=structure[i],y1=means[i]+se[i])
-  segments(x0=structure[i]-0.1,y0=means[i]+se[i],x1=structure[i]+0.1,y1=means[i]+se[i])
-}
-
-######Clearcut
-
+############################################################
+#Run model(s) for clearcut treatment and format output
 
 seedlingsval.clear <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
                                harvests=c('clearcut'),seedlings='hee',
                                 acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                 disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                 mastscenario="hee")
+seedlingsval.clear.simple <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                                 harvests=c('clearcut'),seedlings='simple',
+                                 acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                              disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                 mastscenario="hee")
+seedlingsval.clear.simple6 <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                                        harvests=c('clearcut'),seedlings='simple',maxgrowth=0.6,
+                                        acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                        mastscenario="hee")
 
 means.c <- c(
   
   mean(collapsed$class123[collapsed$treat=="clear"]/16*10000),
   mean(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
+  mean(seedlingsval.clear.simple$clearcut$seedclass123[26,1:30]),
   
   mean(collapsed$class4[collapsed$treat=="clear"]/16*10000),
-  mean(seedlingsval.clear$clearcut$seedclass4[26,1:30])
+  mean(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
+  mean(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30])
 )
 
 se.c <- c(
@@ -134,60 +148,106 @@ se.c <- c(
     length(collapsed$class123[collapsed$treat=='clear'])),
   #sd(seedlingsval.clear$clearcut$seedclass123[26,1:30])/sqrt(30),
   sd(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
+  sd(seedlingsval.clear.simple$clearcut$seedclass123[26,1:30]),
   
   sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='clear'])),
  #sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])/sqrt(30)
-  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])
+  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
+  sd(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30])
+)
+
+############################################################
+#Run model(s) for shelterwood treatment and format output
+seedlingsval.shelt <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                                 harvests=c('shelterwood'),seedlings='hee',
+                                 acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                              disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                 mastscenario="hee")
+seedlingsval.shelt.simple <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                                 harvests=c('shelterwood'),seedlings='simple',
+                                 acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                              disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                 mastscenario="hee")
+seedlingsval.shelt.simple6 <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                                        harvests=c('shelterwood'),seedlings='simple',maxgrowth=0.6,
+                                        acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                        mastscenario="hee")
+
+means.s <- c(
+  
+  mean(collapsed$class123[collapsed$treat=="shelter"]/16*10000),
+  mean(seedlingsval.shelt$shelterwood$seedclass123[26,1:30]),
+  mean(seedlingsval.shelt.simple$shelterwood$seedclass123[26,1:30]),
+  
+  mean(collapsed$class4[collapsed$treat=="shelter"]/16*10000),
+  mean(seedlingsval.shelt$shelterwood$seedclass4[26,1:30]),
+  mean(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30])
+)
+
+se.s <- c(
+  
+  sd(collapsed$class123[collapsed$treat=="shelter"]/16*10000)/sqrt(
+    length(collapsed$class123[collapsed$treat=='shelter'])),
+  #sd(seedlingsval.clear$clearcut$seedclass123[26,1:30])/sqrt(30),
+  sd(seedlingsval.shelt$shelterwood$seedclass123[26,1:30]),
+  sd(seedlingsval.shelt.simple$shelterwood$seedclass123[26,1:30]),
+  
+  sd(collapsed$class4[collapsed$treat=="shelter"]/16*10000)/sqrt(
+    length(collapsed$class4[collapsed$treat=='shelter'])),
+  #sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])/sqrt(30)
+  sd(seedlingsval.shelt$shelterwood$seedclass4[26,1:30]),
+  sd(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30])
   
 )
 
-comb1 <- c(means.n[1:2],means.c[1:2])
-comb1.se <- c(se.n[1:2],se.c[1:2])
-comb2 <- c(means.n[3:4],means.c[3:4])
-comb2.se <- c(se.n[3:4],se.c[3:4])
+
+#############################
+#Combine figure output
+
+comb1 <- c(means.n[1:3],means.c[1:3],means.s[1:3])
+comb1.se <- c(se.n[1:3],se.c[1:3],se.s[1:3])
+comb2 <- c(means.n[4:6],means.c[4:6],means.s[4:6])
+comb2.se <- c(se.n[4:6],se.c[4:6],se.s[4:6])
+
+
+#############################
+#Figure code
 
 par(mfrow=c(2,1),
     mar=c(4.1,4.1,2,0),
     oma=c(0,0,1,1),
     mgp=c(2.5,1,0))
 
-structure <- c(2,3,5,6)
+structure <- c(2,3,4,6,7,8,10,11,12)
 
-plot(structure,comb1,pch=c(21,19,21,19),cex=1,ylim=c(0,5000),xlim=c(1.5,6.5),xaxt='n',xlab=''
+plot(structure,comb1,pch=rep(c(21,19,19),3),col=rep(c('black','black','gray55'),3),
+     cex=1,ylim=c(0,10000),xlim=c(1.5,12.5),xaxt='n',xlab=''
      ,ylab=expression('Seedlings'~ha^{-1}),main='Oak Seedling Density')
-axis(1,at=c(2.5,5.5),labels=c('Matrix','Clearcut'),tick=FALSE)
+axis(1,at=c(3,7,11),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
 box()
-legend('topright',pch=c(21,19),cex=1,legend=c('HEE Data','Model'))
-for (i in 1:4){
+legend('topleft',pch=c(21,19,19),col=c('black','black','gray55'),cex=1,legend=c('HEE Sites','Model 1','Model 2'))
+for (i in 1:9){
   segments(x0=structure[i],y0=comb1[i]-comb1.se[i],x1=structure[i],y1=comb1[i]+comb1.se[i])
   segments(x0=structure[i]-0.1,y0=comb1[i]+comb1.se[i],x1=structure[i]+0.1,y1=comb1[i]+comb1.se[i])
   segments(x0=structure[i]-0.1,y0=comb1[i]-comb1.se[i],x1=structure[i]+0.1,y1=comb1[i]-comb1.se[i])
 }
+abline(v=5)
+abline(v=9)
 
-plot(structure,comb2,pch=c(21,19,21,19),cex=1,ylim=c(0,700),xlim=c(1.5,6.5),xaxt='n',xlab=''
+plot(structure,comb2,pch=rep(c(21,19,19),3),col=rep(c('black','black','gray55'),3),
+     cex=1,ylim=c(0,850),xlim=c(1.5,12.5),xaxt='n',xlab=''
      ,ylab=expression('Saplings'~ha^{-1}),main='Oak Sapling Density')
-axis(1,at=c(2.5,5.5),labels=c('Matrix','Clearcut'),tick=FALSE)
+axis(1,at=c(3,7,11),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
 box()
 #legend('topright',pch=c(21,19),cex=1,legend=c('HEE Data','Model'))
-for (i in 1:4){
+for (i in 1:9){
   segments(x0=structure[i],y0=comb2[i]-comb2.se[i],x1=structure[i],y1=comb2[i]+comb2.se[i])
   segments(x0=structure[i]-0.1,y0=comb2[i]+comb2.se[i],x1=structure[i]+0.1,y1=comb2[i]+comb2.se[i])
   segments(x0=structure[i]-0.1,y0=comb2[i]-comb2.se[i],x1=structure[i]+0.1,y1=comb2[i]-comb2.se[i])
 }
+abline(v=5)
+abline(v=9)
 
 
-
-
-
-
-
-comb1 <- cbind(means.n[1:2],means.c[1:2])
-comb2 <- cbind(means.n[3:4],means.c[3:4])
-barplot(comb1,beside=T,names=c('Matrix','Clearcut'),main='Seedling Density',
-        ylab=expression('Seedlings'~ha^{-1}),legend.text=c('HEE Data','Model'),
-        ylim=c(0,5000))
-
-barplot(comb2,beside=T,names=c('Matrix','Clearcut'),main='Sapling Density',
-        ylab=expression('Saplings'~ha^{-1}),legend.text=c('HEE Data','Model'),
-        ylim=c(0,500),args.legend=list(x=3,y=450))
