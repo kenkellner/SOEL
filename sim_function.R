@@ -74,8 +74,11 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                    "seedclass1","seedclass2","seedclass3","seedclass123","seedclass4")
   } else {
     reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
-                   "regen-dens","regen-stump-dens","seedlings-class4")
-    rep.names <- c("tick","BA","oak","tol","intol","regen","regenstump","seedclass4")
+                   #"regen-dens","regen-stump-dens",
+                   "seedlings-class4")
+    rep.names <- c("tick","BA","oak","tol","intol",
+                   #"regen","regenstump",
+                   "seedclass4")
   }
   
   #Internal function to setup NetLogo in each parallel subprocess
@@ -143,7 +146,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     
     #Return output
     if(model == 'ibm' & seedlings !='none'){return(temp[,2:17])
-    } else {return(temp[,2:8])}
+    } else {return(temp[,2:6])}
       
   }
   

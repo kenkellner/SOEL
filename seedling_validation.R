@@ -38,7 +38,7 @@ for (i in 1:nrow(seedling)){
 }
 
 #Collapse quadrat-level measurements to plot-level measurements
-collapsed <- as.data.frame(matrix(NA,nrow=length(unique(seedling$unitplot)),ncol=7))
+collapsed <- as.data.frame(matrix(NA,nrow=length(unique(seedling$unitplot)),ncol=8))
 collapsed[,1] <- as.character(unique(seedling$unitplot))
 names(collapsed) <- c('unitplot','treat','class1','class2','class3','class123','class4')
 
@@ -58,6 +58,9 @@ for (i in 1:nrow(collapsed)){
   }
   
 }
+
+#Read in simulation output if necessary
+#load('data/seedlings_val_figure.Rdata')
 
 ##############################################################
 #Run model(s) for no harvest treatment
@@ -82,35 +85,59 @@ seedlingsval.none.none <- forest.sim(model='ibm', nreps=30, nyears=40,
                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                         mastscenario="hee")
+seedlingsval.none.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=40, 
+                                     harvests=c('none'),seedlings='none',
+                                     acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                  disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                     mastscenario="hee")
 
 
 #Format output for figures
 means.n <- c(
 
   mean(collapsed$class123[collapsed$treat=="matrix"]/16*10000),
-  mean(seedlingsval.out$none$seedclass123[10:30,1:30]),
-  mean(seedlingsval.none.simple$none$seedclass123[10:30,1:30]),
+  mean(seedlingsval.out$none$seedclass123[26,1:30]),
+  mean(seedlingsval.none.simple$none$seedclass123[26,1:30]),
   
   mean(collapsed$class4[collapsed$treat=="matrix"]/16*10000),
-  mean(seedlingsval.out$none$seedclass4[10:30,1:30]),
-  mean(seedlingsval.none.simple$none$seedclass4[10:30,1:30])
+  mean(seedlingsval.out$none$seedclass4[26,1:30]),
+  mean(seedlingsval.none.simple$none$seedclass4[26,1:30]),
+  mean(seedlingsval.none.none$none$seedclass4[26,1:30]),
+  mean(seedlingsval.none.jabowa$none$seedclass4[26,1:30])
 )
 
 se.n <- c(
   #Using SE for HEE data and SD for model data? not ideal
   sd(collapsed$class123[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class123[collapsed$treat=='matrix'])),
-  #sd(seedlingsval.out$none$seedclass123[10:30,1:30])/sqrt(630),
-  sd(seedlingsval.out$none$seedclass123[10:30,1:30]),
-  sd(seedlingsval.none.simple$none$seedclass123[10:30,1:30]),
+  sd(seedlingsval.out$none$seedclass123[26,1:30]),
+  sd(seedlingsval.none.simple$none$seedclass123[26,1:30]),
   
   sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='matrix'])),
-  #sd(seedlingsval.out$none$seedclass4[10:30,1:30])/sqrt(630)
-  sd(seedlingsval.out$none$seedclass4[10:30,1:30]),
-  sd(seedlingsval.none.simple$none$seedclass4[10:30,1:30])
+  sd(seedlingsval.out$none$seedclass4[26,1:30]),
+  sd(seedlingsval.none.simple$none$seedclass4[26,1:30]),
+  sd(seedlingsval.none.none$none$seedclass4[26,1:30]),
+  sd(seedlingsval.none.jabowa$none$seedclass4[26,1:30])
 )
 
+#Run model comparisons and save
+data <- list()
+data$type <- as.factor(c(rep('modelH',30),rep('modelS',30)))
+data$dens <- c(seedlingsval.out$none$seedclass123[26,1:30],
+               seedlingsval.none.simple$none$seedclass123[26,1:30])
+t.test(dens~type,data=data)
+seedling.matrix <- c('A','B')
+
+data <- list()
+data$type <- as.factor(c(rep('modelH',30),rep('modelS',30),rep('modelN',30),rep('jabowa',30)))
+data$dens <- c(seedlingsval.out$none$seedclass4[26,1:30],
+               seedlingsval.none.simple$none$seedclass4[26,1:30],
+               seedlingsval.none.none$none$seedclass4[26,1:30],
+               seedlingsval.none.jabowa$none$seedclass4[26,1:30])
+t1 <- aov(dens~type,data=data)
+TukeyHSD(t1)
+sapling.matrix <- c('A','B','A','C')
 
 ############################################################
 #Run model(s) for clearcut treatment and format output
@@ -130,6 +157,16 @@ seedlingsval.clear.simple6 <- forest.sim(model='ibm', nreps=30, nyears=30, burni
                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                         mastscenario="hee")
+seedlingsval.clear.none <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                                         harvests=c('clearcut'),seedlings='none',
+                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                         mastscenario="hee")
+seedlingsval.clear.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=30, burnin=20,
+                                      harvests=c('clearcut'),seedlings='none',
+                                      acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                   disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                      mastscenario="hee")
 
 means.c <- c(
   
@@ -139,23 +176,43 @@ means.c <- c(
   
   mean(collapsed$class4[collapsed$treat=="clear"]/16*10000),
   mean(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
-  mean(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30])
+  mean(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30]),
+  mean(seedlingsval.clear.none$clearcut$seedclass4[26,1:30]),
+  mean(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30])
 )
 
 se.c <- c(
   
   sd(collapsed$class123[collapsed$treat=="clear"]/16*10000)/sqrt(
     length(collapsed$class123[collapsed$treat=='clear'])),
-  #sd(seedlingsval.clear$clearcut$seedclass123[26,1:30])/sqrt(30),
   sd(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
   sd(seedlingsval.clear.simple$clearcut$seedclass123[26,1:30]),
   
   sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='clear'])),
- #sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])/sqrt(30)
   sd(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
-  sd(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30])
+  sd(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30]),
+  sd(seedlingsval.clear.none$clearcut$seedclass4[26,1:30]),
+  sd(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30])
 )
+
+#Run model comparisons and save
+data <- list()
+data$type <- as.factor(c(rep('modelH',30),rep('modelS',30)))
+data$dens <- c(seedlingsval.clear$clearcut$seedclass123[26,1:30],
+               seedlingsval.clear.simple$clearcut$seedclass123[26,1:30])
+t.test(dens~type,data=data)
+seedling.clear <- c('A','B')
+
+data <- list()
+data$type <- as.factor(c(rep('modelH',30),rep('modelS',30),rep('modelN',30),rep('jabowa',30)))
+data$dens <- c(seedlingsval.clear$clearcut$seedclass4[26,1:30],
+               seedlingsval.clear.simple$clearcut$seedclass4[26,1:30],
+               seedlingsval.clear.none$clearcut$seedclass4[26,1:30],
+               seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30])
+t1 <- aov(dens~type,data=data)
+TukeyHSD(t1)
+sapling.clear <- c('A','B','C','B')
 
 ############################################################
 #Run model(s) for shelterwood treatment and format output
@@ -174,6 +231,16 @@ seedlingsval.shelt.simple6 <- forest.sim(model='ibm', nreps=30, nyears=30, burni
                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                         mastscenario="hee")
+seedlingsval.shelt.none <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+                                         harvests=c('shelterwood'),seedlings='none',
+                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                         mastscenario="hee")
+seedlingsval.shelt.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=30, burnin=20,
+                                         harvests=c('shelterwood'),seedlings='simple',
+                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
+                                         mastscenario="hee")
 
 means.s <- c(
   
@@ -183,37 +250,66 @@ means.s <- c(
   
   mean(collapsed$class4[collapsed$treat=="shelter"]/16*10000),
   mean(seedlingsval.shelt$shelterwood$seedclass4[26,1:30]),
-  mean(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30])
+  mean(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30]),
+  mean(seedlingsval.shelt.none$shelterwood$seedclass4[26,1:30]),
+  mean(seedlingsval.shelt.jabowa$shelterwood$seedclass4[26,1:30])
 )
 
 se.s <- c(
   
   sd(collapsed$class123[collapsed$treat=="shelter"]/16*10000)/sqrt(
     length(collapsed$class123[collapsed$treat=='shelter'])),
-  #sd(seedlingsval.clear$clearcut$seedclass123[26,1:30])/sqrt(30),
   sd(seedlingsval.shelt$shelterwood$seedclass123[26,1:30]),
   sd(seedlingsval.shelt.simple$shelterwood$seedclass123[26,1:30]),
   
   sd(collapsed$class4[collapsed$treat=="shelter"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='shelter'])),
-  #sd(seedlingsval.clear$clearcut$seedclass4[26,1:30])/sqrt(30)
   sd(seedlingsval.shelt$shelterwood$seedclass4[26,1:30]),
-  sd(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30])
+  sd(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30]),
+  sd(seedlingsval.shelt.none$shelterwood$seedclass4[26,1:30]),
+  sd(seedlingsval.shelt.jabowa$shelterwood$seedclass4[26,1:30])
   
 )
 
+#Run model comparisons and save
+data <- list()
+data$type <- as.factor(c(rep('modelH',30),rep('modelS',30)))
+data$dens <- c(seedlingsval.shelt$shelterwood$seedclass123[26,1:30],
+               seedlingsval.shelt.simple$shelterwood$seedclass123[26,1:30])
+t.test(dens~type,data=data)
+seedling.shelt <- c('A','B')
+
+data <- list()
+data$type <- as.factor(c(rep('modelH',30),rep('modelS',30),rep('modelN',30),rep('jabowa',30)))
+data$dens <- c(seedlingsval.shelt$shelterwood$seedclass4[26,1:30],
+               seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30],
+               seedlingsval.shelt.none$shelterwood$seedclass4[26,1:30],
+               seedlingsval.shelt.jabowa$shelterwood$seedclass4[26,1:30])
+t1 <- aov(dens~type,data=data)
+TukeyHSD(t1)
+sapling.shelt <- c('A','B','A','C')
+
+#############################
+
+#Save all model output
+#save('seedlingsval.out','seedlingsval.none.simple','seedlingsval.none.simple6',
+#     'seedlingsval.none.none','seedlingsval.none.jabowa','seedlingsval.clear',
+#     'seedlingsval.clear.simple','seedlingsval.clear.simple6','seedlingsval.clear.none',
+#     'seedlingsval.clear.jabowa','seedlingsval.shelt','seedlingsval.shelt.simple',
+#     'seedlingsval.shelt.simple6','seedlingsval.shelt.none','seedlingsval.shelt.jabowa',
+#     file='data/seedlings_val_figure.Rdata')
 
 #############################
 #Combine figure output
 
 comb1 <- c(means.n[1:3],means.c[1:3],means.s[1:3])
 comb1.se <- c(se.n[1:3],se.c[1:3],se.s[1:3])
-comb2 <- c(means.n[4:6],means.c[4:6],means.s[4:6])
-comb2.se <- c(se.n[4:6],se.c[4:6],se.s[4:6])
+comb2 <- c(means.n[4:8],means.c[4:8],means.s[4:8])
+comb2.se <- c(se.n[4:8],se.c[4:8],se.s[4:8])
 
 
 #############################
-#Figure code
+#Figure code that includes HEE data as a separate point
 
 par(mfrow=c(2,1),
     mar=c(4.1,4.1,2,0),
@@ -227,7 +323,8 @@ plot(structure,comb1,pch=rep(c(21,19,19),3),col=rep(c('black','black','gray55'),
      ,ylab=expression('Seedlings'~ha^{-1}),main='Oak Seedling Density')
 axis(1,at=c(3,7,11),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
 box()
-legend('topleft',pch=c(21,19,19),col=c('black','black','gray55'),cex=1,legend=c('HEE Sites','Model 1','Model 2'))
+legend('topleft',pch=c(21,19,19,17,24),col=c('black','black','gray55'),cex=1,
+       legend=c('HEE Sites','Model H','Model S'))
 for (i in 1:9){
   segments(x0=structure[i],y0=comb1[i]-comb1.se[i],x1=structure[i],y1=comb1[i]+comb1.se[i])
   segments(x0=structure[i]-0.1,y0=comb1[i]+comb1.se[i],x1=structure[i]+0.1,y1=comb1[i]+comb1.se[i])
@@ -236,18 +333,111 @@ for (i in 1:9){
 abline(v=5)
 abline(v=9)
 
-plot(structure,comb2,pch=rep(c(21,19,19),3),col=rep(c('black','black','gray55'),3),
-     cex=1,ylim=c(0,850),xlim=c(1.5,12.5),xaxt='n',xlab=''
+structure <- c(2,3,4,5,6,8,9,10,11,12,14,15,16,17,18)
+
+plot(structure,comb2,pch=rep(c(21,19,19,17,24),3),col=rep(c('black','black','gray55','black','black'),3),
+     cex=1,ylim=c(0,950),xlim=c(1.5,18.5),xaxt='n',xlab=''
      ,ylab=expression('Saplings'~ha^{-1}),main='Oak Sapling Density')
-axis(1,at=c(3,7,11),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
+axis(1,at=c(4,10,16),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
 box()
 #legend('topright',pch=c(21,19),cex=1,legend=c('HEE Data','Model'))
-for (i in 1:9){
+for (i in 1:15){
   segments(x0=structure[i],y0=comb2[i]-comb2.se[i],x1=structure[i],y1=comb2[i]+comb2.se[i])
   segments(x0=structure[i]-0.1,y0=comb2[i]+comb2.se[i],x1=structure[i]+0.1,y1=comb2[i]+comb2.se[i])
   segments(x0=structure[i]-0.1,y0=comb2[i]-comb2.se[i],x1=structure[i]+0.1,y1=comb2[i]-comb2.se[i])
 }
-abline(v=5)
-abline(v=9)
+legend('topleft',pch=c(17,24),col=c('black','black'),cex=1,
+       legend=c('Model N','JABOWA'))
+abline(v=7)
+abline(v=13)
+
+#################################################
+#Alternate figure with HEE data as shaded area
+
+comb1.new <- comb1[c(2:3,5:6,8:9)]
+comb1.se.new <- comb1.se[c(2:3,5:6,8:9)]
+
+par(mfrow=c(2,1),
+    mar=c(4.1,4.1,2,0),
+    oma=c(0,0,1,1),
+    mgp=c(2.5,1,0))
+
+structure <- c(2,3,5,6,8,9)
+
+diff <- c(seedling.matrix,seedling.clear,seedling.shelt)
+
+plot(structure,comb1.new,ylim=c(0,10000),xlim=c(1.5,9.5),xaxt='n',xlab=''
+     ,ylab=expression('Seedlings'~ha^{-1}),main='Oak Seedling Density')
+axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
+legend('topleft',pch=c(21,21,22,22),pt.bg=c('white','black','white','black'),cex=1,
+       legend=c('Model H','Model S','Model N','JABOWA'),bty='n')
+
+polygon(x=c(0,0,4,4),y=c(comb1[1]-comb1.se[1]*1.96,comb1[1]+comb1.se[1]*1.96,
+                         comb1[1]+comb1.se[1]*1.96,comb1[1]-comb1.se[1]*1.96),col='gray85',border=F)
+segments(x0=0,y0=comb1[1],x1=4,y1=comb1[1],lty=2)
+polygon(x=c(4,4,7,7),y=c(comb1[4]-comb1.se[4]*1.96,comb1[4]+comb1.se[4]*1.96,
+                         comb1[4]+comb1.se[4]*1.96,comb1[4]-comb1.se[4]*1.96),col='gray85',border=F)
+segments(x0=4,y0=comb1[4],x1=7,y1=comb1[4],lty=2)
+polygon(x=c(7,7,10,10),y=c(comb1[7]-comb1.se[7]*1.96,comb1[7]+comb1.se[7]*1.96,
+                         comb1[7]+comb1.se[7]*1.96,comb1[7]-comb1.se[7]*1.96),col='gray85',border=F)
+segments(x0=7,y0=comb1[7],x1=10,y1=comb1[7],lty=2)
+
+box()
+adjust <- c(600,500,1000,600,600,600)
+for (i in 1:6){
+  segments(x0=structure[i],y0=comb1.new[i]-comb1.se.new[i],
+           x1=structure[i],y1=comb1.new[i]+comb1.se.new[i])
+  segments(x0=structure[i]-0.06,y0=comb1.new[i]+comb1.se.new[i],
+           x1=structure[i]+0.06,y1=comb1.new[i]+comb1.se.new[i])
+  segments(x0=structure[i]-0.06,y0=comb1.new[i]-comb1.se.new[i],
+           x1=structure[i]+0.06,y1=comb1.new[i]-comb1.se.new[i])
+  text(structure[i],comb1.new[i]+comb1.se.new[i]+adjust[i],diff[i],cex=0.8)
+}
+points(structure,comb1.new,pch=21,bg=rep(c('white','black'),3),
+       cex=1)
+abline(v=4)
+abline(v=7)
+
+#Bottom figure
+comb2.new <- comb2[c(2:5,7:10,12:15)]
+comb2.se.new <- comb2.se[c(2:5,7:10,12:15)]
+
+structure <- c(2,3,4,5,7,8,9,10,12,13,14,15)
+
+diff <- c(sapling.matrix,sapling.clear,sapling.shelt)
+
+plot(structure,comb2.new,ylim=c(0,1100),xlim=c(1.5,15.5),xaxt='n',xlab=''
+     ,ylab=expression('Saplings'~ha^{-1}),main='Oak Sapling Density',pch=rep(c(21,21,22,22),3),
+     cex=1)
+axis(1,at=c(3.5,8.5,13.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
+
+polygon(x=c(0,0,6,6),y=c(comb2[1]-comb2.se[1]*1.96,comb2[1]+comb2.se[1]*1.96,
+                         comb2[1]+comb2.se[1]*1.96,comb2[1]-comb2.se[1]*1.96),col='gray85',border=F)
+segments(x0=0,y0=comb2[1],x1=6,y1=comb2[1],lty=2)
+polygon(x=c(6,6,11,11),y=c(comb2[6]-comb2.se[6]*1.96,comb2[6]+comb2.se[6]*1.96,
+                         comb2[6]+comb2.se[6]*1.96,comb2[6]-comb2.se[6]*1.96),col='gray85',border=F)
+segments(x0=6,y0=comb2[6],x1=11,y1=comb2[6],lty=2)
+polygon(x=c(11,11,16,16),y=c(comb2[11]-comb2.se[11]*1.96,comb2[11]+comb2.se[11]*1.96,
+                           comb2[11]+comb2.se[11]*1.96,comb2[11]-comb2.se[11]*1.96),col='gray85',border=F)
+segments(x0=11,y0=comb2[11],x1=16,y1=comb2[11],lty=2)
+
+adjust <- c(70,70,70,70,70,70,85,70,70,70,70,70)
+for (i in 1:12){
+  segments(x0=structure[i],y0=comb2.new[i]-comb2.se.new[i],
+           x1=structure[i],y1=comb2.new[i]+comb2.se.new[i])
+  segments(x0=structure[i]-0.1,y0=comb2.new[i]+comb2.se.new[i],
+           x1=structure[i]+0.1,y1=comb2.new[i]+comb2.se.new[i])
+  segments(x0=structure[i]-0.1,y0=comb2.new[i]-comb2.se.new[i],
+           x1=structure[i]+0.1,y1=comb2.new[i]-comb2.se.new[i])
+  text(structure[i],comb2.new[i]+comb2.se.new[i]+adjust[i],diff[i],cex=0.8)
+}
+
+points(structure,comb2.new,pch=rep(c(21,21,22,22),3),bg=rep(c('white','black','white','black'),3),
+       cex=1)
+
+box()
+abline(v=6)
+abline(v=11)
+
 
 
