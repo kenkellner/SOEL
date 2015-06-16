@@ -1,9 +1,24 @@
 extensions [profiler]
-globals [basal-area basal-area-ft qdbh qdbh-in dens dens-ac
+globals [
+  basal-area basal-area-ft basal-area-ovs   
+  qdbh qdbh-in qdbh-ovs  
+  dens dens-ac dens-ovs
+  
+  ba-oak ba-oak-ovs
+  qdbh-oak qdbh-oak-ovs
+  dens-oak dens-oak-ovs
+  
+  ba-map ba-map-ovs
+  qdbh-map qdbh-map-ovs
+  dens-map dens-map-ovs
+  
+  ba-pop ba-pop-ovs
+  qdbh-pop qdbh-pop-ovs
+  dens-pop dens-pop-ovs
+ 
   prop-oak prop-tol prop-intol
   sitequal-boak sitequal-woak sitequal-maple sitequal-poplar
   harvest-year shelter-phase
-  ba-oak ba-map ba-pop
   xmin xmax ymin ymax
   seedlings-class4
   ]
@@ -430,20 +445,38 @@ to calc-global-vars ;;Calculate global reporter values
     
   let adjust (x-core * y-core) / 100
   
-  set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
+  set basal-area (sum [ba] of turtles with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set basal-area-ovs (sum [ba] of turtles with [dbh >= 0.3 and in-core = TRUE]) / adjust
   set basal-area-ft basal-area * 4.356
-  set dens (count turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
+  set ba-oak (sum [ba] of oaks with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set ba-oak-ovs (sum [ba] of oaks with [dbh >= 0.3 and in-core = TRUE]) / adjust
+  set ba-map (sum [ba] of maples with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set ba-map-ovs (sum [ba] of maples with [dbh >= 0.3 and in-core = TRUE]) / adjust
+  set ba-pop (sum [ba] of poplars with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set ba-pop-ovs (sum [ba] of poplars with [dbh >= 0.3 and in-core = TRUE]) / adjust
+  set dens (count turtles with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set dens-ovs (count turtles with [dbh >= 0.3 and in-core = TRUE]) / adjust
   set dens-ac dens * 0.40477
-  set ba-oak (sum [ba] of turtles with [dbh >= 0.01 and breed = oaks and in-core = TRUE]) / adjust
-  set ba-map (sum [ba] of turtles with [dbh >= 0.01 and breed = maples and in-core = TRUE]) / adjust
-  set ba-pop (sum [ba] of turtles with [dbh >= 0.01 and breed = poplars and in-core = TRUE]) / adjust
-  if basal-area > 0 [
-    set qdbh sqrt(basal-area * adjust / (0.0000785 * count turtles with [height > 1.37 and in-core = TRUE]))
-    set qdbh-in 2 * (sqrt(mean [ba] of turtles with [height > 1.37 and in-core = TRUE] / pi)) * 39.37
+  set dens-oak (count oaks with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set dens-oak-ovs (count oaks with [dbh >= 0.3 and in-core = TRUE]) / adjust
+  set dens-map (count maples with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set dens-map-ovs (count maples with [dbh >= 0.3 and in-core = TRUE]) / adjust
+  set dens-pop (count poplars with [dbh >= 0.015 and in-core = TRUE]) / adjust
+  set dens-pop-ovs (count poplars with [dbh >= 0.3 and in-core = TRUE]) / adjust  
+  ifelse basal-area > 0 [
+    set qdbh sqrt(basal-area * adjust / (0.0000785 * count turtles with [dbh >= 0.015 and in-core = TRUE]))
+    set qdbh-in 2 * (sqrt(mean [ba] of turtles with [dbh >= 0.015 and in-core = TRUE] / pi)) * 39.37 
     set prop-oak (ba-oak / basal-area)
     set prop-tol (ba-map / basal-area)
     set prop-intol (ba-pop / basal-area)
-  ]
+  ][set qdbh 0 set qdbh-in 0 set prop-oak 0 set prop-tol 0 set prop-intol 0]
+  set qdbh-ovs sqrt(basal-area-ovs * adjust / (0.0000785 * (max list 1 count turtles with [dbh >= 0.3 and in-core = TRUE])))  
+  set qdbh-oak sqrt(ba-oak * adjust / (0.0000785 * (max list 1 count oaks with [dbh >= 0.015 and in-core = TRUE])))
+  set qdbh-oak-ovs sqrt(ba-oak-ovs * adjust / (0.0000785 * (max list 1 count oaks with [dbh >= 0.3 and in-core = TRUE])))
+  set qdbh-map sqrt(ba-map * adjust / (0.0000785 * (max list 1 count maples with [dbh >= 0.015 and in-core = TRUE])))
+  set qdbh-map-ovs sqrt(ba-map-ovs * adjust / (0.0000785 * (max list 1 count maples with [dbh >= 0.3 and in-core = TRUE])))
+  set qdbh-pop sqrt(ba-pop * adjust / (0.0000785 * (max list 1 count poplars with [dbh >= 0.015 and in-core = TRUE])))
+  set qdbh-pop-ovs sqrt(ba-pop-ovs * adjust / (0.0000785 * (max list 1 count poplars with [dbh >= 0.3 and in-core = TRUE])))
   set seedlings-class4 (count oaks with [height > 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
 end
 
@@ -975,7 +1008,7 @@ y-core
 y-core
 1
 25
-14
+10
 1
 1
 cells

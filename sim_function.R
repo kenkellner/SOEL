@@ -64,20 +64,43 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   
   #Set list of resporters to save
   if(model == 'ibm' & seedlings != 'none'){
-    reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
+    reporters <- c("ticks","basal-area","basal-area-ovs",
+                   "ba-oak","ba-oak-ovs","ba-map","ba-map-ovs","ba-pop","ba-pop-ovs",
+                   "dens","dens-ovs",
+                   "dens-oak","dens-oak-ovs","dens-map","dens-map-ovs","dens-pop","dens-pop-ovs",
+                   "qdbh","qdbh-ovs",
+                   "qdbh-oak","qdbh-oak-ovs","qdbh-map","qdbh-map-ovs","qdbh-pop","qdbh-pop-ovs",
+                   "prop-oak","prop-tol","prop-intol",
                    "total-acorns","acorns-pertree","total-seedlings","new-seedlings","pct-germ",
                    "regen-dens","regen-stump-dens",
                    "seedlings-class1","seedlings-class2","seedlings-class3",
                    "seedlings-class123","seedlings-class4")
-    rep.names <- c("tick","BA","oak","tol","intol","totacorns","acornspertree","totseedlings",
+    rep.names <- c("ticks","ba","ba.ovs",
+                   "ba.oak","ba.oak.ovs","ba.map","ba.map.ovs","ba.pop","ba.pop.ovs",
+                   "dens","dens.ovs",
+                   "dens.oak","dens.oak.ovs","dens.map","dens.map.ovs","dens.pop","dens.pop.ovs",
+                   "qdbh","qdbh.ovs",
+                   "qdbh.oak","qdbh.oak.ovs","qdbh.map","qdbh.map.ovs","qdbh.pop","qdbh.pop.ovs",
+                   "prop.oak","prop.tol","prop.intol",
+                   "totacorns","acornspertree","totseedlings",
                    "newseedlings","pctgerm","regen",'regenstump',
                    "seedclass1","seedclass2","seedclass3","seedclass123","seedclass4")
   } else {
-    reporters <- c("ticks","basal-area","prop-oak","prop-tol","prop-intol",
-                   #"regen-dens","regen-stump-dens",
+    reporters <- c("ticks","basal-area","basal-area-ovs",
+                   "ba-oak","ba-oak-ovs","ba-map","ba-map-ovs","ba-pop","ba-pop-ovs",
+                   "dens","dens-ovs",
+                   "dens-oak","dens-oak-ovs","dens-map","dens-map-ovs","dens-pop","dens-pop-ovs",
+                   "qdbh","qdbh-ovs",
+                   "qdbh-oak","qdbh-oak-ovs","qdbh-map","qdbh-map-ovs","qdbh-pop","qdbh-pop-ovs",
+                   "prop-oak","prop-tol","prop-intol",
                    "seedlings-class4")
-    rep.names <- c("tick","BA","oak","tol","intol",
-                   #"regen","regenstump",
+    rep.names <- c("ticks","ba","ba.ovs",
+                   "ba.oak","ba.oak.ovs","ba.map","ba.map.ovs","ba.pop","ba.pop.ovs",
+                   "dens","dens.ovs",
+                   "dens.oak","dens.oak.ovs","dens.map","dens.map.ovs","dens.pop","dens.pop.ovs",
+                   "qdbh","qdbh.ovs",
+                   "qdbh.oak","qdbh.oak.ovs","qdbh.map","qdbh.map.ovs","qdbh.pop","qdbh.pop.ovs",
+                   "prop.oak","prop.tol","prop.intol",
                    "seedclass4")
   }
   
@@ -145,8 +168,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     temp <- NLDoReport(nyears, "go", reporters, as.data.frame=TRUE, df.col.names=rep.names)
     
     #Return output
-    if(model == 'ibm' & seedlings !='none'){return(temp[,2:17])
-    } else {return(temp[,2:6])}
+    if(model == 'ibm' & seedlings !='none'){return(temp[,2:40])
+    } else {return(temp[,2:29])}
       
   }
   
