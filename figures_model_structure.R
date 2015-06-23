@@ -1,6 +1,7 @@
 
 ##Site quality Example Figure
-
+png(filename='site.png',type='cairo',units='in',
+    width=6,height=6.3,pointsize=12,res=96)
 par(mfrow=c(2,2),
     mar=c(5.1,4.1,2.6,0),
     oma=c(1,0,1,1))
@@ -8,12 +9,12 @@ par(mfrow=c(2,2),
 x <- seq(1980,5500,1)
 y <- 4 * (x - 1977)*(5894 - x) / ((5894 - 1977)^2)
 plot(x,y,type='l',lwd=2,xlab="Degree-Days", main="Degree-Days",
-     ylab="")
+     ylab="Growth Response")
 
 x <- seq(0,400,1)
 y <- (-0.6 + 1 * (2.94 * (1 - 10 ^(-1 * 0.00234 * (x + 117.52)))))/2.19
 plot(x,y,type='l',lwd=2,xlab="Soil Nitrogen (kg/ha)", main="Soil Fertility",
-     ylab="Growth Response")
+     ylab="")
 
 x <- seq(0,0.4,0.01)
 y <- 1 - (x / 0.45)^2
@@ -24,6 +25,7 @@ x <- seq(0.5,10,0.01)
 y <- 1 - (0.933 / x)
 plot(x,y,type='l',lwd=2,xlab="Depth to Water Table (m)", main="Soil Saturation",
      ylab="",ylim=c(0,1.01),xlim=c(0,10))
+dev.off()
 
 ###############################################################################
 
