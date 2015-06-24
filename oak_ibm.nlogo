@@ -495,7 +495,7 @@ to check-seedling-survival ;Placeholders
   
   let sp-ef 0
   if species = "WO" [set sp-ef 0.086]
-  let survpred (-0.587 + sp-ef + 0.37 * (1 - light) * 0.37 + 0.589 * (min list 5 age))  
+  let survpred (-0.587 + sp-ef + 0.37 * (1 - light) + 0.589 * (min list 5 age))  
   let psurv (1 + exp(-1 * survpred)) ^ (-1) 
   if random-float 1 > psurv [die]
   
