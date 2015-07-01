@@ -2,8 +2,8 @@
 ##Figure showing oak dbh distribution at HEE sites
 #############################################################################
 #Read in data
-data.bo = as.numeric(read.csv('data/hee_oakdbh.csv',header=FALSE)[,1])
-data.sm = as.numeric(read.csv('data/hee_oakdbh.csv',header=FALSE)[,2])
+data.bo = as.numeric(read.csv('data/hee_oakdbh.csv',header=FALSE)[,1])*2.54
+data.sm = as.numeric(read.csv('data/hee_oakdbh.csv',header=FALSE)[,2])*2.54
 
 #Plot histograms of dbh for oak vs. sugar maple
 par(mfrow=c(2,1),mar=c(4,4,3,2))
@@ -14,9 +14,9 @@ abline(v=median(data.sm),lwd=3)
 
 #Black and white version
 par(mfrow=c(2,1),mar=c(4,4,3,2))
-hist(data.bo, breaks=15,xlim=c(0,40),main="Black Oak", col="gray38", xlab="DBH", freq=FALSE)
+hist(data.bo, breaks=15,xlim=c(0,100),main="Black Oak", col="gray38", xlab="DBH (cm)", freq=FALSE)
 abline(v=median(data.bo,na.rm=TRUE),lwd=3)
-hist(data.sm, breaks=15,xlim=c(0,40), main="Sugar Maple", col="gray75", xlab="DBH", freq=FALSE)
+hist(data.sm, breaks=15,xlim=c(0,100), main="Sugar Maple", col="gray75", xlab="DBH (cm)", freq=FALSE)
 abline(v=median(data.sm),lwd=3)
 
 #Dissertation Version using Computer Modern Font
