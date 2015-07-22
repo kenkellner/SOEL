@@ -14,9 +14,9 @@ abline(v=median(data.sm),lwd=3)
 
 #Black and white version
 par(mfrow=c(2,1),mar=c(4,4,3,2))
-hist(data.bo, breaks=15,xlim=c(0,100),main="Black Oak", col="gray38", xlab="DBH (cm)", freq=FALSE)
+hist(data.bo, breaks=15,xlim=c(0,100),main="Black Oak", col="gray38", xlab="d.b.h. (cm)", freq=FALSE)
 abline(v=median(data.bo,na.rm=TRUE),lwd=3)
-hist(data.sm, breaks=15,xlim=c(0,100), main="Sugar Maple", col="gray75", xlab="DBH (cm)", freq=FALSE)
+hist(data.sm, breaks=15,xlim=c(0,100), main="Sugar Maple", col="gray75", xlab="d.b.h. (cm)", freq=FALSE)
 abline(v=median(data.sm),lwd=3)
 
 #Dissertation Version using Computer Modern Font

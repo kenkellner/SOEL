@@ -2,6 +2,8 @@ extensions [profiler]
 globals [
   xcutoff ycutoff
   
+  surv-params growth-params
+  
   basal-area basal-area-ft basal-area-ovs   
   qdbh qdbh-in qdbh-ovs  
   dens dens-ac dens-ovs
@@ -94,7 +96,7 @@ to go
     
   calc-light
   
-  set-mast-scenario
+  set-scenario
   set acorn-count 0
   
   ask turtles with [seedling = FALSE] [
@@ -333,8 +335,9 @@ end
 ;;;;;;;;                Early Oak Lifecycle Procedures                   ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-to set-mast-scenario
+to set-scenario
   
+  ;Acorn production
   if mast-scenario = "fixedaverage" [
     set mast-mean-wo 0.08518
     set mast-mean-bo 0.09033
@@ -374,7 +377,32 @@ to set-mast-scenario
       set mast-mean-wo one-of wo-mast-list
       set mast-mean-bo one-of bo-mast-list
       ]    
-  ] 
+  ]
+  
+  ;Seedling survival and growth
+  if seed-scenario = "fixedaverage" [
+    ; intercept species canopy age
+    set surv-params (list -0.6 0.101 0.366 0.576)
+    ; intercept seedSD browse canopy species obsSD
+    set growth-params (list 1.24 0.248 -0.94 -0.488 0.166 1.188)
+  ]
+  
+  if seed-scenario = "randomdrought" [
+    
+    ;drought conditions
+    ifelse random-float 1 < drought-prob [
+      set surv-params (list -0.531 0.197 0.528 0.44)
+      set growth-params (list 0.911 0.157 -0.871 -0.238 0.085 1.016)
+      ]
+    ;non-drought
+    [
+      set surv-params (list -0.531 0.197 0.528 0.44)
+      set growth-params (list 2.091 0.199 -0.976 -1.733 0.468 1.468)
+    ]    
+  ]
+  
+  
+   
 end
 
 to produce-acorns 
@@ -459,15 +487,25 @@ to grow-seedling
   ifelse random-float 1 < prob-browsed [set browsed 1][set browsed 0]
   
   ifelse seedlings = "hee" [
-    ifelse random-float 1 < 0.0699 and light > 0.8 [
-      set actual-growth (min list 150 random-exponential 52.18) / 100
-    ][
-    let sp-ef 0
-    if species = "WO" [set sp-ef 1.73]
-    set actual-growth max list 0 (4.485 + random-normal 0 1.934 - 3.014 * (1 - light) 
-      + sp-ef - 4.892 * browsed + random-normal 0 9.151) / 100
-    ]
+    ;ifelse random-float 1 < 0.0699 and light > 0.8 [
+    ;  set actual-growth (min list 150 random-exponential 52.18) / 100
+    ;][
+    ;let sp-ef 0
+    ;if species = "WO" [set sp-ef 1.73]
+    ;set actual-growth max list 0 (4.485 + random-normal 0 1.934 - 3.014 * (1 - light) 
+    ;  + sp-ef - 4.892 * browsed + random-normal 0 9.151) / 100
+    ;]
     
+    let sp-ef 0
+    if species = "WO" [set sp-ef 1]
+    let growthpred ((item 0 growth-params) + (random-normal 0 item 1 growth-params) 
+    + (item 2 growth-params) * browsed + (item 3 growth-params) * (1 - light)     
+    + (item 4 growth-params) * sp-ef + (random-normal 0 item 5 growth-params))
+    
+    set actual-growth (inv-neglog growthpred) / 100
+    
+    if actual-growth < 0 [set actual-growth 0]
+   
   ][
   
   let max-growth seedling-growth  ;growth is height-based 
@@ -487,15 +525,16 @@ to grow-seedling
 end
 
 
-to check-seedling-survival ;Placeholders 
-  ;if random-float 1 < 0.1 [die] ;Intrinsic seedling mortality 
-  ;if actual-growth < (0.5 * seedling-growth) and random-float 1 < 0.393 [die] ;Growth-based mortality 
+to check-seedling-survival ;Based on HEE data
   
   if age = 0 [if random-float 1 > 0.567 [die]]
   
   let sp-ef 0
-  if species = "WO" [set sp-ef 0.086]
-  let survpred (-0.587 + sp-ef + 0.37 * (1 - light) + 0.589 * (min list 5 age))  
+  if species = "WO" [set sp-ef 1]
+ 
+  let survpred ((item 0 surv-params) + (item 1 surv-params) * sp-ef + (item 2 surv-params) 
+    * (1 - light) + (item 3 surv-params) * (min list 5 age))  
+    
   let psurv (1 + exp(-1 * survpred)) ^ (-1) 
   if random-float 1 > psurv [die]
   
@@ -598,6 +637,10 @@ end
 
 to check-in-core
   ifelse xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)[set in-core TRUE][set in-core FALSE]
+end
+
+to-report inv-neglog [x]
+  ifelse x <= 1 [report (1 - exp(-1 * x))][report (exp(x) - 1)]
 end
 
 to calc-site-quality
@@ -1539,10 +1582,10 @@ seedlings
 2
 
 CHOOSER
-1044
-39
-1182
-84
+962
+40
+1100
+85
 mast-scenario
 mast-scenario
 "random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad"
@@ -1644,6 +1687,31 @@ prob-browsed
 0
 1
 0
+0.01
+1
+NIL
+HORIZONTAL
+
+CHOOSER
+1104
+39
+1242
+84
+seed-scenario
+seed-scenario
+"fixedaverage" "randomdrought"
+0
+
+SLIDER
+829
+209
+1001
+242
+drought-prob
+drought-prob
+0
+1
+0.2
 0.01
 1
 NIL
