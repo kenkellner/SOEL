@@ -401,6 +401,12 @@ to set-scenario
     ]    
   ]
   
+  if browse-scenario = "fixedaverage" [set prob-browsed 0.1058]
+  
+  if browse-scenario = "hee" [set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)]
+  
+  if browse-scenario = "custom" [ ]
+  
   
    
 end
@@ -1582,9 +1588,9 @@ seedlings
 2
 
 CHOOSER
-962
+958
 40
-1100
+1050
 85
 mast-scenario
 mast-scenario
@@ -1664,9 +1670,9 @@ HORIZONTAL
 
 SLIDER
 1054
-204
+202
 1168
-237
+235
 undisp-eaten-prob
 undisp-eaten-prob
 0
@@ -1678,12 +1684,37 @@ NIL
 HORIZONTAL
 
 SLIDER
-1023
+1080
 333
 1195
 366
 prob-browsed
 prob-browsed
+0
+1
+0.1058
+0.01
+1
+NIL
+HORIZONTAL
+
+CHOOSER
+1054
+39
+1146
+84
+seed-scenario
+seed-scenario
+"fixedaverage" "randomdrought"
+1
+
+SLIDER
+969
+334
+1077
+367
+drought-prob
+drought-prob
 0
 1
 0
@@ -1693,29 +1724,14 @@ NIL
 HORIZONTAL
 
 CHOOSER
-1104
+1148
 39
-1242
+1240
 84
-seed-scenario
-seed-scenario
-"fixedaverage" "randomdrought"
+browse-scenario
+browse-scenario
+"fixedaverage" "hee" "custom"
 0
-
-SLIDER
-829
-209
-1001
-242
-drought-prob
-drought-prob
-0
-1
-0.2
-0.01
-1
-NIL
-HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
