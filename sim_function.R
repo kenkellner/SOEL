@@ -54,8 +54,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #'random' for randomly selecting a year of HEE data
                        #'priorgood' or 'priorbad' for two good/bad mast years just before harvest
                        mast.scenario = 'fixedaverage',
+                       #Weevil scenario, 'fixedaverage', 'random', 'hee', or 'custom'
+                       weevil.scenario = 'fixedaverage',
                        #Acorn transition probabilities (list)
-                       acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
+                       acorn = list(disperse=0.41,disperse.dist=5.185,
                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                        #Maximum yearly seedling growth if 'simple' is selected
                        maxgrowth = 0.9,
@@ -157,7 +159,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       } else {NLCommand('set sprouting FALSE')}
       if(seedlings != "none"){
         NLCommand(paste('set mast-scenario ','\"',mast.scenario,'\"',sep=""))
-        NLCommand(paste('set weevil-probability',acorn$weevil))
+        NLCommand(paste('set weevil-scenario ','\"',weevil.scenario,'\"',sep=""))
         NLCommand(paste('set disperse-prob',acorn$disperse))
         NLCommand(paste('set disperse-dist',acorn$disperse.eaten))
         NLCommand(paste('set disperse-eaten-prob',acorn$cache.prob))

@@ -27,7 +27,7 @@ globals [
   harvest-year shelter-phase
   
   mast-mean-bo mast-mean-wo
-  wo-mast-list bo-mast-list mast-year-index
+  wo-mast-list bo-mast-list mast-year-index bo-weev-list wo-weev-list
   acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters 
   regen-dens regen-stump-dens
   seedlings-class1 seedlings-class2 seedlings-class3 seedlings-class123 seedlings-class4 acorns-pertree
@@ -75,6 +75,8 @@ to setup
   
   set bo-mast-list [0.0827 0.0489 2.975 0.8809 0.0757 0.1153 0.0661 0.1415 0.05667]
   set wo-mast-list [0.1355 0.0665 0.1092 2.720 0.0367 0.136 0.1070 0.238 0.0406]
+  set bo-weev-list [0.1396 0.2057 0.6250 0.9545 0.3744 0.1310 0.1304 0.3424 0.2389]
+  set wo-weev-list [0.0198 0.1919 0.3679 0.8571 0.1786 0.1176 0.1695 0.1429 0.0761]
   set mast-year-index 0
    
   ifelse HEE-mean = TRUE [
@@ -401,22 +403,29 @@ to set-scenario
     ]    
   ]
   
-  if browse-scenario = "fixedaverage" [set prob-browsed 0.1058]
-  
-  if browse-scenario = "hee" [set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)]
-  
+  ;Browsing
+  if browse-scenario = "fixedaverage" [set prob-browsed 0.1058] 
+  if browse-scenario = "hee" [set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)]  
   if browse-scenario = "custom" [ ]
   
-  
-   
+  ;Weevils
+  if weevil-scenario = "fixedaverage" [set bo-weevil-prob 0.3491 set wo-weevil-prob 0.2357]
+  if weevil-scenario = "random" [set bo-weevil-prob one-of bo-weev-list set wo-weevil-prob one-of wo-weev-list]
+  if weevil-scenario = "hee" [ ]
+  if weevil-scenario = "custom" [ ]
+     
 end
 
 to produce-acorns 
   
   let acorns-produced 0
+  let weevil-probability 0
   ifelse species = "WO" [
-    set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo))][ ;per meter squared
-    set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))]
+    set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo)) ;per meter squared
+    set weevil-probability wo-weevil-prob]
+  [ 
+    set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))
+    set weevil-probability bo-weevil-prob]
   if in-core = TRUE [set acorn-count (acorn-count + acorns-produced)]  
   let tree-radius canopy-radius
   let temp species
@@ -429,6 +438,7 @@ to produce-acorns
     set hidden? FALSE
     right random 360
     forward (random-float (tree-radius - 0.5)) + 0.5
+    
     ifelse random-float 1 < weevil-probability [set weevil TRUE] [set weevil FALSE] ;;check to see if weeviled
   ]
   
@@ -1010,9 +1020,9 @@ NIL
 
 SLIDER
 1019
-641
+651
 1194
-674
+684
 DegDays
 DegDays
 1980
@@ -1025,9 +1035,9 @@ HORIZONTAL
 
 SLIDER
 1020
-679
+689
 1192
-712
+722
 wt-dist
 wt-dist
 0.1
@@ -1040,9 +1050,9 @@ HORIZONTAL
 
 SLIDER
 1020
-719
+729
 1192
-752
+762
 available-N
 available-N
 0
@@ -1065,25 +1075,25 @@ basal-area
 11
 
 SLIDER
-1027
-90
-1199
-123
-weevil-probability
-weevil-probability
+1084
+134
+1200
+167
+bo-weevil-prob
+bo-weevil-prob
 0
 1
-0.31
+0.34
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1024
-241
-1196
-274
+1118
+251
+1230
+284
 germ-prob
 germ-prob
 0
@@ -1096,9 +1106,9 @@ HORIZONTAL
 
 SLIDER
 1025
-376
+386
 1197
-409
+419
 seedling-growth
 seedling-growth
 0
@@ -1300,9 +1310,9 @@ Initial Forest\n
 
 SLIDER
 1021
-757
+767
 1193
-790
+800
 wilt
 wilt
 0
@@ -1315,9 +1325,9 @@ HORIZONTAL
 
 MONITOR
 984
-592
+602
 1061
-637
+647
 NIL
 sitequal-woak
 2
@@ -1326,9 +1336,9 @@ sitequal-woak
 
 MONITOR
 1064
-592
+602
 1141
-637
+647
 NIL
 sitequal-maple
 2
@@ -1337,9 +1347,9 @@ sitequal-maple
 
 MONITOR
 1144
-591
+601
 1224
-636
+646
 NIL
 sitequal-poplar
 2
@@ -1348,9 +1358,9 @@ sitequal-poplar
 
 TEXTBOX
 1056
-451
+461
 1206
-469
+479
 Site Conditions
 14
 0.0
@@ -1358,9 +1368,9 @@ Site Conditions
 
 TEXTBOX
 1043
-16
+10
 1193
-34
+28
 Oak Regen Parameters
 14
 0.0
@@ -1448,9 +1458,9 @@ Tuning Parameters
 
 SWITCH
 1030
-472
+482
 1177
-505
+515
 manual-site-qual
 manual-site-qual
 0
@@ -1459,9 +1469,9 @@ manual-site-qual
 
 SLIDER
 1007
-509
+519
 1099
-542
+552
 sqwoak
 sqwoak
 0
@@ -1474,9 +1484,9 @@ HORIZONTAL
 
 SLIDER
 1105
-508
+518
 1197
-541
+551
 sqboak
 sqboak
 0
@@ -1489,9 +1499,9 @@ HORIZONTAL
 
 SLIDER
 1007
-544
+554
 1099
-577
+587
 sqmap
 sqmap
 0
@@ -1504,9 +1514,9 @@ HORIZONTAL
 
 SLIDER
 1104
-544
+554
 1196
-577
+587
 sqpop
 sqpop
 0
@@ -1579,9 +1589,9 @@ HORIZONTAL
 
 CHOOSER
 1045
-282
+292
 1183
-327
+337
 seedlings
 seedlings
 "none" "simple" "hee"
@@ -1589,9 +1599,9 @@ seedlings
 
 CHOOSER
 958
-40
+34
 1050
-85
+79
 mast-scenario
 mast-scenario
 "random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad"
@@ -1599,9 +1609,9 @@ mast-scenario
 
 SWITCH
 1055
-413
+423
 1163
-446
+456
 sprouting
 sprouting
 0
@@ -1609,10 +1619,10 @@ sprouting
 -1000
 
 SLIDER
-992
-129
-1106
-162
+993
+173
+1107
+206
 disperse-prob
 disperse-prob
 0
@@ -1624,10 +1634,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1108
-129
-1220
-162
+1109
+173
+1221
+206
 disperse-dist
 disperse-dist
 0
@@ -1639,10 +1649,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-992
-166
-1108
-199
+993
+210
+1109
+243
 disperse-eaten-prob
 disperse-eaten-prob
 0
@@ -1654,10 +1664,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1111
-166
-1235
-199
+1112
+210
+1236
+243
 cache-prob
 cache-prob
 0
@@ -1669,10 +1679,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1054
-202
-1168
-235
+996
+250
+1110
+283
 undisp-eaten-prob
 undisp-eaten-prob
 0
@@ -1685,9 +1695,9 @@ HORIZONTAL
 
 SLIDER
 1080
-333
+343
 1195
-366
+376
 prob-browsed
 prob-browsed
 0
@@ -1700,9 +1710,9 @@ HORIZONTAL
 
 CHOOSER
 1054
-39
+33
 1146
-84
+78
 seed-scenario
 seed-scenario
 "fixedaverage" "randomdrought"
@@ -1710,9 +1720,9 @@ seed-scenario
 
 SLIDER
 969
-334
+344
 1077
-367
+377
 drought-prob
 drought-prob
 0
@@ -1725,12 +1735,37 @@ HORIZONTAL
 
 CHOOSER
 1148
-39
+33
 1240
-84
+78
 browse-scenario
 browse-scenario
 "fixedaverage" "hee" "custom"
+0
+
+SLIDER
+963
+134
+1081
+167
+wo-weevil-prob
+wo-weevil-prob
+0
+1
+0.24
+0.01
+1
+NIL
+HORIZONTAL
+
+CHOOSER
+960
+82
+1059
+127
+weevil-scenario
+weevil-scenario
+"fixedaverage" "random" "hee" "custom"
 0
 
 @#$#@#$#@
