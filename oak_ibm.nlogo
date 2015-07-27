@@ -339,6 +339,8 @@ end
 
 to set-scenario
   
+  let random-index random 8 + 1
+  
   ;Acorn production
   if mast-scenario = "fixedaverage" [
     set mast-mean-wo 0.08518
@@ -353,8 +355,8 @@ to set-scenario
     set mast-mean-bo 0.06030
   ]
   if mast-scenario = "random" [
-    set mast-mean-wo one-of wo-mast-list
-    set mast-mean-bo one-of bo-mast-list
+    set mast-mean-wo item random-index wo-mast-list
+    set mast-mean-bo item random-index bo-mast-list
   ]
   if mast-scenario = "hee" [
     set mast-mean-wo item mast-year-index wo-mast-list
@@ -410,8 +412,15 @@ to set-scenario
   
   ;Weevils
   if weevil-scenario = "fixedaverage" [set bo-weevil-prob 0.3491 set wo-weevil-prob 0.2357]
-  if weevil-scenario = "random" [set bo-weevil-prob one-of bo-weev-list set wo-weevil-prob one-of wo-weev-list]
-  if weevil-scenario = "hee" [ ]
+  if weevil-scenario = "random" [set bo-weevil-prob one-of bo-weev-list set wo-weevil-prob one-of wo-weev-list]  
+  if weevil-scenario = "random-match" [ 
+    set bo-weevil-prob item random-index bo-weev-list
+    set wo-weevil-prob item random-index wo-weev-list   
+    ]  
+  if weevil-scenario = "hee" [
+    set bo-weevil-prob item mast-year-index bo-weev-list
+    set wo-weevil-prob item mast-year-index wo-weev-list
+    ]
   if weevil-scenario = "custom" [ ]
      
 end
@@ -1765,7 +1774,7 @@ CHOOSER
 127
 weevil-scenario
 weevil-scenario
-"fixedaverage" "random" "hee" "custom"
+"fixedaverage" "random" "random-match" "hee" "custom"
 0
 
 @#$#@#$#@

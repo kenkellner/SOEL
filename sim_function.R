@@ -54,7 +54,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #'random' for randomly selecting a year of HEE data
                        #'priorgood' or 'priorbad' for two good/bad mast years just before harvest
                        mast.scenario = 'fixedaverage',
-                       #Weevil scenario, 'fixedaverage', 'random', 'hee', or 'custom'
+                       #Weevil scenario, 'fixedaverage', 'random', 'random-match', 'hee', or 'custom'
                        weevil.scenario = 'fixedaverage',
                        #Acorn transition probabilities (list)
                        acorn = list(disperse=0.41,disperse.dist=5.185,
