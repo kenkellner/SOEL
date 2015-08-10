@@ -1,4 +1,4 @@
-extensions [profiler]
+extensions [profiler matrix]
 globals [
   xcutoff ycutoff
   
@@ -27,6 +27,9 @@ globals [
   harvest-year shelter-phase
   
   mast-mean-bo mast-mean-wo
+  core-acorn-params buffer-acorn-params
+  disp-params-sq
+  
   wo-mast-list bo-mast-list mast-year-index bo-weev-list wo-weev-list
   acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters 
   regen-dens regen-stump-dens
@@ -78,6 +81,14 @@ to setup
   set bo-weev-list [0.1396 0.2057 0.6250 0.9545 0.3744 0.1310 0.1304 0.3424 0.2389]
   set wo-weev-list [0.0198 0.1919 0.3679 0.8571 0.1786 0.1176 0.1695 0.1429 0.0761]
   set mast-year-index 0
+  
+  set disp-params-sq matrix:from-row-list [
+    [0.624 7.814 8.535 1.353 62.676 1.450 0.757 0.750 0.707] ;AllYrAllTrtBO 
+    [0.614 7.892 8.676 1.384 62.412 1.438 0.799 0.679 0.941] ;AllYrAllTrtWO
+    
+    
+    
+    ]
    
   ifelse HEE-mean = TRUE [
     init-stand adjust TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
@@ -422,6 +433,21 @@ to set-scenario
     set wo-weevil-prob item mast-year-index wo-weev-list
     ]
   if weevil-scenario = "custom" [ ]
+  
+  if dispersal-scenario = "fixedaverage" [
+    ;disperse prob, distance, disp eaten prob, cache prob, undisp eaten prob  
+    set core-acorn-params [0.41 5.185 0.704 0.288 0.538]
+    set buffer-acorn-params [0.41 5.185 0.704 0.288 0.538]   
+    ]
+  if dispersal-scenario = "custom" [
+    set core-acorn-params (list disperse-prob disperse-dist disperse-eaten-prob cache-prob undisp-eaten-prob)
+    set buffer-acorn-params (list disperse-prob disperse-dist disperse-eaten-prob cache-prob undisp-eaten-prob)
+    ]
+  if dispersal-scenario = "treat-diff" [ 
+    
+    ]
+  if dispersal-scenario = "yearly-diff" [ ]
+  if dispersal-scenario = "treat-yearly-diff" [ ]
      
 end
 
@@ -455,32 +481,37 @@ end
 
 
 to disperse-mast
-    
-  ;ifelse in-core = TRUE [let acorn-params core-acorn-params]
-  ;[let acorn-params buffer-acorn-params]
-    
+  
+  let acorn-params buffer-acorn-params  
+  if in-core = TRUE [set acorn-params core-acorn-params]
+  
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
-  ifelse random-float 1 < disperse-prob and weevil = FALSE [ ;default disperse-prob 0.41
+  ifelse random-float 1 < (item 0 acorn-params) and weevil = FALSE [ ;default disperse-prob 0.41
     
     ;;new approach to dispersal to avoid openings
     let startx xcor let starty ycor    
     loop [
       right random 360
       ;;based on HEE data
-      forward random-exponential disperse-dist ;default 5.185
+      forward random-exponential (item 1 acorn-params) ;default 5.185
       ifelse [shade] of patch-here > 0.2 [stop]
       [set xcor startx set ycor starty]      
       ]
+    
     ;;check to see if still in core area after being dispersed
     check-in-core
+    ifelse in-core = TRUE [set acorn-params core-acorn-params]
+    [set acorn-params buffer-acorn-params]
+    
+    
     ;;probability of being eaten
-    ifelse random-float 1 > disperse-eaten-prob [ ;default 0.704
+    ifelse random-float 1 > (item 2 acorn-params) [ ;default 0.704
       ;;probability of being cached
-      ifelse random-float 1 < cache-prob [set cached TRUE] [set cached FALSE]] ; 0.288 default
+      ifelse random-float 1 < (item 3 acorn-params) [set cached TRUE] [set cached FALSE]] ; 0.288 default
     [die]]
   ;;check if eaten
-  [if random-float 1 < undisp-eaten-prob [die]] ;0.538 default
+  [if random-float 1 < (item 4 acorn-params) [die]] ;0.538 default
 end
 
 
@@ -659,6 +690,11 @@ end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;                       Utility Procedures                        ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+to-report random-weibull [Wshape Wscale]
+  let R random-float 1
+  report Wscale * (- ln(R)) ^ (1 / Wshape)
+end
 
 to check-in-core
   ifelse xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)[set in-core TRUE][set in-core FALSE]
@@ -1092,7 +1128,7 @@ bo-weevil-prob
 bo-weevil-prob
 0
 1
-0.34
+0.3491
 0.01
 1
 NIL
@@ -1761,7 +1797,7 @@ wo-weevil-prob
 wo-weevil-prob
 0
 1
-0.24
+0.2357
 0.01
 1
 NIL
@@ -1775,6 +1811,16 @@ CHOOSER
 weevil-scenario
 weevil-scenario
 "fixedaverage" "random" "random-match" "hee" "custom"
+0
+
+CHOOSER
+1062
+82
+1158
+127
+dispersal-scenario
+dispersal-scenario
+"fixedaverage" "custom"
 0
 
 @#$#@#$#@
