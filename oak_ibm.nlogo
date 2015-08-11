@@ -27,7 +27,8 @@ globals [
   harvest-year shelter-phase
   
   mast-mean-bo mast-mean-wo
-  core-acorn-params buffer-acorn-params
+  core-acorn-params-bo buffer-acorn-params-bo
+  core-acorn-params-wo buffer-acorn-params-wo
   disp-params-sq
   
   wo-mast-list bo-mast-list mast-year-index bo-weev-list wo-weev-list
@@ -80,13 +81,43 @@ to setup
   set wo-mast-list [0.1355 0.0665 0.1092 2.720 0.0367 0.136 0.1070 0.238 0.0406]
   set bo-weev-list [0.1396 0.2057 0.6250 0.9545 0.3744 0.1310 0.1304 0.3424 0.2389]
   set wo-weev-list [0.0198 0.1919 0.3679 0.8571 0.1786 0.1176 0.1695 0.1429 0.0761]
-  set mast-year-index 0
+  
+  ifelse dispersal-scenario = "yearly-diff" or dispersal-scenario = "treat-yearly-diff" [
+    set mast-year-index 5][set mast-year-index 0]
   
   set disp-params-sq matrix:from-row-list [
-    [0.624 7.814 8.535 1.353 62.676 1.450 0.757 0.750 0.707] ;AllYrAllTrtBO 
-    [0.614 7.892 8.676 1.384 62.412 1.438 0.799 0.679 0.941] ;AllYrAllTrtWO
-    
-    
+    ;dispProb, lam, weibSc, weibSh, 2dtA, 2dtB, DispEatenProb, cacheProb, undispeatenProb
+    [0.624  7.814  8.535 1.353  62.676 1.450 0.757 0.750 0.707] ;AllYrAllTrtBO 
+    [0.614  7.892  8.676 1.384  62.412 1.438 0.799 0.679 0.941] ;AllYrAllTrtWO
+    [0.638  8.002  8.875 1.469  92.823 1.821 0.768 0.685 0.636] ;AllYrContBO
+    [0.545  7.806  8.616 1.417  71.906 1.591 0.733 0.758 0.933] ;AllYrContWO
+    [0.593  7.492  7.799 1.116  14.172 0.750 0.708 0.821 0.848] ;AllYrSheltBO
+    [0.743  6.778  7.439 1.350  35.333 1.250 0.883 0.500 0.966] ;AllYrSheltWO
+    [0.407  3.987  4.216 1.141   8.920 1.133 0.609 0.972 0.634] ;y11BO
+    [0.407  3.987  4.216 1.141   8.920 1.133 0.609 0.972 0.634] ;y11WO
+    [0.910  8.006  8.792 1.415  87.878 1.731 0.620 0.222 0.000] ;y12BO
+    [0.839  7.091  7.813 1.378  55.027 1.544 0.644 0.679 0.714] ;y12WO
+    [0.661  9.618 10.849 1.767 456.982 4.597 0.744 0.905 0.952] ;y13BO
+    [0.401  9.119 10.100 1.487 491.705 5.000 0.905 0.667 0.968] ;y13WO
+    [0.848 10.624 11.962 1.888 619.826 5.000 0.976 1.000 1.000] ;y14BO
+    [0.506  8.112  8.892 1.360  58.660 1.346 1.000 0.000 1.000] ;y14WO
+    [0.466  4.409  4.810 1.265  19.285 1.561 0.794 1.000 0.487] ;y11ContBO
+    [0.291  2.637  2.559 0.948   1.177 0.750 0.130 0.950 0.839] ;y11SheltBO
+    [0.466  4.409  4.810 1.265  19.285 1.561 0.794 1.000 0.487] ;y11ContWO
+    [0.291  2.637  2.559 0.948   1.177 0.750 0.130 0.950 0.839] ;y11SheltWO
+    [0.873  8.020  8.898 1.567 185.572 2.947 0.646 0.118 0.000] ;y12ContBO
+    [1.000  8.274  8.866 1.239  24.993 0.836 0.583 0.500 0.000] ;y12SheltBO
+    [0.834  8.274  9.140 1.422  82.102 1.610 0.534 0.705 0.615] ;y12ContWO
+    [0.848  5.086  5.693 1.535  52.282 2.319 0.798 0.556 0.875] ;y12SheltWO
+    [0.590  9.354 10.568 1.932 470.712 5.000 0.661 0.950 0.976] ;y13ContBO
+    [0.958 10.335 11.670 1.817 600.180 5.000 1.000 0.000 0.000] ;y13SheltBO
+    [0.336  9.328 10.399 1.558 509.884 5.000 0.900 1.000 0.962] ;y13ContWO
+    [0.615  9.479 10.490 1.565 530.731 5.000 0.917 0.000 1.000] ;y13SheltWO
+    [0.906 10.914 12.336 2.315 625.842 5.000 0.966 1.000 1.000] ;y14ContBO
+    [0.743  9.315 10.153 1.341  85.854 1.396 1.000 0.000 1.000] ;y14SheltBO
+    [0.407  7.197  8.043 1.567 113.597 2.437 1.000 0.000 1.000] ;y14ContWO
+    [0.678  8.844  9.613 1.307  41.316 1.011 1.000 0.000 1.000] ;y14SheltWO
+    [0.619  7.699  8.445 1.367  55.407 1.383 0.769 0.704 0.838] ;AllyrAllTrt
     
     ]
    
@@ -372,9 +403,8 @@ to set-scenario
   if mast-scenario = "hee" [
     set mast-mean-wo item mast-year-index wo-mast-list
     set mast-mean-bo item mast-year-index bo-mast-list
-    set mast-year-index (mast-year-index + 1)
-    if mast-year-index = 9 [set mast-year-index 0]
   ]
+  
   if mast-scenario = "priorgood" [
     ifelse ticks = (harvest-year - 1) OR ticks = (harvest-year - 2) [
       set mast-mean-wo 0.04475
@@ -433,21 +463,46 @@ to set-scenario
     set wo-weevil-prob item mast-year-index wo-weev-list
     ]
   if weevil-scenario = "custom" [ ]
-  
-  if dispersal-scenario = "fixedaverage" [
-    ;disperse prob, distance, disp eaten prob, cache prob, undisp eaten prob  
-    set core-acorn-params [0.41 5.185 0.704 0.288 0.538]
-    set buffer-acorn-params [0.41 5.185 0.704 0.288 0.538]   
-    ]
-  if dispersal-scenario = "custom" [
-    set core-acorn-params (list disperse-prob disperse-dist disperse-eaten-prob cache-prob undisp-eaten-prob)
-    set buffer-acorn-params (list disperse-prob disperse-dist disperse-eaten-prob cache-prob undisp-eaten-prob)
-    ]
-  if dispersal-scenario = "treat-diff" [ 
     
+  if dispersal-scenario = "fixedaverage" [
+    ;old defaults  
+    ;set core-acorn-params [0.41 5.185 0.704 0.288 0.538]
+    ;set buffer-acorn-params [0.41 5.185 0.704 0.288 0.538]   
+    set core-acorn-params-bo matrix:get-row disp-params-sq 30
+    set buffer-acorn-params-bo matrix:get-row disp-params-sq 30
+    set core-acorn-params-wo matrix:get-row disp-params-sq 30
+    set buffer-acorn-params-wo matrix:get-row disp-params-sq 30
     ]
-  if dispersal-scenario = "yearly-diff" [ ]
+  
+  if dispersal-scenario = "custom" [
+    set dispersal-distrib "exponential"
+    set core-acorn-params-bo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    set buffer-acorn-params-bo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    set core-acorn-params-wo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    set buffer-acorn-params-wo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    ]
+  
+  if dispersal-scenario = "treat-diff" [
+    set core-acorn-params-bo matrix:get-row disp-params-sq 4
+    set buffer-acorn-params-bo matrix:get-row disp-params-sq 2
+    set core-acorn-params-wo matrix:get-row disp-params-sq 5
+    set buffer-acorn-params-wo matrix:get-row disp-params-sq 3     
+  ]
+  
+  if dispersal-scenario = "yearly-diff" [
+    let translate-index-bo (list 10 10 10 10 10 10 6 8 10 12)
+    let translate-index-wo (list 10 10 10 10 10 10 7 9 11 13)
+    set core-acorn-params-bo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-bo)
+    set buffer-acorn-params-bo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-bo)
+    set core-acorn-params-wo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-wo)
+    set buffer-acorn-params-wo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-wo)   
+    ]
   if dispersal-scenario = "treat-yearly-diff" [ ]
+  
+  set mast-year-index (mast-year-index + 1)
+  if mast-year-index = 9 [
+      ifelse dispersal-scenario = "yearly-diff" or dispersal-scenario = "treat-yearly-diff"[
+        set mast-year-index 5] [set mast-year-index 0]]
      
 end
 
@@ -481,37 +536,46 @@ end
 
 
 to disperse-mast
+
+  ;Set up parameter sets depending on species
+  let core-acorn-params core-acorn-params-bo
+  let buffer-acorn-params buffer-acorn-params-bo
+  if species = "WO" [
+    set core-acorn-params core-acorn-params-wo 
+    set buffer-acorn-params buffer-acorn-params-wo
+  ]
   
-  let acorn-params buffer-acorn-params  
-  if in-core = TRUE [set acorn-params core-acorn-params]
+  let acorn-params buffer-acorn-params
+  if in-core = TRUE and ticks > harvest-year [set acorn-params core-acorn-params]
   
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
-  ifelse random-float 1 < (item 0 acorn-params) and weevil = FALSE [ ;default disperse-prob 0.41
+  ifelse random-float 1 < (item 0 acorn-params) and weevil = FALSE [
     
     ;;new approach to dispersal to avoid openings
     let startx xcor let starty ycor    
     loop [
       right random 360
       ;;based on HEE data
-      forward random-exponential (item 1 acorn-params) ;default 5.185
+      ifelse dispersal-distrib = "exponential" [forward random-exponential (item 1 acorn-params)]
+      [forward random-weibull (item 3 acorn-params) (item 2 acorn-params)]
       ifelse [shade] of patch-here > 0.2 [stop]
       [set xcor startx set ycor starty]      
       ]
     
     ;;check to see if still in core area after being dispersed
     check-in-core
-    ifelse in-core = TRUE [set acorn-params core-acorn-params]
+    ifelse in-core = TRUE and ticks > harvest-year [set acorn-params core-acorn-params]
     [set acorn-params buffer-acorn-params]
     
     
     ;;probability of being eaten
-    ifelse random-float 1 > (item 2 acorn-params) [ ;default 0.704
+    ifelse random-float 1 > (item 6 acorn-params) [
       ;;probability of being cached
-      ifelse random-float 1 < (item 3 acorn-params) [set cached TRUE] [set cached FALSE]] ; 0.288 default
+      ifelse random-float 1 < (item 7 acorn-params) [set cached TRUE] [set cached FALSE]]
     [die]]
   ;;check if eaten
-  [if random-float 1 < (item 4 acorn-params) [die]] ;0.538 default
+  [if random-float 1 < (item 8 acorn-params) [die]] 
 end
 
 
@@ -1064,10 +1128,10 @@ NIL
 0
 
 SLIDER
-1019
-651
-1194
-684
+1020
+655
+1195
+688
 DegDays
 DegDays
 1980
@@ -1079,10 +1143,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1020
-689
-1192
-722
+1021
+693
+1193
+726
 wt-dist
 wt-dist
 0.1
@@ -1094,10 +1158,10 @@ m
 HORIZONTAL
 
 SLIDER
-1020
-729
-1192
-762
+1021
+733
+1193
+766
 available-N
 available-N
 0
@@ -1120,9 +1184,9 @@ basal-area
 11
 
 SLIDER
-1084
+1102
 134
-1200
+1218
 167
 bo-weevil-prob
 bo-weevil-prob
@@ -1135,10 +1199,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1118
-251
-1230
-284
+1116
+306
+1228
+339
 germ-prob
 germ-prob
 0
@@ -1150,10 +1214,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1025
-386
-1197
-419
+1022
+388
+1194
+421
 seedling-growth
 seedling-growth
 0
@@ -1354,10 +1418,10 @@ Initial Forest\n
 1
 
 SLIDER
-1021
-767
-1193
-800
+1022
+771
+1194
+804
 wilt
 wilt
 0
@@ -1369,10 +1433,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-984
-602
-1061
-647
+985
+606
+1062
+651
 NIL
 sitequal-woak
 2
@@ -1380,10 +1444,10 @@ sitequal-woak
 11
 
 MONITOR
-1064
-602
-1141
-647
+1065
+606
+1142
+651
 NIL
 sitequal-maple
 2
@@ -1391,10 +1455,10 @@ sitequal-maple
 11
 
 MONITOR
-1144
-601
-1224
-646
+1146
+606
+1226
+651
 NIL
 sitequal-poplar
 2
@@ -1402,10 +1466,10 @@ sitequal-poplar
 11
 
 TEXTBOX
-1056
-461
-1206
-479
+1057
+465
+1207
+483
 Site Conditions
 14
 0.0
@@ -1449,7 +1513,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-0
+2
 
 TEXTBOX
 65
@@ -1502,10 +1566,10 @@ Tuning Parameters
 1
 
 SWITCH
-1030
-482
-1177
-515
+1031
+486
+1178
+519
 manual-site-qual
 manual-site-qual
 0
@@ -1513,12 +1577,42 @@ manual-site-qual
 -1000
 
 SLIDER
-1007
-519
-1099
-552
+1008
+523
+1100
+556
 sqwoak
 sqwoak
+0
+1
+0.75
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1106
+522
+1198
+555
+sqboak
+sqboak
+0
+1
+0.75
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1008
+558
+1100
+591
+sqmap
+sqmap
 0
 1
 0.75
@@ -1529,39 +1623,9 @@ HORIZONTAL
 
 SLIDER
 1105
-518
+558
 1197
-551
-sqboak
-sqboak
-0
-1
-0.75
-0.01
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1007
-554
-1099
-587
-sqmap
-sqmap
-0
-1
-0.75
-0.01
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1104
-554
-1196
-587
+591
 sqpop
 sqpop
 0
@@ -1633,10 +1697,10 @@ years
 HORIZONTAL
 
 CHOOSER
-1045
-292
-1183
-337
+971
+300
+1109
+345
 seedlings
 seedlings
 "none" "simple" "hee"
@@ -1653,10 +1717,10 @@ mast-scenario
 1
 
 SWITCH
-1055
-423
-1163
-456
+1052
+425
+1160
+458
 sprouting
 sprouting
 0
@@ -1664,25 +1728,25 @@ sprouting
 -1000
 
 SLIDER
-993
-173
-1107
-206
+986
+178
+1100
+211
 disperse-prob
 disperse-prob
 0
 1
-0.41
+0.56
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1109
-173
-1221
-206
+986
+219
+1098
+252
 disperse-dist
 disperse-dist
 0
@@ -1694,25 +1758,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-993
-210
-1109
-243
+1101
+219
+1217
+252
 disperse-eaten-prob
 disperse-eaten-prob
 0
 1
-0.704
+0.705
 0.001
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1112
-210
-1236
-243
+987
+256
+1100
+289
 cache-prob
 cache-prob
 0
@@ -1724,10 +1788,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-996
-250
-1110
-283
+1104
+256
+1218
+289
 undisp-eaten-prob
 undisp-eaten-prob
 0
@@ -1739,10 +1803,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1080
-343
-1195
-376
+1097
+351
+1212
+384
 prob-browsed
 prob-browsed
 0
@@ -1764,10 +1828,10 @@ seed-scenario
 1
 
 SLIDER
-969
-344
-1077
-377
+986
+352
+1094
+385
 drought-prob
 drought-prob
 0
@@ -1789,9 +1853,9 @@ browse-scenario
 0
 
 SLIDER
-963
+981
 134
-1081
+1099
 167
 wo-weevil-prob
 wo-weevil-prob
@@ -1804,23 +1868,33 @@ NIL
 HORIZONTAL
 
 CHOOSER
-960
-82
-1059
-127
+996
+84
+1095
+129
 weevil-scenario
 weevil-scenario
 "fixedaverage" "random" "random-match" "hee" "custom"
 0
 
 CHOOSER
-1062
-82
-1158
-127
+1098
+84
+1194
+129
 dispersal-scenario
 dispersal-scenario
-"fixedaverage" "custom"
+"fixedaverage" "custom" "treat-diff" "yearly-diff"
+1
+
+CHOOSER
+1105
+171
+1200
+216
+dispersal-distrib
+dispersal-distrib
+"exponential" "weibull"
 0
 
 @#$#@#$#@

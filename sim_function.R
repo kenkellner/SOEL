@@ -56,7 +56,11 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        mast.scenario = 'fixedaverage',
                        #Weevil scenario, 'fixedaverage', 'random', 'random-match', 'hee', or 'custom'
                        weevil.scenario = 'fixedaverage',
-                       #Acorn transition probabilities (list)
+                       #Dispersal scenario, 'fixedaverage', 'custom', 'treat-diff', 'yearly-diff'
+                       dispersal.scenario = 'fixedaverage',
+                       #Dispersal kernal type, exponential or weibull
+                       dispersal.distrib = 'weibull',
+                       #Acorn transition probabilities (list) to use if above is set to custom
                        acorn = list(disperse=0.41,disperse.dist=5.185,
                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                        #Maximum yearly seedling growth if 'simple' is selected
@@ -160,11 +164,15 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       if(seedlings != "none"){
         NLCommand(paste('set mast-scenario ','\"',mast.scenario,'\"',sep=""))
         NLCommand(paste('set weevil-scenario ','\"',weevil.scenario,'\"',sep=""))
-        NLCommand(paste('set disperse-prob',acorn$disperse))
-        NLCommand(paste('set disperse-dist',acorn$disperse.eaten))
-        NLCommand(paste('set disperse-eaten-prob',acorn$cache.prob))
-        NLCommand(paste('set cache-prob',acorn$weevil))
-        NLCommand(paste('set undisp-eaten-prob',acorn$undisperse.eaten))
+        NLCommand(paste('set dispersal-scenario ','\"',dispersal.scenario,'\"',sep=""))
+        NLCommand(paste('set dispersal-distrib ','\"',dispersal.distrib,'\"',sep=""))
+        if(dispersal.scenario == "custom"){
+          NLCommand(paste('set disperse-prob',acorn$disperse))
+          NLCommand(paste('set disperse-dist',acorn$disperse.eaten))
+          NLCommand(paste('set disperse-eaten-prob',acorn$cache.prob))
+          NLCommand(paste('set cache-prob',acorn$weevil))
+          NLCommand(paste('set undisp-eaten-prob',acorn$undisperse.eaten))
+        }
       }
       if(seedlings == "hee"){
         NLCommand(paste('set prob-browsed',prob.browsed))
