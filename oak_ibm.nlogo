@@ -381,7 +381,8 @@ end
 
 to set-scenario
   
-  let random-index random 8 + 1
+  let random-index random 9
+  if dispersal-scenario = "random" [set random-index ((random 4) + 5)] 
   
   ;Acorn production
   if mast-scenario = "fixedaverage" [
@@ -497,7 +498,24 @@ to set-scenario
     set core-acorn-params-wo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-wo)
     set buffer-acorn-params-wo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-wo)   
     ]
-  if dispersal-scenario = "treat-yearly-diff" [ ]
+  if dispersal-scenario = "treat-yearly-diff" [ 
+    let translate-index-core-bo (list 10 10 10 10 10 10 15 19 23 27)
+    let translate-index-buffer-bo (list 10 10 10 10 10 10 14 18 22 26)
+    let translate-index-core-wo (list 10 10 10 10 10 10 17 21 25 29)
+    let translate-index-buffer-wo (list 10 10 10 10 10 10 16 20 24 28)
+    set core-acorn-params-bo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-core-bo)
+    set buffer-acorn-params-bo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-buffer-bo)
+    set core-acorn-params-wo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-core-wo)
+    set buffer-acorn-params-wo matrix:get-row disp-params-sq (item (mast-year-index + 1) translate-index-buffer-wo)   
+    ]
+  if dispersal-scenario = "random" [
+    let translate-index-bo (list 10 10 10 10 10 10 6 8 10 12)
+    let translate-index-wo (list 10 10 10 10 10 10 7 9 11 13)
+    set core-acorn-params-bo matrix:get-row disp-params-sq (item (random-index + 1) translate-index-bo)
+    set buffer-acorn-params-bo matrix:get-row disp-params-sq (item (random-index + 1) translate-index-bo)
+    set core-acorn-params-wo matrix:get-row disp-params-sq (item (random-index + 1) translate-index-wo)
+    set buffer-acorn-params-wo matrix:get-row disp-params-sq (item (random-index + 1) translate-index-wo)
+  ]
   
   set mast-year-index (mast-year-index + 1)
   if mast-year-index = 9 [
@@ -1880,12 +1898,12 @@ weevil-scenario
 CHOOSER
 1098
 84
-1194
+1237
 129
 dispersal-scenario
 dispersal-scenario
-"fixedaverage" "custom" "treat-diff" "yearly-diff"
-1
+"fixedaverage" "custom" "treat-diff" "yearly-diff" "treat-yearly-diff" "random"
+5
 
 CHOOSER
 1105

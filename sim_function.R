@@ -56,7 +56,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        mast.scenario = 'fixedaverage',
                        #Weevil scenario, 'fixedaverage', 'random', 'random-match', 'hee', or 'custom'
                        weevil.scenario = 'fixedaverage',
-                       #Dispersal scenario, 'fixedaverage', 'custom', 'treat-diff', 'yearly-diff'
+                       #Dispersal scenario, 'fixedaverage', 'custom', 'treat-diff', 'yearly-diff',
+                       #'treat-yearly-diff', or 'random'
                        dispersal.scenario = 'fixedaverage',
                        #Dispersal kernal type, exponential or weibull
                        dispersal.distrib = 'weibull',
