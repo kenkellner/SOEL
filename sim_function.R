@@ -10,6 +10,8 @@ require(parallel)
 #May need to manually set system paths to java install, e.g. below:
 #system('export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre')
 #system('export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64:$JAVA_HOME/jre/lib/amd64/client')
+#system('sudo R CMD javareconf')
+#https://stackoverflow.com/questions/12872699/error-unable-to-load-installed-packages-just-now
 
 #Netlogo model files should be in current working directory
 
