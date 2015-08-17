@@ -138,6 +138,9 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   #Internal function to set variables and run NetLogo in each process
   runNL <- function(i,harvest) {
     #Select harvest type, seedling type, etc.
+    NLCommand(paste('set x-core',xcorewidth))
+    NLCommand(paste('set y-core',ycorewidth))
+    NLCommand(paste('set buffer',buffer))
     NLCommand(paste('set harvest-type',harvest))
     NLCommand(paste('set burnin',burnin))
     NLCommand(paste('set light-extinct',extinct))
