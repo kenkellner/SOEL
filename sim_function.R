@@ -47,7 +47,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        drought.prob = 0.2,
                        #Browse scenario (also only works when seedlings = 'hee')
                        #'fixedaverage', 'hee' for yearly variation, or 'custom' to set manually
-                       browse.scenario = 'custom',
+                       browse.scenario = 'fixedaverage',
                        prob.browsed = 0,
                        #Masting cycle control; 'fixedaverage', 'fixedgood', fixedbad' for constant values
                        #'hee' for cycling through each year of HEE data repeatedly
