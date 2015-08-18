@@ -74,6 +74,9 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        force.processors = NULL
                        ){
   
+  #Model start time
+  start.time <- Sys.time()
+  
   #Get path to appropriate model
   if(model == 'ibm'){model.path <- paste(getwd(),"/oak_ibm.nlogo",sep="")
   } else {model.path <- paste(getwd(),"/oak_ibm_jabowa.nlogo",sep="")}
@@ -210,6 +213,12 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       out[[i]][[j]] <- sapply(sim, function(x) x[[j]])
     }
   }
+  
+  #End time
+  end.time <- Sys.time() 
+  time <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
+  
+  out$runtime.minutes <- time
   
   #Stop NetLogo instances and cluster
   stopNL <- function(i){NLQuit()}

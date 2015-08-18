@@ -1,6 +1,15 @@
 
 source('sim_function.R')
+library(notifyR)
 
-mast.average <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=2,
-                    burnin=20,nyears=25,
-                    mast.scenario='fixedaverage')
+notifyR(
+
+mast.average <- forest.sim(xcorewidth=100, ycorewidth=100, nreps=1,
+                    burnin=5,nyears=10,
+                    mast.scenario='fixedaverage',force.processors=1)
+
+,
+
+email = 'ken.kellner@gmail.com'
+
+)
