@@ -1,15 +1,10 @@
 
 source('sim_function.R')
-library(notifyR)
 
-notifyR(
-
-mast.average <- forest.sim(xcorewidth=100, ycorewidth=100, nreps=1,
+mast.average <- forest.sim(xcorewidth=50, ycorewidth=50, nreps=2,
                     burnin=5,nyears=10,
-                    mast.scenario='fixedaverage',force.processors=1)
+                    mast.scenario='fixedaverage')
 
-,
 
-email = 'ken.kellner@gmail.com'
-
-)
+library(RPushbullet)
+pbPost('note','testing','testing more text',devices='Nexus 6')
