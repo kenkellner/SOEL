@@ -7,6 +7,8 @@
 #install.packages('RNetLogo')
 require(parallel)
 
+options( java.parameters = "-Xmx45g" )
+
 #May need to manually set system paths to java install, e.g. below:
 #system('export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre')
 #system('export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64:$JAVA_HOME/jre/lib/amd64/client')
@@ -125,10 +127,19 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   
   #Internal function to setup NetLogo in each parallel subprocess
   initNL <- function(dummy, gui, nl.path, model.path) {
+    options( java.parameters = "-Xmx4000m" )
+    library(rJava)
+    .jinit()
     library(RNetLogo)
     NLStart(nl.path, gui=FALSE)
     NLLoadModel(model.path)
   }
+  
+  #Java garbage cleanup
+  jgc <- function()
+  {
+    .jcall("java/lang/System", method = "gc")
+  }    
   
   #Setup each parallel process
   if(!is.null(force.processors)){processors <- force.processors
@@ -140,6 +151,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   
   #Internal function to set variables and run NetLogo in each process
   runNL <- function(i,harvest) {
+    
+    gc()
+    jgc()
+    
     #Select harvest type, seedling type, etc.
     NLCommand(paste('set x-core',xcorewidth))
     NLCommand(paste('set y-core',ycorewidth))
@@ -201,6 +216,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     #Return output
     if(model == 'ibm' & seedlings !='none'){return(temp[,2:40])
     } else {return(temp[,2:29])}
+    
+    gc()
       
   }
   
