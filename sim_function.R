@@ -127,6 +127,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   
   #Internal function to setup NetLogo in each parallel subprocess
   initNL <- function(dummy, gui, nl.path, model.path) {
+
+    #Initialize JVM with plenty of RAM
     options( java.parameters = "-Xmx6000m" )
     library(rJava)
     .jinit()
@@ -135,7 +137,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     NLLoadModel(model.path)
   }
   
-  #Java garbage cleanup
+  #Java garbage cleanup function
   jgc <- function()
   {
     .jcall("java/lang/System", method = "gc")
@@ -152,6 +154,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   #Internal function to set variables and run NetLogo in each process
   runNL <- function(i,harvest) {
     
+    #Garbage collection in R and Java
     gc()
     jgc()
     

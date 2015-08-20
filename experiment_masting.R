@@ -1,10 +1,12 @@
+##Comparison of different masting scenarios given average conditions otherwise
 
 source('sim_function.R')
 
 library(RPushbullet)
 
-#24 reps with 8 processors works
+start.time <- Sys.time()
 
+#Run experiment and save results
 mast.average <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                     burnin=20,nyears=40,
                     mast.scenario='fixedaverage', force.processors = 15)
@@ -35,5 +37,12 @@ mast.priorbad <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                        mast.scenario='priorbad', force.processors = 15)
 save(mast.priorbad,file='output/mast_priorbad.Rdata')
 
+#Calculate runtime and push alert message
+end.time <- Sys.time() 
+runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
+pbPost('note','Analysis Complete',
+       paste('Mast experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
+       devices='Nexus 6')
 
-pbPost('note','Analysis Complete','Simple mast analysis on rbrutus32 complete',devices='Nexus 6')
+#Shut down instance
+system('sudo shutdown -h now')
