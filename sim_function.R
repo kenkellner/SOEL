@@ -7,7 +7,7 @@
 #install.packages('RNetLogo')
 require(parallel)
 
-options( java.parameters = "-Xmx45g" )
+#options( java.parameters = "-Xmx60g" )
 
 #May need to manually set system paths to java install, e.g. below:
 #system('export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre')
@@ -127,7 +127,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   
   #Internal function to setup NetLogo in each parallel subprocess
   initNL <- function(dummy, gui, nl.path, model.path) {
-    options( java.parameters = "-Xmx4000m" )
+    options( java.parameters = "-Xmx6000m" )
     library(rJava)
     .jinit()
     library(RNetLogo)
