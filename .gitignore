@@ -3,3 +3,4 @@
 .RData
 *.db
 oak-lifecycle.Rproj
+output
