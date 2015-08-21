@@ -11,31 +11,31 @@ drought.prob2 <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                            burnin=20,nyears=40,
                            seed.scenario = "randomdrought",
                            drought.prob = 0.2,
-                           force.processors = 15)
+                           force.processors = 10)
 save(drought.prob2,file='output/drought_prob2.Rdata')
 drought.prob4 <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                             burnin=20,nyears=40,
                             seed.scenario = "randomdrought",
                             drought.prob = 0.4,
-                            force.processors = 15)
+                            force.processors = 10)
 save(drought.prob4,file='output/drought_prob4.Rdata')
 drought.prob6 <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                             burnin=20,nyears=40,
                             seed.scenario = "randomdrought",
                             drought.prob = 0.6,
-                            force.processors = 15)
+                            force.processors = 10)
 save(drought.prob6,file='output/drought_prob6.Rdata')
 drought.prob8 <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                             burnin=20,nyears=40,
                             seed.scenario = "randomdrought",
                             drought.prob = 0.8,
-                            force.processors = 15)
+                            force.processors = 10)
 save(drought.prob8,file='output/drought_prob8.Rdata')
 drought.prob10 <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                             burnin=20,nyears=40,
                             seed.scenario = "randomdrought",
                             drought.prob = 1,
-                            force.processors = 15)
+                            force.processors = 10)
 save(drought.prob10,file='output/drought_prob10.Rdata')
 
 #Calculate runtime and push alert message
@@ -45,6 +45,6 @@ pbPost('note','Analysis Complete',
        paste('Drought experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
        devices='Nexus 6')
 
-#Shut down instance
+#Shut down instance 
 system('sudo shutdown -h now')
 
