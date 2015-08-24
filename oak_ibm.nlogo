@@ -2387,6 +2387,138 @@ NetLogo 5.2.0
       <value value="0.5"/>
     </enumeratedValueSet>
   </experiment>
+  <experiment name="test1" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="40"/>
+    <metric>basal-area</metric>
+    <enumeratedValueSet variable="y-core">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wo-weevil-prob">
+      <value value="0.2357"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-oak">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="HEE-mean">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed-scenario">
+      <value value="&quot;randomdrought&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dispersal-scenario">
+      <value value="&quot;random&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="burnin">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wilt">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="disperse-eaten-prob">
+      <value value="0.705"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="undisp-eaten-prob">
+      <value value="0.538"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="available-N">
+      <value value="325"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="harvest-type">
+      <value value="&quot;shelterwood&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-maple">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="bo-weevil-prob">
+      <value value="0.3491"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="disperse-prob">
+      <value value="0.56"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sqmap">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="weevil-scenario">
+      <value value="&quot;fixedaverage&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seedlings">
+      <value value="&quot;hee&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sqboak">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-maple">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="light-extinct">
+      <value value="2.5E-4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="density-dep">
+      <value value="3.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="manual-site-qual">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sqwoak">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cache-prob">
+      <value value="0.288"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="disperse-dist">
+      <value value="5.185"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="x-core">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob-browsed">
+      <value value="0.1058"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-oak">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="germ-prob">
+      <value value="0.77"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seedling-growth">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sprouting">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mast-scenario">
+      <value value="&quot;hee&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dispersal-distrib">
+      <value value="&quot;exponential&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sapling-poplar">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sqpop">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DegDays">
+      <value value="4840"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="browse-scenario">
+      <value value="&quot;fixedaverage&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drought-prob">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wt-dist">
+      <value value="9.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="buffer">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mature-poplar">
+      <value value="0"/>
+    </enumeratedValueSet>
+  </experiment>
 </experiments>
 @#$#@#$#@
 @#$#@#$#@
