@@ -129,7 +129,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   initNL <- function(dummy, gui, nl.path, model.path) {
 
     #Initialize JVM with plenty of RAM
-    options( java.parameters = "-Xmx6000m" )
+    options( java.parameters = "-Xmx5500m" )
     library(rJava)
     .jinit()
     library(RNetLogo)
@@ -239,6 +239,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     stopNL <- function(i){NLQuit()}
     invisible(parLapply(cl, 1:processors, stopNL))
     stopCluster(cl)
+    gc()
   }
   
   #End time
