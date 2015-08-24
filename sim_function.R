@@ -146,10 +146,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   #Setup each parallel process
   if(!is.null(force.processors)){processors <- force.processors
   } else {processors <- detectCores()}
-  cl <- makeCluster(processors)
-  clusterExport(cl = cl, ls(), envir = environment())
-  invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
-                      nl.path=netlogo.path, model.path=model.path))
+  #cl <- makeCluster(processors)
+  #clusterExport(cl = cl, ls(), envir = environment())
+  #invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
+  #                    nl.path=netlogo.path, model.path=model.path))
   
   #Internal function to set variables and run NetLogo in each process
   runNL <- function(i,harvest) {
@@ -227,11 +227,18 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   #Generate and format output
   out <- sapply(harvests,function(x) NULL)
   for (i in 1:length(harvests)){
+    cl <- makeCluster(processors)
+    clusterExport(cl = cl, ls(), envir = environment())
+    invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
+                        nl.path=netlogo.path, model.path=model.path))
     sim <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest= paste('\"',harvests[i],'\"',sep=""))
     out[[i]] <- sapply(rep.names[-1],function(x) NULL)
     for (j in 1:(length(rep.names)-1)){
       out[[i]][[j]] <- sapply(sim, function(x) x[[j]])
     }
+    stopNL <- function(i){NLQuit()}
+    invisible(parLapply(cl, 1:processors, stopNL))
+    stopCluster(cl)
   }
   
   #End time
@@ -241,9 +248,9 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   out$runtime.minutes <- time
   
   #Stop NetLogo instances and cluster
-  stopNL <- function(i){NLQuit()}
-  invisible(parLapply(cl, 1:processors, stopNL))
-  stopCluster(cl)
+  #stopNL <- function(i){NLQuit()}
+  #invisible(parLapply(cl, 1:processors, stopNL))
+  #stopCluster(cl)
   
   return(out)
  
