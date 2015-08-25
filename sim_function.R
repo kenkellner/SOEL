@@ -129,7 +129,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   initNL <- function(dummy, gui, nl.path, model.path) {
 
     #Initialize JVM with plenty of RAM
-    options( java.parameters = "-Xmx5500m" )
+    options( java.parameters = "-Xmx9000m" )
     library(rJava)
     .jinit()
     library(RNetLogo)
@@ -228,9 +228,11 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   out <- sapply(harvests,function(x) NULL)
   for (i in 1:length(harvests)){
     cl <- makeCluster(processors)
+    on.exit(stopCluster(cl))
     clusterExport(cl = cl, ls(), envir = environment())
     invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
                         nl.path=netlogo.path, model.path=model.path))
+    on.exit(closeAllConnections())
     sim <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest= paste('\"',harvests[i],'\"',sep=""))
     out[[i]] <- sapply(rep.names[-1],function(x) NULL)
     for (j in 1:(length(rep.names)-1)){
@@ -239,7 +241,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     stopNL <- function(i){NLQuit()}
     invisible(parLapply(cl, 1:processors, stopNL))
     stopCluster(cl)
+    closeAllConnections()
+    Sys.sleep(30)
     gc()
+    print(paste("Completed", harvests[i]))
   }
   
   #End time

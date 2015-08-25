@@ -7,11 +7,11 @@ library(RPushbullet)
 start.time <- Sys.time()
 
 #Run experiment and save results
-drought.prob2 <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
+drought.prob2 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=24,
                            burnin=20,nyears=40,
                            seed.scenario = "randomdrought",
                            drought.prob = 0.2,
-                           force.processors = 10)
+                           force.processors = 6)
 save(drought.prob2,file='output/drought_prob2.Rdata')
 drought.prob4 <- forest.sim(xcorewidth=200, ycorewidth=200, nreps=30,
                             burnin=20,nyears=40,
