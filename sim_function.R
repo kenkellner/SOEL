@@ -7,8 +7,6 @@
 #install.packages('RNetLogo')
 require(parallel)
 
-#options( java.parameters = "-Xmx60g" )
-
 #May need to manually set system paths to java install, e.g. below:
 #system('export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre')
 #system('export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64:$JAVA_HOME/jre/lib/amd64/client')
@@ -73,7 +71,9 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Absolute path to NetLogo directory
                        netlogo.path = nl.path,
                        #Force a certain number of cores to be used (otherwise all cores are used)
-                       force.processors = NULL
+                       force.processors = NULL,
+                       #RAM per processor maximum in MB
+                       ram.max = 5000
                        ){
   
   #Model start time
@@ -129,7 +129,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   initNL <- function(dummy, gui, nl.path, model.path) {
 
     #Initialize JVM with plenty of RAM
-    options( java.parameters = "-Xmx9000m" )
+    options( java.parameters = paste("-Xmx",ram.max,"m",sep="") )
     library(rJava)
     .jinit()
     library(RNetLogo)
