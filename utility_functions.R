@@ -49,12 +49,20 @@ gen.dataset <- function(datalist,metric,year){
       index = index + length(dat.add)
     }
   }
+  out[,1] <- as.numeric(out[,1])
   return(out)
 }
 
-gen.figures <- function(datalist,metric,year,maxy){
+gen.figures <- function(datalist,metric,year,maxy,singleplot=FALSE){
   
   dat <- gen.dataset(datalist,metric,year)
+  
+  if(singleplot){
+    if(length(unique(dat$harvest))==2){par(mfrow=c(2,1))}
+    if(length(unique(dat$harvest))==4){par(mfrow=c(2,2))}
+  }
+  
+  cols <- c('red','blue','green','yellow')
   
   for (i in 1:length(unique(dat$harvest))){
     temp <- dat[dat$harvest == unique(dat$harvest)[i],]
@@ -68,11 +76,40 @@ gen.figures <- function(datalist,metric,year,maxy){
       sds[j] <- sd(hold)
     }
       
-    brp <- barplot(means,ylab=metric,xlab="Scenario",names=unique(temp$scenario),
-                    main=unique(dat$harvest)[i],
-                    ylim=c(0,maxy))
+    brp <- barplot(means,ylab=metric,xlab="",names=unique(temp$scenario),
+                    main=unique(dat$harvest)[i],col=cols[i],
+                    ylim=c(0,maxy),las=3)
       for (k in 1:length(means)){
           segments(brp[k],means[k]-sds[k],brp[k],means[k]+sds[k])
-    }
+      }
   }
+  if(singleplot){par(mfrow=c(1,1))}
+}
+
+analyze.ibm <- function(datalist,harvest,metric,year,cont=FALSE){
+  
+  require(pgirmess)
+  
+  dat <- gen.dataset(datalist,metric,year)
+  dat <- dat[dat$harvest == harvest,]
+  
+  if(!cont){
+    dat[,3] <- as.factor(dat[,3])
+    a <- aov(dat[,1] ~ dat[,3])
+    a.mc <- TukeyHSD(a)
+  
+    b <- kruskal.test(dat[,1] ~ dat[,3])
+    b.mc <- kruskalmc(dat[,1], dat[,3])
+    
+    out <- list(anova=a,anova.mc=a.mc,kruskal=b,kruskal.mc=b.mc)
+  }
+  
+  if(cont){
+    dat[,3] ~ as.numeric(dat[,3])
+    a <- lm(dat[,1] ~ dat[,3])
+    
+    out <- a
+  }
+  
+  return(out)
 }

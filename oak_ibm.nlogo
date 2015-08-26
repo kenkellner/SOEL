@@ -564,7 +564,7 @@ to disperse-mast
   ]
   
   let acorn-params buffer-acorn-params
-  if in-core = TRUE and ticks > harvest-year [set acorn-params core-acorn-params]
+  if harvest-type = "shelterwood" and ticks > harvest-year and in-core = TRUE [set acorn-params core-acorn-params]
   
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
@@ -583,7 +583,7 @@ to disperse-mast
     
     ;;check to see if still in core area after being dispersed
     check-in-core
-    ifelse in-core = TRUE and ticks > harvest-year [set acorn-params core-acorn-params]
+    ifelse harvest-type = "shelterwood" and ticks > harvest-year and in-core = TRUE [set acorn-params core-acorn-params]
     [set acorn-params buffer-acorn-params]
     
     
