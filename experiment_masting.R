@@ -46,3 +46,23 @@ pbPost('note','Analysis Complete',
 
 #Shut down instance
 system('sudo shutdown -h now') 
+
+#Reload data
+lapply(c('output/mast_average.Rdata','output/mast_bad.Rdata','output/mast_good.Rdata',
+         'output/mast_hee.Rdata','output/mast_priorbad.Rdata','output/mast_priorgood.Rdata',
+         'output/mast_random.Rdata'),load,.GlobalEnv)
+
+source('utility_functions.R')
+
+datalist <- list(mast.good=mast.good,mast.average=mast.average,mast.bad=mast.bad,mast.hee=mast.hee,
+                 mast.random=mast.random,mast.priorgood=mast.priorgood,mast.priorbad=mast.priorbad)
+
+gen.figures(datalist,'seedclass123',25,c(0,11000),singleplot=T)
+gen.figures(datalist,'seedclass4',25,c(0,150),singleplot=T)
+gen.figures(datalist,'ba',25,c(0,35),singleplot=T)
+
+out <- analyze.ibm(datalist,'clearcut','seedclass4',25)
+summary(out$anova)
+out$kruskal
+out$anova.mc
+

@@ -22,7 +22,7 @@ treat.reorg <- function(datalist){
 }
 
 #Function to summarize data from a particular year and metric
-gen.dataset <- function(datalist,metric,year){
+gen.dataset <- function(datalist,metric,year,cont=FALSE,vals=NULL){
   
   temp <- treat.reorg(datalist)
   
@@ -44,18 +44,20 @@ gen.dataset <- function(datalist,metric,year){
       
       dat.add <- eval(parse(text=paste('temp[[i]][[j]]$',metric,'[',year,',]',sep="")))
       temp.harv <- rep(names(temp)[i],length(dat.add))
-      temp.treat <- rep(names(temp[[1]])[j],length(dat.add))
+      if(!cont){temp.treat <- rep(names(temp[[1]])[j],length(dat.add))}
+      if(cont){temp.treat <- as.numeric(rep(vals[j],length(dat.add)))}
       out[index:(index+length(dat.add)-1),1:3] <- cbind(dat.add,temp.harv,temp.treat)
       index = index + length(dat.add)
     }
   }
   out[,1] <- as.numeric(out[,1])
+  if(cont){out[,3] <- as.numeric(out[,3])}
   return(out)
 }
 
-gen.figures <- function(datalist,metric,year,maxy,singleplot=FALSE){
+gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplot=FALSE){
   
-  dat <- gen.dataset(datalist,metric,year)
+  dat <- gen.dataset(datalist,metric,year,cont,vals)
   
   if(singleplot){
     if(length(unique(dat$harvest))==2){par(mfrow=c(2,1))}
@@ -75,22 +77,35 @@ gen.figures <- function(datalist,metric,year,maxy,singleplot=FALSE){
       means[j] <- mean(hold)
       sds[j] <- sd(hold)
     }
+    
+    if(!cont){
       
     brp <- barplot(means,ylab=metric,xlab="",names=unique(temp$scenario),
                     main=unique(dat$harvest)[i],col=cols[i],
-                    ylim=c(0,maxy),las=3)
+                    ylim=ylim,las=3)
       for (k in 1:length(means)){
           segments(brp[k],means[k]-sds[k],brp[k],means[k]+sds[k])
       }
+    }
+    
+    if(cont){
+      
+      plot(vals,means,ylab=metric,xlab="Parameter Value",ylim=ylim,col=cols[i],
+           main=unique(dat$harvest)[i],type='o',lwd=3)
+      for (k in 1:length(means)){
+        segments(vals[k],means[k]-sds[k],vals[k],means[k]+sds[k])
+      }
+      
+    }
   }
   if(singleplot){par(mfrow=c(1,1))}
 }
 
-analyze.ibm <- function(datalist,harvest,metric,year,cont=FALSE){
+analyze.ibm <- function(datalist,harvest,metric,year,cont=FALSE,vals=NULL){
   
   require(pgirmess)
   
-  dat <- gen.dataset(datalist,metric,year)
+  dat <- gen.dataset(datalist,metric,year,cont,vals)
   dat <- dat[dat$harvest == harvest,]
   
   if(!cont){

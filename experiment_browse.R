@@ -65,3 +65,18 @@ pbPost('note','Analysis Complete',
 
 #Shut down instance 
 system('sudo shutdown -h now')
+
+lapply(c('output/browse_prob0.Rdata','output/browse_prob2.Rdata','output/browse_prob4.Rdata',
+         'output/browse_prob6.Rdata','output/browse_prob8.Rdata','output/browse_prob10.Rdata'),
+       load,.GlobalEnv)
+
+source('utility_functions.R')
+
+datalist = list(browse.prob0=browse.prob0,browse.prob2=browse.prob2,browse.prob4=browse.prob4,
+                browse.prob6=browse.prob6,browse.prob8=browse.prob8,browse.prob10=browse.prob10)
+
+gen.figures(datalist,'seedclass123',25,ylim=c(1000,6000),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
+gen.figures(datalist,'seedclass4',25,ylim=c(0,100),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
+
+out <- analyze.ibm(datalist,'clearcut','seedclass4',25,cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1))
+summary(out)

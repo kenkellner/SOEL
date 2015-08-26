@@ -59,3 +59,17 @@ pbPost('note','Analysis Complete',
 #Shut down instance 
 system('sudo shutdown -h now')
 
+lapply(c('output/drought_prob0.Rdata','output/drought_prob2.Rdata','output/drought_prob4.Rdata',
+         'output/drought_prob6.Rdata','output/drought_prob8.Rdata','output/drought_prob10.Rdata'),
+         load,.GlobalEnv)
+
+source('utility_functions.R')
+
+datalist = list(drought.prob0=drought.prob0,drought.prob2=drought.prob2,drought.prob4=drought.prob4,
+                drought.prob6=drought.prob6,drought.prob8=drought.prob8,drought.prob10=drought.prob10)
+
+gen.figures(datalist,'seedclass123',25,ylim=c(1000,6000),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
+gen.figures(datalist,'seedclass4',25,ylim=c(0,500),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
+
+out <- analyze.ibm(datalist,'clearcut','seedclass4',25,cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1))
+summary(out)
