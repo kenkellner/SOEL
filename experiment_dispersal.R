@@ -7,6 +7,12 @@ library(RPushbullet)
 start.time <- Sys.time()
 
 #Run experiment and save results
+disp.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=24,
+                             burnin=20,nyears=40,
+                             dispersal.scenario = "fixedaverage",
+                             force.processors = 12,
+                             ram.max = 5000)
+save(disp.average,file='output/disp_average.Rdata')
 disp.treatdiff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=24,
                          burnin=20,nyears=40,
                          dispersal.scenario = "treat-diff",
@@ -45,3 +51,23 @@ pbPost('note','Analysis Complete',
 
 #Shut down instance 
 system('sudo shutdown -h now')
+
+#Reload data
+lapply(c('output/disp_average.Rdata','output/disp_treatdiff.Rdata','output/disp_yearlydiff.Rdata',
+         'output/disp_yearlytreatdiff.Rdata',
+         'output/disp_yearlytreatdiffweev.Rdata'),load,.GlobalEnv)
+
+source('utility_functions.R')
+
+for (i in 1:4){
+  for (j in 1:39){
+    mast.average[[i]][[j]] <- mast.average[[i]][[j]][,1:24]
+  }
+}
+
+datalist <- list(disp.average=disp.average,disp.treatdiff=disp.treatdiff,disp.yearlydiff=disp.yearlydiff,
+                 disp.yearlytreatdiff=disp.yearlytreatdiff,disp.ytweev=disp.yearlytreatdiffweev)
+
+gen.figures(datalist,'seedboclass123',25,c(0,11000),singleplot=T)
+gen.figures(datalist,'seedboclass4',25,c(0,100),singleplot=T)
+gen.figures(datalist,'ba',25,c(0,35),singleplot=T)

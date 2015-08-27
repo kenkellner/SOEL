@@ -35,6 +35,11 @@ globals [
   acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters 
   regen-dens regen-stump-dens
   seedlings-class1 seedlings-class2 seedlings-class3 seedlings-class123 seedlings-class4 acorns-pertree
+  seedbo-class123 seedwo-class123 seedbo-class4 seedwo-class4
+  bo-acorn-count wo-acorn-count
+  new-bo-seedlings new-wo-seedlings
+  total-bo-acorns total-wo-acorns
+  pct-bo-germ pct-wo-germ
   ]
 
 turtles-own [in-core]
@@ -141,7 +146,7 @@ to go
   calc-light
   
   set-scenario
-  set acorn-count 0
+  set acorn-count 0 set bo-acorn-count 0 set wo-acorn-count 0
   
   ask turtles with [seedling = FALSE] [
     grow
@@ -534,7 +539,11 @@ to produce-acorns
   [ 
     set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-bo))
     set weevil-probability bo-weevil-prob]
-  if in-core = TRUE [set acorn-count (acorn-count + acorns-produced)]  
+  if in-core = TRUE [
+    set acorn-count (acorn-count + acorns-produced)
+    ifelse species = "BO" [set bo-acorn-count (bo-acorn-count + acorns-produced)]
+    [set wo-acorn-count (wo-acorn-count + acorns-produced)]   
+    ]  
   let tree-radius canopy-radius
   let temp species
   let coretemp in-core
@@ -976,15 +985,25 @@ to calc-global-vars ;;Calculate global reporter values
   set qdbh-pop-ovs sqrt(ba-pop-ovs * adjust / (0.0000785 * (max list 1 count poplars with [dbh >= 0.3 and in-core = TRUE])))
   set total-seedlings (count turtles with [seedling = TRUE and in-core = TRUE]) / adjust
   set new-seedlings (count turtles with [seedling = TRUE and age = 1 and in-core = TRUE]) / adjust
+  set new-bo-seedlings (count turtles with [seedling = TRUE and species = "BO" and age = 1 and in-core = TRUE]) / adjust
+  set new-wo-seedlings (count turtles with [seedling = TRUE and species = "WO" and age = 1 and in-core = TRUE]) / adjust
   set seedlings-class1 (count turtles with [seedling = TRUE and height <= 0.3 and in-core = TRUE]) / adjust
   set seedlings-class2 (count turtles with [seedling = TRUE and height > 0.3 and height <= 0.6 and in-core = TRUE]) / adjust
   set seedlings-class3 (count turtles with [seedling = TRUE and height > 0.6 and height <= 1.4 and in-core = TRUE]) / adjust
   set seedlings-class123 (count turtles with [seedling = TRUE and height <= 1.4 and in-core = TRUE]) / adjust
+  set seedbo-class123 (count turtles with [seedling = TRUE and species = "BO" and height <= 1.4 and in-core = TRUE]) / adjust
+  set seedwo-class123 (count turtles with [seedling = TRUE and species = "WO" and height <= 1.4 and in-core = TRUE]) / adjust
   set seedlings-class4 (count oaks with [height > 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
+  set seedbo-class4 (count oaks with [height > 1.4 and species = "BO" and dbh < 0.015 and in-core = TRUE]) / adjust
+  set seedwo-class4 (count oaks with [height > 1.4 and species = "WO" and dbh < 0.015 and in-core = TRUE]) / adjust
   set total-acorns round (acorn-count / adjust)
+  set total-bo-acorns round (bo-acorn-count / adjust)
+  set total-wo-acorns round (wo-acorn-count / adjust)
   ifelse count oaks with [dbh > 0.2 and in-core = TRUE] > 0 [set acorns-pertree (total-acorns / count oaks with [dbh > 0.2 and in-core = TRUE])]
   [set acorns-pertree 0]
   ifelse total-acorns > 0 [set pct-germ (new-seedlings / total-acorns)][set pct-germ 0]
+  ifelse total-bo-acorns > 0 [set pct-bo-germ (new-bo-seedlings / total-bo-acorns)][set pct-bo-germ 0]
+  ifelse total-wo-acorns > 0 [set pct-wo-germ (new-wo-seedlings / total-wo-acorns)][set pct-wo-germ 0]
   set regen-dens (count oaks with [height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
   set regen-stump-dens (count oaks with [sprout? = TRUE and height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
   

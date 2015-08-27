@@ -93,10 +93,12 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                    "qdbh","qdbh-ovs",
                    "qdbh-oak","qdbh-oak-ovs","qdbh-map","qdbh-map-ovs","qdbh-pop","qdbh-pop-ovs",
                    "prop-oak","prop-tol","prop-intol",
-                   "total-acorns","acorns-pertree","total-seedlings","new-seedlings","pct-germ",
+                   "total-acorns","acorns-pertree","total-seedlings","new-seedlings",
+                   "pct-germ","pct-bo-germ","pct-wo-germ",
                    "regen-dens","regen-stump-dens",
                    "seedlings-class1","seedlings-class2","seedlings-class3",
-                   "seedlings-class123","seedlings-class4")
+                   "seedlings-class123","seedlings-class4",
+                   "seedbo-class123","seedwo-class123","seedbo-class4","seedwo-class4")
     rep.names <- c("ticks","ba","ba.ovs",
                    "ba.oak","ba.oak.ovs","ba.map","ba.map.ovs","ba.pop","ba.pop.ovs",
                    "dens","dens.ovs",
@@ -105,8 +107,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                    "qdbh.oak","qdbh.oak.ovs","qdbh.map","qdbh.map.ovs","qdbh.pop","qdbh.pop.ovs",
                    "prop.oak","prop.tol","prop.intol",
                    "totacorns","acornspertree","totseedlings",
-                   "newseedlings","pctgerm","regen",'regenstump',
-                   "seedclass1","seedclass2","seedclass3","seedclass123","seedclass4")
+                   "newseedlings","pctgerm","pctbogerm","pctwogerm",
+                   "regen",'regenstump',
+                   "seedclass1","seedclass2","seedclass3","seedclass123","seedclass4",
+                   "seedboclass123","seedwoclass123","seedboclass4","seedwoclass4")
   } else {
     reporters <- c("ticks","basal-area","basal-area-ovs",
                    "ba-oak","ba-oak-ovs","ba-map","ba-map-ovs","ba-pop","ba-pop-ovs",
@@ -115,7 +119,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                    "qdbh","qdbh-ovs",
                    "qdbh-oak","qdbh-oak-ovs","qdbh-map","qdbh-map-ovs","qdbh-pop","qdbh-pop-ovs",
                    "prop-oak","prop-tol","prop-intol",
-                   "seedlings-class4")
+                   "seedlings-class4","seedbo-class4","seedwo-class4")
     rep.names <- c("ticks","ba","ba.ovs",
                    "ba.oak","ba.oak.ovs","ba.map","ba.map.ovs","ba.pop","ba.pop.ovs",
                    "dens","dens.ovs",
@@ -123,7 +127,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                    "qdbh","qdbh.ovs",
                    "qdbh.oak","qdbh.oak.ovs","qdbh.map","qdbh.map.ovs","qdbh.pop","qdbh.pop.ovs",
                    "prop.oak","prop.tol","prop.intol",
-                   "seedclass4")
+                   "seedclass4","seedboclass4","seedwoclass4")
   }
   
   #Internal function to setup NetLogo in each parallel subprocess
@@ -220,8 +224,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     temp <- NLDoReport(nyears, "go", reporters, as.data.frame=TRUE, df.col.names=rep.names)
     
     #Return output
-    if(model == 'ibm' & seedlings !='none'){return(temp[,2:40])
-    } else {return(temp[,2:29])}
+    if(model == 'ibm' & seedlings !='none'){return(temp[,2:46])
+    } else {return(temp[,2:31])}
     
     gc()
       

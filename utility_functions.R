@@ -74,8 +74,8 @@ gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplo
     for (j in 1:length(unique(temp$scenario))){
       
       hold <- as.numeric(temp[temp$scenario==unique(temp$scenario)[j],1])
-      means[j] <- mean(hold)
-      sds[j] <- sd(hold)
+      means[j] <- mean(hold,na.rm=T)
+      sds[j] <- sd(hold,na.rm=T)
     }
     
     if(!cont){
