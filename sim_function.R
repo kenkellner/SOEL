@@ -58,6 +58,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        mast.scenario = 'fixedaverage',
                        #Weevil scenario, 'fixedaverage', 'random', 'random-match', 'hee', or 'custom'
                        weevil.scenario = 'fixedaverage',
+                       prob.weevil = 0.3,
                        #Dispersal scenario, 'fixedaverage', 'custom', 'treat-diff', 'yearly-diff',
                        #'treat-yearly-diff', or 'random'
                        dispersal.scenario = 'fixedaverage',
@@ -191,6 +192,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       if(seedlings != "none"){
         NLCommand(paste('set mast-scenario ','\"',mast.scenario,'\"',sep=""))
         NLCommand(paste('set weevil-scenario ','\"',weevil.scenario,'\"',sep=""))
+        NLCommand(paste('set wo-weevil-prob',prob.weevil))
+        NLCommand(paste('set bo-weevil-prob',prob.weevil))
         NLCommand(paste('set dispersal-scenario ','\"',dispersal.scenario,'\"',sep=""))
         NLCommand(paste('set dispersal-distrib ','\"',dispersal.distrib,'\"',sep=""))
         if(dispersal.scenario == "custom"){
