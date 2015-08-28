@@ -128,3 +128,20 @@ analyze.ibm <- function(datalist,harvest,metric,year,cont=FALSE,vals=NULL){
   
   return(out)
 }
+
+compare.sensitivity <- function(input,nparams,harvest,metric){
+  
+  dep.var <- eval(parse(text=paste('input$',harvest,'$',metric,sep="")))
+  
+  out <- as.data.frame(matrix(data=NA,nrow=nparams,ncol=2))
+  
+  for (i in 1:nparams){
+    out[i,1] <- names(input[[1]])[i]
+    hold <- eval(parse(text=paste('input$',harvest,'[,',i,']',sep="")))
+    out[i,2] <- cor(dep.var,hold)
+  }
+  
+  out <- out[order(abs(out[,2]),decreasing=TRUE),]
+  names(out) <- c('parameter','correlation')
+  return(out)
+}

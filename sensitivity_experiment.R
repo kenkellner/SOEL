@@ -16,3 +16,7 @@ runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
 pbPost('note','Analysis Complete',
        paste('Sensitivity experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
        devices='Nexus 6')
+
+source('utility_functions.R')
+
+sens.analysis <- compare.sensitivity(sens.test,3,'none','seedclass123')
