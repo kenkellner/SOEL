@@ -60,3 +60,15 @@ pbPost('note','Analysis Complete',
 
 #Shut down instance 
 system('sudo shutdown -h now')
+
+lapply(c('output/weevil_prob0.Rdata','output/weevil_prob2.Rdata','output/weevil_prob4.Rdata',
+         'output/weevil_prob6.Rdata','output/weevil_prob8.Rdata','output/weevil_prob10.Rdata'),
+       load,.GlobalEnv)
+
+source('utility_functions.R')
+
+datalist = list(weevil.prob0=weevil.prob0,weevil.prob2=weevil.prob2,weevil.prob4=weevil.prob4,
+                weevil.prob6=weevil.prob6,weevil.prob8=weevil.prob8,weevil.prob10=weevil.prob10)
+
+gen.figures(datalist,'seedclass123',25,ylim=c(0,10000),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
+gen.figures(datalist,'seedclass4',25,ylim=c(0,100),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
