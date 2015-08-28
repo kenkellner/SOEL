@@ -2,14 +2,15 @@
 
 require(parallel)
 
-#Path to NetLogo installation based on OS
-if(Sys.info()[['sysname']] == "Windows"){
-  nl.path <- "C:/Program Files (x86)/Netlogo 5.2.0"}
-if(Sys.info()[['sysname']] == "Linux"){
-  nl.path <- paste('/home/',Sys.info()[['user']],'/programs/netlogo-5.2.0',sep="")}
 
 sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=NULL, ram.max){
 
+  #Path to NetLogo installation based on OS
+  if(Sys.info()[['sysname']] == "Windows"){
+    nl.path <- "C:/Program Files (x86)/Netlogo 5.2.0"}
+  if(Sys.info()[['sysname']] == "Linux"){
+    nl.path <- paste('/home/',Sys.info()[['user']],'/programs/netlogo-5.2.0',sep="")}
+  
   #Model start time
   start.time <- Sys.time()
   
@@ -173,7 +174,7 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
     on.exit(stopCluster(cl))
     clusterExport(cl = cl, ls(), envir = environment())
     invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
-                        nl.path=netlogo.path, model.path=model.path))
+                        nl.path=nl.path, model.path=model.path))
     on.exit(closeAllConnections())
     
     sim <- clusterApply(cl=cl,x=1:nreps,fun=runNL,harvest= paste('\"',harvests[i],'\"',sep=""),
