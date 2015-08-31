@@ -19,4 +19,4 @@ pbPost('note','Analysis Complete',
 
 source('utility_functions.R')
 
-sens.analysis <- compare.sensitivity(sens.test,3,'none','seedclass123')
+sens.analysis <- compare.sensitivity(sens.test,10,'none','seedclass123')

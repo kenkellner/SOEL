@@ -390,6 +390,10 @@ to set-scenario
   if dispersal-scenario = "random" [set random-index ((random 4) + 5)] 
   
   ;Acorn production
+  if mast-scenario = "custom" [
+    set mast-mean-wo mast-val
+    set mast-mean-bo mast-val
+  ]
   if mast-scenario = "fixedaverage" [
     set mast-mean-wo 0.08518
     set mast-mean-bo 0.09033
@@ -481,11 +485,11 @@ to set-scenario
     ]
   
   if dispersal-scenario = "custom" [
-    set dispersal-distrib "exponential"
-    set core-acorn-params-bo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
-    set buffer-acorn-params-bo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
-    set core-acorn-params-wo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
-    set buffer-acorn-params-wo (list disperse-prob disperse-dist 0 0 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    ;set dispersal-distrib "exponential"
+    set core-acorn-params-bo (list disperse-prob 0 weibSc weibSh 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    set buffer-acorn-params-bo (list disperse-prob 0 weibSc weibSh 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    set core-acorn-params-wo (list disperse-prob 0 weibSc weibSh 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
+    set buffer-acorn-params-wo (list disperse-prob 0 weibSc weibSh 0 0 disperse-eaten-prob cache-prob undisp-eaten-prob)
     ]
   
   if dispersal-scenario = "treat-diff" [
@@ -1750,7 +1754,7 @@ CHOOSER
 79
 mast-scenario
 mast-scenario
-"random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad"
+"random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom"
 1
 
 SWITCH
@@ -1933,6 +1937,51 @@ dispersal-distrib
 dispersal-distrib
 "exponential" "weibull"
 0
+
+SLIDER
+698
+760
+790
+793
+mast-val
+mast-val
+0
+3
+0.09
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+796
+759
+888
+792
+weibSc
+weibSc
+4
+12
+6
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+596
+758
+688
+791
+weibSh
+weibSh
+1
+2
+1.5
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -51,12 +51,25 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
                  "seedboclass123","seedwoclass123","seedboclass4","seedwoclass4")
   
   #Generate parameter set
-  params <- c('prob.browse','prob.weevil','prob.drought')
+  params <- c('prob.browse','prob.weevil','prob.drought','mast.val','disperse.prob',
+              'weibSc','weibSh','disp.eaten.prob','cache.prob','undisp.eaten.prob')
   param.set <- array(data=NA,dim=c(nreps,length(params),4))
   for (i in 1:4){
-    for (j in 1:length(params)){
-      param.set[,j,i] <- runif(nreps,0,1)
-    }
+    
+    param.set[,1,i] <- runif(nreps,0,1)
+    param.set[,2,i] <- runif(nreps,0.0198,0.9545)
+    param.set[,3,i] <- runif(nreps,0,1)
+    param.set[,4,i] <- runif(nreps,0.0367,2.975)
+    param.set[,5,i] <- runif(nreps,0.401,0.910)
+    param.set[,6,i] <- runif(nreps,4.216,11.962)
+    param.set[,7,i] <- runif(nreps,1.141,1.888)
+    param.set[,8,i] <- runif(nreps,0.610,0.976)
+    param.set[,9,i] <- runif(nreps,0.222,1)
+    param.set[,10,i] <- runif(nreps,0,1)
+    
+    #for (j in 1:length(params)){
+    #  param.set[,j,i] <- runif(nreps,0,1)
+    #}
   }
   
   #Internal function to setup NetLogo in each parallel subprocess
@@ -90,6 +103,7 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
     prob.browsed=param.set[i,1,harvestcount]
     prob.weevil=param.set[i,2,harvestcount]
     prob.drought=param.set[i,3,harvestcount]
+    mast.val=param.set[i,4,harvestcount]
     
     #Select harvest type, seedling type, etc.
     NLCommand(paste('set x-core',140))
@@ -124,22 +138,24 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
         NLCommand('set sprouting TRUE')
       #} else {NLCommand('set sprouting FALSE')}
       #if(seedlings != "none"){
-        mast.scenario = "fixedaverage"
+        mast.scenario = "custom"
         weevil.scenario = "custom"
-        dispersal.scenario = "fixedaverage"
+        #dispersal.scenario = "fixedaverage"
+        dispersal.scenario = "custom"
         dispersal.distrib = "weibull"
         NLCommand(paste('set mast-scenario ','\"',mast.scenario,'\"',sep=""))
+        NLCommand(paste('set mast-val',mast.val))
         NLCommand(paste('set weevil-scenario ','\"',weevil.scenario,'\"',sep=""))
         NLCommand(paste('set wo-weevil-prob',prob.weevil))
         NLCommand(paste('set bo-weevil-prob',prob.weevil))
         NLCommand(paste('set dispersal-scenario ','\"',dispersal.scenario,'\"',sep=""))
         NLCommand(paste('set dispersal-distrib ','\"',dispersal.distrib,'\"',sep=""))
-        #if(dispersal.scenario == "custom"){
-        #  NLCommand(paste('set disperse-prob',acorn$disperse))
-        #  NLCommand(paste('set disperse-dist',acorn$disperse.eaten))
-        #  NLCommand(paste('set disperse-eaten-prob',acorn$cache.prob))
-        #  NLCommand(paste('set cache-prob',acorn$weevil))
-        #  NLCommand(paste('set undisp-eaten-prob',acorn$undisperse.eaten))
+        NLCommand(paste('set disperse-prob',param.set[i,5,harvestcount]))
+        NLCommand(paste('set weibSc',param.set[i,6,harvestcount]))
+        NLCommand(paste('set weibSh',param.set[i,7,harvestcount]))
+        NLCommand(paste('set disperse-eaten-prob',param.set[i,8,harvestcount]))
+        NLCommand(paste('set cache-prob',param.set[i,9,harvestcount]))
+        NLCommand(paste('set undisp-eaten-prob',param.set[i,10,harvestcount]))
         #}
       #}
       #if(seedlings == "hee"){
@@ -182,10 +198,12 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
     )
     
     out[[i]] <- as.data.frame(matrix(data=NA,nrow=nreps,ncol=dim(param.set)[2]+length(rep.names)-1))
-    names(out[[i]]) <- c('prob.browse','prob.weevil','prob.drought',rep.names[-1])
-    out[[i]][,1:3] <- param.set[,,i]
+    names(out[[i]]) <- c('prob.browse','prob.weevil','prob.drought','mast.val','disperse.prob',
+                         'weibSc','weibSh','disp.eaten.prob','cache.prob','undisp.eaten.prob',
+                         rep.names[-1])
+    out[[i]][,1:dim(param.set)[2]] <- param.set[,,i]
     for (j in 1:(length(rep.names)-1)){
-      out[[i]][,j+3] <- sapply(sim, function(x) x[[j]])[length,]
+      out[[i]][,j+dim(param.set)[2]] <- sapply(sim, function(x) x[[j]])[length,]
     }
     stopNL <- function(i){NLQuit()}
     invisible(parLapply(cl, 1:processors, stopNL))
