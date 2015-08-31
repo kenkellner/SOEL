@@ -55,7 +55,7 @@ gen.dataset <- function(datalist,metric,year,cont=FALSE,vals=NULL){
   return(out)
 }
 
-gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplot=FALSE){
+gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplot=FALSE,specify.main=NULL){
   
   dat <- gen.dataset(datalist,metric,year,cont,vals)
   
@@ -64,7 +64,7 @@ gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplo
     if(length(unique(dat$harvest))==4){par(mfrow=c(2,2))}
   }
   
-  cols <- c('red','blue','green','yellow')
+  cols <- c('red','blue','green','orange')
   
   for (i in 1:length(unique(dat$harvest))){
     temp <- dat[dat$harvest == unique(dat$harvest)[i],]
@@ -90,11 +90,22 @@ gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplo
     
     if(cont){
       
+      if(i==1){
+      
       plot(vals,means,ylab=metric,xlab="Parameter Value",ylim=ylim,col=cols[i],
-           main=unique(dat$harvest)[i],type='o',lwd=3)
+           main=specify.main,type='o',lwd=3)
       for (k in 1:length(means)){
         segments(vals[k],means[k]-sds[k],vals[k],means[k]+sds[k])
       }
+      legend('bottomleft',legend=c('none','clearcut','shelterwood','singletree'),
+             col=cols,lty=1)
+      }
+      if(i>1){
+        lines(vals,means,col=cols[i],
+             type='o',lwd=3)
+        for (k in 1:length(means)){
+          segments(vals[k],means[k]-sds[k],vals[k],means[k]+sds[k])
+      }}
       
     }
   }

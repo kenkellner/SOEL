@@ -10,6 +10,11 @@ sens.test <- sensitivity.test(nreps=96,burnin=20,length=26,
                          force.processors=12, ram.max=5000)
 save(sens.test,file='output/sens_test.Rdata')
 
+sens.test.sh <- sensitivity.test(nreps=96,burnin=20,length=26,
+                              harvests = c('shelterwood'),
+                              force.processors=12, ram.max=5000)
+save(sens.test.sh,file='output/sens_test_sh.Rdata')
+
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
 runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)

@@ -70,5 +70,9 @@ source('utility_functions.R')
 datalist = list(weevil.prob0=weevil.prob0,weevil.prob2=weevil.prob2,weevil.prob4=weevil.prob4,
                 weevil.prob6=weevil.prob6,weevil.prob8=weevil.prob8,weevil.prob10=weevil.prob10)
 
-gen.figures(datalist,'seedclass123',25,ylim=c(0,10000),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
-gen.figures(datalist,'seedclass4',25,ylim=c(0,100),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=T)
+gen.figures(datalist,'seedclass123',25,ylim=c(0,10000),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=F,
+            specify.main='Seedling Density')
+gen.figures(datalist,'seedclass4',25,ylim=c(0,100),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=F,
+            specify.main='Sapling Density')
+gen.figures(datalist,'pctgerm',25,ylim=c(0,0.02),cont=TRUE,vals=c(0,0.2,0.4,0.6,0.8,1),singleplot=F,
+            specify.main='% Germ')

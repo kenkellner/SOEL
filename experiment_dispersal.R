@@ -68,6 +68,8 @@ for (i in 1:4){
 datalist <- list(disp.average=disp.average,disp.treatdiff=disp.treatdiff,disp.yearlydiff=disp.yearlydiff,
                  disp.yearlytreatdiff=disp.yearlytreatdiff,disp.ytweev=disp.yearlytreatdiffweev)
 
-gen.figures(datalist,'seedboclass123',25,c(0,11000),singleplot=T)
-gen.figures(datalist,'seedboclass4',25,c(0,100),singleplot=T)
+gen.figures(datalist,'seedclass123',25,c(0,8000),singleplot=T)
+gen.figures(datalist,'seedclass4',25,c(0,100),singleplot=T)
+gen.figures(datalist,'seedboclass4',25,c(0,40),singleplot=T)
+gen.figures(datalist,'seedwoclass4',25,c(0,60),singleplot=T)
 gen.figures(datalist,'ba',25,c(0,35),singleplot=T)
