@@ -2,6 +2,23 @@
 
 require(parallel)
 
+correlatedValue = function(x, r, meany, sdy){
+  
+  m <- mean(x)
+  s <- sd(x)
+  
+  x <- (x - mean(x))/sd(x)
+  
+  r2 = r**2
+  ve = 1-r2
+  SD = sqrt(ve)
+  e  = rnorm(length(x), mean=0, sd=SD)
+  y  = r*x + e
+  
+  y <- (y*sdy) + meany
+  
+  return(y)
+}
 
 sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=NULL, ram.max){
 
