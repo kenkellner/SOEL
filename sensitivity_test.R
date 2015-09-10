@@ -2,25 +2,65 @@
 
 require(parallel)
 
-correlatedValue = function(x, r, meany, sdy){
-  
-  m <- mean(x)
-  s <- sd(x)
-  
-  x <- (x - mean(x))/sd(x)
-  
-  r2 = r**2
-  ve = 1-r2
-  SD = sqrt(ve)
-  e  = rnorm(length(x), mean=0, sd=SD)
-  y  = r*x + e
-  
-  y <- (y*sdy) + meany
-  
-  return(y)
-}
+library(pse)
 
-sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=NULL, ram.max){
+#Create correlation matrix
+
+psummary <- read.csv('data/param_summary.csv',header=T)[1:9,]
+
+covs = c('pDispersal','weibSc','weibSh','pDispEaten','pCache','pUndispEaten','pWeevil',
+         'lamAcorn','pBrowse','pDrought')
+
+corm <- matrix(data=NA,nrow=10,ncol=10)
+corm[,10] <- corm[10,] <- 0
+corm[10,10] <- 1
+
+for (i in 1:(length(covs)-1)){
+  for (j in 1:(length(covs)-1)){
+  
+    if(i==j){corm[i,j]=1
+    }else{
+      hold1 <- psummary[,i]
+      hold2 <- psummary[,j]
+      if(is.na(hold1[1])|is.na(hold2[1])){
+        hold1 <- hold1[6:9]
+        hold2 <- hold2[6:9]
+      }
+      corm[i,j] <- cor(hold1,hold2)
+    }
+}}
+
+q = 'qunif'
+
+#Min and max of raw data
+qarg.actual <- list(pDispersal=list(min=min(psummary[,1],na.rm=T),max=max(psummary[,1],na.rm=T)),
+             weibSc=list(min=min(psummary[,2],na.rm=T),max=max(psummary[,2],na.rm=T)),
+             weibSh=list(min=min(psummary[,3],na.rm=T),max=max(psummary[,3],na.rm=T)),
+             pDispEaten=list(min=min(psummary[,4],na.rm=T),max=max(psummary[,4],na.rm=T)),
+             pCache=list(min=min(psummary[,5],na.rm=T),max=max(psummary[,5],na.rm=T)),
+             pUndispEaten=list(min=min(psummary[,6],na.rm=T),max=max(psummary[,6],na.rm=T)),
+             pWeevil=list(min=min(psummary[,7],na.rm=T),max=max(psummary[,7],na.rm=T)),
+             lamAcorn=list(min=min(psummary[,8],na.rm=T),max=max(psummary[,8],na.rm=T)),
+             pBrowse=list(min=min(psummary[,9],na.rm=T),max=max(psummary[,9],na.rm=T)),
+             pDrought=list(min=0,max=1))
+
+#test <- LHS(model=NULL,factors=covs,N=20,q=q,q.arg=qarg,opts=list(COR=corm))
+
+#wider ranges
+qarg.wide <- list(pDispersal=list(min=0,max=1),
+             weibSc=list(min=4.216,max=11.962),
+             weibSh=list(min=0.957,max=1.88),
+             pDispEaten=list(min=0,max=1),
+             pCache=list(min=0,max=1),
+             pUndispEaten=list(min=0,max=1),
+             pWeevil=list(min=0,max=1),
+             lamAcorn=list(min=min(psummary[,8],na.rm=T),max=max(psummary[,8],na.rm=T)),
+             pBrowse=list(min=0,max=1),
+             pDrought=list(min=0,max=1))
+
+
+
+sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=NULL, ram.max, qarg){
 
   #Path to NetLogo installation based on OS
   if(Sys.info()[['sysname']] == "Windows"){
@@ -67,27 +107,32 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
                  "seedclass1","seedclass2","seedclass3","seedclass123","seedclass4",
                  "seedboclass123","seedwoclass123","seedboclass4","seedwoclass4")
   
+  #Old approach
   #Generate parameter set
-  params <- c('prob.browse','prob.weevil','prob.drought','mast.val','disperse.prob',
-              'weibSc','weibSh','disp.eaten.prob','cache.prob','undisp.eaten.prob')
-  param.set <- array(data=NA,dim=c(nreps,length(params),4))
-  for (i in 1:4){
+  #params <- c('prob.browse','prob.weevil','prob.drought','mast.val','disperse.prob',
+  #            'weibSc','weibSh','disp.eaten.prob','cache.prob','undisp.eaten.prob')
+  #param.set <- array(data=NA,dim=c(nreps,length(params),4))
+  #for (i in 1:4){
     
-    param.set[,1,i] <- runif(nreps,0,1)
-    param.set[,2,i] <- runif(nreps,0.0198,0.9545)
-    param.set[,3,i] <- runif(nreps,0,1)
-    param.set[,4,i] <- runif(nreps,0.0367,2.975)
-    param.set[,5,i] <- runif(nreps,0.401,0.910)
-    param.set[,6,i] <- runif(nreps,4.216,11.962)
-    param.set[,7,i] <- runif(nreps,1.141,1.888)
-    param.set[,8,i] <- runif(nreps,0.610,0.976)
-    param.set[,9,i] <- runif(nreps,0.222,1)
-    param.set[,10,i] <- runif(nreps,0,1)
+  #  param.set[,1,i] <- runif(nreps,0,1)
+  #  param.set[,2,i] <- runif(nreps,0.0198,0.9545)
+  #  param.set[,3,i] <- runif(nreps,0,1)
+  #  param.set[,4,i] <- runif(nreps,0.0367,2.975)
+  #  param.set[,5,i] <- runif(nreps,0.401,0.910)
+  #  param.set[,6,i] <- runif(nreps,4.216,11.962)
+  #  param.set[,7,i] <- runif(nreps,1.141,1.888)
+  #  param.set[,8,i] <- runif(nreps,0.610,0.976)
+  #  param.set[,9,i] <- runif(nreps,0.222,1)
+  #  param.set[,10,i] <- runif(nreps,0,1)
     
     #for (j in 1:length(params)){
     #  param.set[,j,i] <- runif(nreps,0,1)
     #}
-  }
+  #}
+  
+  #New approach
+  lhc <- LHS(model=NULL,factors=covs,N=nreps,q=q,q.arg=qarg,opts=list(COR=corm))$data
+  
   
   #Internal function to setup NetLogo in each parallel subprocess
   initNL <- function(dummy, gui, nl.path, model.path) {
@@ -117,10 +162,14 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
     gc()
     jgc()
     
-    prob.browsed=param.set[i,1,harvestcount]
-    prob.weevil=param.set[i,2,harvestcount]
-    prob.drought=param.set[i,3,harvestcount]
-    mast.val=param.set[i,4,harvestcount]
+    #prob.browsed=param.set[i,1,harvestcount]
+    #prob.weevil=param.set[i,2,harvestcount]
+    #prob.drought=param.set[i,3,harvestcount]
+    #mast.val=param.set[i,4,harvestcount]
+    prob.browsed=lhc$pBrowse[i]
+    prob.weevil=lhc$pWeevil[i]
+    prob.drought=lhc$pDrought[i]
+    mast.val=lhc$lamAcorn[i]
     
     #Select harvest type, seedling type, etc.
     NLCommand(paste('set x-core',140))
@@ -167,12 +216,18 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
         NLCommand(paste('set bo-weevil-prob',prob.weevil))
         NLCommand(paste('set dispersal-scenario ','\"',dispersal.scenario,'\"',sep=""))
         NLCommand(paste('set dispersal-distrib ','\"',dispersal.distrib,'\"',sep=""))
-        NLCommand(paste('set disperse-prob',param.set[i,5,harvestcount]))
-        NLCommand(paste('set weibSc',param.set[i,6,harvestcount]))
-        NLCommand(paste('set weibSh',param.set[i,7,harvestcount]))
-        NLCommand(paste('set disperse-eaten-prob',param.set[i,8,harvestcount]))
-        NLCommand(paste('set cache-prob',param.set[i,9,harvestcount]))
-        NLCommand(paste('set undisp-eaten-prob',param.set[i,10,harvestcount]))
+        #NLCommand(paste('set disperse-prob',param.set[i,5,harvestcount]))
+        #NLCommand(paste('set weibSc',param.set[i,6,harvestcount]))
+        #NLCommand(paste('set weibSh',param.set[i,7,harvestcount]))
+        #NLCommand(paste('set disperse-eaten-prob',param.set[i,8,harvestcount]))
+        #NLCommand(paste('set cache-prob',param.set[i,9,harvestcount]))
+        #NLCommand(paste('set undisp-eaten-prob',param.set[i,10,harvestcount]))
+        NLCommand(paste('set disperse-prob',lhc$pDispersal[i]))
+        NLCommand(paste('set weibSc',lhc$weibSc[i]))
+        NLCommand(paste('set weibSh',lhc$weibSh[i]))
+        NLCommand(paste('set disperse-eaten-prob',lhc$pDispEaten[i]))
+        NLCommand(paste('set cache-prob',lhc$pCache[i]))
+        NLCommand(paste('set undisp-eaten-prob',lhc$pUndispEaten[i]))
         #}
       #}
       #if(seedlings == "hee"){

@@ -1,6 +1,6 @@
 
 tree <- read.csv('data/hee_treedata.csv',header=T)
-prod <- read.csv('data/acornproduction.csv',header=T)
+prod <- read.csv('data/hee_production.csv',header=T)
 
 com <- cbind(tree,prod)[,c('species','X2006','X2007','X2008','X2009','X2010','X2011',
                           'X2012','X2013','X2014')]
