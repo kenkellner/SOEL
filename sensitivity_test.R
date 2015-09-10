@@ -269,13 +269,13 @@ sensitivity.test <- function(nreps, burnin, length, harvests, force.processors=N
                         harvestcount=i
     )
     
-    out[[i]] <- as.data.frame(matrix(data=NA,nrow=nreps,ncol=dim(param.set)[2]+length(rep.names)-1))
-    names(out[[i]]) <- c('prob.browse','prob.weevil','prob.drought','mast.val','disperse.prob',
-                         'weibSc','weibSh','disp.eaten.prob','cache.prob','undisp.eaten.prob',
+    out[[i]] <- as.data.frame(matrix(data=NA,nrow=nreps,ncol=dim(lhc)[2]+length(rep.names)-1))
+    names(out[[i]]) <- c('pDispersal','weibSc','weibSh','pDispEaten','pCache','pUndispEaten','pWeevil',
+                         'lamAcorn','pBrowse','pDrought',
                          rep.names[-1])
-    out[[i]][,1:dim(param.set)[2]] <- param.set[,,i]
+    out[[i]][,1:dim(lhc)[2]] <- lhc
     for (j in 1:(length(rep.names)-1)){
-      out[[i]][,j+dim(param.set)[2]] <- sapply(sim, function(x) x[[j]])[length,]
+      out[[i]][,j+dim(lhc)[2]] <- sapply(sim, function(x) x[[j]])[length,]
     }
     stopNL <- function(i){NLQuit()}
     invisible(parLapply(cl, 1:processors, stopNL))
