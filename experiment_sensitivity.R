@@ -23,9 +23,9 @@ sens.analysis <- compare.sensitivity(sens.test,10,'none','seedclass123')
 
 sens.sh.analysis <- compare.sensitivity(sens.test.sh,10,'shelterwood','seedclass4')
 
-summary(lm(seedclass123~prob.browse+prob.weevil+prob.drought+mast.val+disperse.prob+cache.prob
-           +weibSc+weibSh+disp.eaten.prob+undisp.eaten.prob,
-           data=as.data.frame(scale(sens.test$clearcut))))
+summary(lm(seedclass4~pBrowse+pWeevil+pDrought+lamAcorn+pDispersal+pCache
+           +weibSc+weibSh+pDispEaten+pUndispEaten,
+           data=as.data.frame(scale(sens.test$none))))
 
 
 
