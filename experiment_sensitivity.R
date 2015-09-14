@@ -55,7 +55,7 @@ qarg.wide <- list(pDispersal=list(min=0,max=1),
 
 start.time <- Sys.time()
 
-sens.test <- forest.sim(nreps=1008,burnin=20,nyears=26,
+sens.test.actual <- forest.sim(nreps=1008,burnin=20,nyears=26,
                               harvests = c('none','clearcut','shelterwood'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
@@ -64,7 +64,7 @@ sens.test <- forest.sim(nreps=1008,burnin=20,nyears=26,
                               corm=corm)
 
 
-save(sens.test,file='output/sens_test.Rdata')
+save(sens.test.actual,file='output/sens_test_actual.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
@@ -72,6 +72,9 @@ runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
 pbPost('note','Analysis Complete',
        paste('Sensitivity experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
        devices='Nexus 6')
+
+#Shut down instance 
+system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
