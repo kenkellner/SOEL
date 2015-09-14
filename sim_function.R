@@ -65,7 +65,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Dispersal kernal type, exponential or weibull
                        dispersal.distrib = 'weibull',
                        #Acorn transition probabilities (list) to use if above is set to custom
-                       acorn = list(disperse=0.41,disperse.dist=5.185,
+                       acorn = list(disperse=0.41,disperse.exp=5.185,weibSc=7.578,weibSh=1.292,
                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                        #Maximum yearly seedling growth if 'simple' is selected
                        maxgrowth = 0.9,
@@ -74,7 +74,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Force a certain number of cores to be used (otherwise all cores are used)
                        force.processors = NULL,
                        #RAM per processor maximum in MB
-                       ram.max = 5000
+                       ram.max = 5000,
+                       sensitivity = FALSE,
+                       #Arguments for sensitivity test
+                       covs = NULL, q = NULL, qarg = NULL, corm = NULL
                        ){
   
   #Model start time
@@ -148,13 +151,15 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     .jcall("java/lang/System", method = "gc")
   }    
   
-  #Setup each parallel process
+  #Set number of processors to use
   if(!is.null(force.processors)){processors <- force.processors
   } else {processors <- detectCores()}
-  #cl <- makeCluster(processors)
-  #clusterExport(cl = cl, ls(), envir = environment())
-  #invisible(parLapply(cl, 1:processors, initNL, gui=FALSE,
-  #                    nl.path=netlogo.path, model.path=model.path))
+  
+  #Generate Latin hypercube if this is a sensitivity analysis
+  if(sensitivity){
+    require(pse)
+    lhc <- LHS(model=NULL,factors=covs,N=nreps,q=q,q.arg=qarg,opts=list(COR=corm))$data
+  }
   
   #Internal function to set variables and run NetLogo in each process
   runNL <- function(i,harvest) {
@@ -162,6 +167,25 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     #Garbage collection in R and Java
     gc()
     jgc()
+    
+    #Set variables if this is a sensitivity analysis
+    if(sensitivity){
+      mast.scenario <- "custom"
+      weevil.scenario <- "custom"
+      dispersal.scenario <- "custom"
+      dispersal.distrib <- "weibull"
+      seed.scenario <- "randomdrought"
+      browse.scenario <- "custom"
+      
+      prob.browsed <- lhc$pBrowse[i]
+      prob.weevil <- lhc$pWeevil[i]
+      prob.drought <- lhc$pDrought[i]
+      mast.val <- lhc$lamAcorn[i]
+      
+      acorn <- list(disperse=lhc$pDispersal[i],disperse.exp=5.185,weibSc=lhc$weibSc[i],
+                    weibSh=lhc$weibSh[i],disperse.eaten=lhc$pDispEaten[i],
+                    cache.prob=lhc$pCache[i],undisperse.eaten=lhc$pUndispEaten[i])
+    }
     
     #Select harvest type, seedling type, etc.
     NLCommand(paste('set x-core',xcorewidth))
@@ -202,9 +226,11 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
         NLCommand(paste('set dispersal-distrib ','\"',dispersal.distrib,'\"',sep=""))
         if(dispersal.scenario == "custom"){
           NLCommand(paste('set disperse-prob',acorn$disperse))
-          NLCommand(paste('set disperse-dist',acorn$disperse.eaten))
-          NLCommand(paste('set disperse-eaten-prob',acorn$cache.prob))
-          NLCommand(paste('set cache-prob',acorn$weevil))
+          NLCommand(paste('set disperse-dist',acorn$disperse.exp))
+          NLCommand(paste('set weibSc',acorn$weibSc))
+          NLCommand(paste('set weibSh',acorn$weibSh))
+          NLCommand(paste('set disperse-eaten-prob',acorn$disperse.eaten))
+          NLCommand(paste('set cache-prob',acorn$cache.prob))
           NLCommand(paste('set undisp-eaten-prob',acorn$undisperse.eaten))
         }
       }
@@ -249,7 +275,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     invisible(parLapply(cl, 1:processors, stopNL))
     stopCluster(cl)
     closeAllConnections()
-    Sys.sleep(30)
+    Sys.sleep(10)
     gc()
     print(paste("Completed", harvests[i]))
   }
@@ -259,13 +285,9 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   time <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
   
   out$runtime.minutes <- time
-  
-  #Stop NetLogo instances and cluster
-  #stopNL <- function(i){NLQuit()}
-  #invisible(parLapply(cl, 1:processors, stopNL))
-  #stopCluster(cl)
-  
-  return(out)
+
+  if(sensitivity){return(list(lhc=lhc,out=out))
+  } else{return(out)}
  
 }
 

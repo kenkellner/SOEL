@@ -1,13 +1,69 @@
 
-source('sensitivity_test.R')
+source('sim_function.R')
 
 library(RPushbullet)
 
+#Generate correlation matrix for Latin hypercube sampling
+psummary <- read.csv('data/param_summary.csv',header=T)[1:9,]
+
+covs = c('pDispersal','weibSc','weibSh','pDispEaten','pCache','pUndispEaten','pWeevil',
+         'lamAcorn','pBrowse','pDrought')
+
+corm <- matrix(data=NA,nrow=10,ncol=10)
+corm[,10] <- corm[10,] <- 0
+corm[10,10] <- 1
+
+for (i in 1:(length(covs)-1)){
+  for (j in 1:(length(covs)-1)){
+    
+    if(i==j){corm[i,j]=1
+    }else{
+      hold1 <- psummary[,i]
+      hold2 <- psummary[,j]
+      if(is.na(hold1[1])|is.na(hold2[1])){
+        hold1 <- hold1[6:9]
+        hold2 <- hold2[6:9]
+      }
+      corm[i,j] <- cor(hold1,hold2)
+    }
+  }}
+
+#Parameter sampling distribution arguments
+#Based on actual ranges
+qarg.actual <- list(pDispersal=list(min=min(psummary[,1],na.rm=T),max=max(psummary[,1],na.rm=T)),
+                    weibSc=list(min=min(psummary[,2],na.rm=T),max=max(psummary[,2],na.rm=T)),
+                    weibSh=list(min=min(psummary[,3],na.rm=T),max=max(psummary[,3],na.rm=T)),
+                    pDispEaten=list(min=min(psummary[,4],na.rm=T),max=max(psummary[,4],na.rm=T)),
+                    pCache=list(min=min(psummary[,5],na.rm=T),max=max(psummary[,5],na.rm=T)),
+                    pUndispEaten=list(min=min(psummary[,6],na.rm=T),max=max(psummary[,6],na.rm=T)),
+                    pWeevil=list(min=min(psummary[,7],na.rm=T),max=max(psummary[,7],na.rm=T)),
+                    lamAcorn=list(min=min(psummary[,8],na.rm=T),max=max(psummary[,8],na.rm=T)),
+                    pBrowse=list(min=min(psummary[,9],na.rm=T),max=max(psummary[,9],na.rm=T)),
+                    pDrought=list(min=0,max=1))
+
+#Wider ranges
+qarg.wide <- list(pDispersal=list(min=0,max=1),
+                  weibSc=list(min=4.216,max=11.962),
+                  weibSh=list(min=0.957,max=1.88),
+                  pDispEaten=list(min=0,max=1),
+                  pCache=list(min=0,max=1),
+                  pUndispEaten=list(min=0,max=1),
+                  pWeevil=list(min=0,max=1),
+                  lamAcorn=list(min=min(psummary[,8],na.rm=T),max=max(psummary[,8],na.rm=T)),
+                  pBrowse=list(min=0,max=1),
+                  pDrought=list(min=0,max=1))
+
 start.time <- Sys.time()
 
-sens.test <- sensitivity.test(nreps=96,burnin=20,length=26,
-                         harvests = c('none','clearcut','shelterwood'),
-                         force.processors=12, ram.max=5000, qarg=qarg.actual)
+sens.test <- forest.sim(nreps=1008,burnin=20,nyears=26,
+                              harvests = c('none','clearcut','shelterwood'),
+                              force.processors=12, ram.max=5000, 
+                              sensitivity=TRUE,
+                              covs=covs,q="qunif",
+                              qarg=qarg.actual,
+                              corm=corm)
+
+
 save(sens.test,file='output/sens_test.Rdata')
 
 #Calculate runtime and push alert message
@@ -19,50 +75,25 @@ pbPost('note','Analysis Complete',
 
 source('utility_functions.R')
 
-sens.analysis <- compare.sensitivity(sens.test,10,'none','seedclass123')
+focus.year = 25
 
-sens.sh.analysis <- compare.sensitivity(sens.test.sh,10,'shelterwood','seedclass4')
+#Simple correlation test
+correlation.test(sens.test,'none','seedclass4',focus.year)
 
-summary(lm(seedclass4~pBrowse+pWeevil+pDrought+lamAcorn+pDispersal+pCache
-           +weibSc+weibSh+pDispEaten+pUndispEaten,
-           data=as.data.frame(scale(sens.test$none))))
+#Sensitivity partitioning (Xu and Gertner 2008)
+inp.covs <- as.data.frame(scale(sens.test$lhc))
+out.vals <- sens.test$out$none$seedclass4[focus.year,]
 
+varPart(out.vals,inp.covs)
 
-
-summary(lm(seedclass123~prob.browse+prob.weevil+prob.drought+mast.val+disperse.prob+cache.prob
-           +weibSc+weibSh+disp.eaten.prob+undisp.eaten.prob+prob.weevil*mast.val+disperse.prob*mast.val
-           +disp.eaten.prob*mast.val+undisp.eaten.prob*mast.val+cache.prob*mast.val,
-           data=as.data.frame(scale(sens.test$clearcut))))
-
-test = lm(seedclass123~prob.browse+prob.weevil+prob.drought+mast.val+disperse.prob+cache.prob
-           +weibSc+weibSh+disp.eaten.prob+undisp.eaten.prob+prob.weevil*mast.val+disperse.prob*mast.val
-           +disp.eaten.prob*mast.val+undisp.eaten.prob*mast.val+cache.prob*mast.val,
-           data=as.data.frame(scale(sens.test$clearcut)))
-
-test2 = lm(seedclass4~prob.browse+prob.weevil+prob.drought+mast.val+disperse.prob+cache.prob
-          +weibSc+weibSh+disp.eaten.prob+undisp.eaten.prob+prob.weevil*mast.val+disperse.prob*mast.val
-          +disp.eaten.prob*mast.val+undisp.eaten.prob*mast.val+cache.prob*mast.val,
-          data=as.data.frame(scale(sens.test$clearcut)))
-
-summary(step(test,scope=seedclass123~prob.browse+prob.weevil+prob.drought+mast.val+disperse.prob+cache.prob
-        +weibSc+weibSh+disp.eaten.prob+undisp.eaten.prob+prob.weevil*mast.val+disperse.prob*mast.val
-        +disp.eaten.prob*mast.val+undisp.eaten.prob*mast.val+cache.prob*mast.val,direction="both"))
-
-
-summary(step(test2,scope=seedclass4~prob.browse+prob.weevil+prob.drought+mast.val+disperse.prob+cache.prob
-        +weibSc+weibSh+disp.eaten.prob+undisp.eaten.prob+prob.weevil*mast.val+disperse.prob*mast.val
-        +disp.eaten.prob*mast.val+undisp.eaten.prob*mast.val+cache.prob*mast.val,direction="both"))
-
-
-#Testinga method to calculate commonality coefficients from sensitivity regression output
+#Communality coefficients
 library(yhat)
 
-attach(sens.test$clearcut)
+attach(inp.covs)
 
-test = lm(seedclass4~prob.browse+prob.weevil+prob.drought+mast.val+disperse.prob+cache.prob
-          +weibSc+weibSh+disp.eaten.prob+undisp.eaten.prob+prob.weevil)
+inp.lm <- lm(out.vals~pDispersal+weibSc)
 
-out.test <- calc.yhat(test)
+com.coeff <- calc.yhat(inp.lm)
 
-detach(sens.test$clearcut)
+detach(inp.covs)
 

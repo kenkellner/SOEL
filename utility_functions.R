@@ -55,6 +55,7 @@ gen.dataset <- function(datalist,metric,year,cont=FALSE,vals=NULL){
   return(out)
 }
 
+#Function to generate quick summary figures
 gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplot=FALSE,specify.main=NULL){
   
   dat <- gen.dataset(datalist,metric,year,cont,vals)
@@ -140,19 +141,95 @@ analyze.ibm <- function(datalist,harvest,metric,year,cont=FALSE,vals=NULL){
   return(out)
 }
 
-compare.sensitivity <- function(input,nparams,harvest,metric){
+correlation.test <- function(input,harvest,metric,year){
   
-  dep.var <- eval(parse(text=paste('input$',harvest,'$',metric,sep="")))
+  nparams <- dim(input$lhc)[2]
+  
+  dep.var <- eval(parse(text=paste('input$out$',harvest,'$',metric,'[',year,',]',sep="")))
   
   out <- as.data.frame(matrix(data=NA,nrow=nparams,ncol=2))
   
   for (i in 1:nparams){
     out[i,1] <- names(input[[1]])[i]
-    hold <- eval(parse(text=paste('input$',harvest,'[,',i,']',sep="")))
+    hold <- eval(parse(text=paste('input$lhc[,',i,']',sep="")))
     out[i,2] <- cor(dep.var,hold)
   }
   
   out <- out[order(abs(out[,2]),decreasing=TRUE),]
   names(out) <- c('parameter','correlation')
+  return(out)
+}
+
+#Function to decompose explained variance (and sensitivities) to uncorrelated and correlated portions
+#based on Xu and Gertner 2008
+varPart <- function(response, inputs){
+  
+  #Create empty output object and add names
+  out <- as.data.frame(matrix(data=NA,nrow=(dim(inputs)[2]+1),ncol=7))
+  names(out) <- c('parameter','parV','parUV','parCV','S','Su','Sc')
+  out[,1] <- c(colnames(inputs),'sum')
+  
+  #Iterate over i input covariates and calculate variances
+  for (i in 1:(dim(inputs)[2])){
+    
+    #Assume partial variance = correlated component of partial variance + uncorrelated component
+    
+    ######calculate partial variance for covariate i (eq 11)
+    
+    #regression of output on only covariate i (eq 10)
+    pv = lm(response~inputs[,i])
+    
+    temp.sum <- 0
+    for(j in 1:length(response)){
+      temp.sum <- temp.sum + (pv$fitted.values[j]-mean(response))^2
+    }
+    parV <- 1/(length(response)-1)*temp.sum
+    
+    #Place in output object
+    out[i,2] <- parV
+    
+    #####Calculate uncorrelated partial variance for covariate i
+    
+    #Create sub-dataset
+    focal <- inputs[,i]
+    minusi <- inputs[,-i]
+    comb <- cbind(focal,minusi)
+    
+    #regress covariate i on all other covariates (eq 14)
+    rp <- lm(focal~.,comb)
+    
+    #regress output on residuals from above (eq 13)
+    upv <- lm(response ~ rp$residuals)
+    
+    #Calculate uncorrelated partial variance (eq 16)
+    temp.sum <- 0
+    for(j in 1:length(response)){
+      temp.sum <- temp.sum + (upv$fitted.values[j]-mean(response))^2
+    }
+    parUV <- 1/(length(response)-1)*temp.sum
+    
+    #Save in output object
+    out[i,3] <- parUV
+    
+    ######Calculate correlated partial variance for covariate i
+    
+    parCv <- parV - parUV #(eq 9)
+    
+    #Save in output object
+    out[i,4] <- parCv
+    
+    #Calculate sensitivities for each partial variance based on ratio w/total variance
+    v <- var(response)
+    
+    #save in output object
+    out[i,5] <- parV/v
+    out[i,6] <- parUV/v
+    out[i,7] <- parCv/v
+    
+    
+  }
+  
+  #calculate column means and return output
+  out[(dim(inputs)[2]+1),2:7] <- colSums(out[1:(dim(inputs)[2]),2:7])
   return(out)
 }
