@@ -53,6 +53,22 @@ qarg.wide <- list(pDispersal=list(min=0,max=1),
                   pBrowse=list(min=0,max=1),
                   pDrought=list(min=0,max=1))
 
+#Narrower ranges (10% around mean)
+mn <- colMeans(psummary,na.rm=T)
+adj <- .1*colMeans(psummary,na.rm=T)
+up <- mn+adj
+lw <- mn-adj
+qarg.narrow <- list(pDispersal=list(min=lw[1],max=up[1]),
+                    weibSc=list(min=lw[2],max=up[2]),
+                    weibSh=list(min=lw[3],max=up[3]),
+                    pDispEaten=list(min=lw[4],max=up[4]),
+                    pCache=list(min=lw[5],max=up[5]),
+                    pUndispEaten=list(min=lw[6],max=up[6]),
+                    pWeevil=list(min=lw[7],max=up[7]),
+                    lamAcorn=list(min=lw[8],max=up[8]),
+                    pBrowse=list(min=lw[9],max=up[9]),
+                    pDrought=list(min=0.5-0.1*0.5,max=0.5+0.1*0.5))
+
 start.time <- Sys.time()
 
 sens.test.actual <- forest.sim(nreps=1008,burnin=20,nyears=26,
