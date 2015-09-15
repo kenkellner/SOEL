@@ -71,8 +71,8 @@ qarg.narrow <- list(pDispersal=list(min=lw[1],max=up[1]),
 
 start.time <- Sys.time()
 
-sens.test.actual <- forest.sim(nreps=1008,burnin=20,nyears=26,
-                              harvests = c('none','clearcut','shelterwood'),
+sens.test.actual <- forest.sim(nreps=504,burnin=20,nyears=26,
+                              harvests = c('none'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
                               covs=covs,q="qunif",
@@ -94,16 +94,16 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
-focus.year = 25
+focus.year = 26
 
 #Simple correlation test
 correlation.test(sens.test,'none','seedclass4',focus.year)
 
 #Sensitivity partitioning (Xu and Gertner 2008)
-inp.covs <- as.data.frame(scale(sens.test$lhc))
-out.vals <- sens.test$out$none$seedclass4[focus.year,]
+inp.covs <- as.data.frame(scale(sens.test.actual$lhc))
+out.vals <- sens.test.actual$out$none$seedclass4[focus.year,]
 
-varPart(out.vals,inp.covs)
+varPart(out.vals,inp.covs,3)
 
 #Communality coefficients
 library(yhat)

@@ -162,7 +162,7 @@ correlation.test <- function(input,harvest,metric,year){
 
 #Function to decompose explained variance (and sensitivities) to uncorrelated and correlated portions
 #based on Xu and Gertner 2008
-varPart <- function(response, inputs){
+varPart <- function(response, inputs, digits=3){
   
   #Create empty output object and add names
   out <- as.data.frame(matrix(data=NA,nrow=(dim(inputs)[2]+1),ncol=7))
@@ -231,5 +231,10 @@ varPart <- function(response, inputs){
   
   #calculate column means and return output
   out[(dim(inputs)[2]+1),2:7] <- colSums(out[1:(dim(inputs)[2]),2:7])
+  
+  for(i in 2:7){
+    out[,i] <- round(out[,i],digits=digits)
+  }
+  
   return(out)
 }

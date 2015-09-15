@@ -238,7 +238,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
         NLCommand(paste('set prob-browsed',prob.browsed))
         NLCommand(paste('set seed-scenario ','\"',seed.scenario,'\"',sep=""))
         NLCommand(paste('set browse-scenario ','\"',browse.scenario,'\"',sep=""))
-        NLCommand(paste('set drought-prob',drought.prob))
+        NLCommand(paste('set drought-prob',prob.drought))
         }
       if(seedlings == "simple"){NLCommand(paste('set seedling-growth',maxgrowth))}
     }
