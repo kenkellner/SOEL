@@ -46,7 +46,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #'fixedaverage' or 'randomdrought'
                        #'#Only works when seedlings = 'hee'
                        seed.scenario = 'fixedaverage',
-                       drought.prob = 0.2,
+                       prob.drought = 0.2,
                        #Browse scenario (also only works when seedlings = 'hee')
                        #'fixedaverage', 'hee' for yearly variation, or 'custom' to set manually
                        browse.scenario = 'fixedaverage',
