@@ -29,6 +29,8 @@ globals [
   mast-mean-bo mast-mean-wo
   core-acorn-params-bo buffer-acorn-params-bo
   core-acorn-params-wo buffer-acorn-params-wo
+  core-bo-weevil-prob core-wo-weevil-prob
+  buffer-bo-weevil-prob buffer-wo-weevil-prob
   disp-params-sq
   
   wo-mast-list bo-mast-list mast-year-index bo-weev-list wo-weev-list
@@ -472,6 +474,23 @@ to set-scenario
     set bo-weevil-prob item mast-year-index bo-weev-list
     set wo-weevil-prob item mast-year-index wo-weev-list
     ]
+  if weevil-scenario = "treat-diff" [
+    
+    let year-ef random-normal 0 1.373
+    
+    let weev-mean-bo-core (-0.314 + year-ef + 0.983 * mast-mean-bo - 0.619)
+    let weev-mean-wo-core (-0.314 + year-ef + 0.545 * mast-mean-wo - 0.619)
+    let weev-mean-bo-buffer (-0.314 + year-ef + 0.983 * mast-mean-bo)
+    let weev-mean-wo-buffer (-0.314 + year-ef + 0.545 * mast-mean-wo)
+    
+    set core-bo-weevil-prob (1 + exp(-1 * weev-mean-bo-core)) ^ (-1) 
+    set buffer-bo-weevil-prob (1 + exp(-1 * weev-mean-bo-buffer)) ^ (-1) 
+    
+    set core-wo-weevil-prob (1 + exp(-1 * weev-mean-wo-core)) ^ (-1) 
+    set buffer-wo-weevil-prob (1 + exp(-1 * weev-mean-wo-buffer)) ^ (-1) 
+        
+  ]
+    
   if weevil-scenario = "custom" [ ]
     
   if dispersal-scenario = "fixedaverage" [
@@ -537,6 +556,15 @@ to produce-acorns
   
   let acorns-produced 0
   let weevil-probability 0
+  
+  if weevil-scenario = "treat-diff" [
+    ifelse in-core = TRUE and harvest-type = "shelterwood" and ticks > harvest-year [
+      set bo-weevil-prob core-bo-weevil-prob
+      set wo-weevil-prob core-wo-weevil-prob]
+    [set bo-weevil-prob buffer-bo-weevil-prob
+      set wo-weevil-prob buffer-wo-weevil-prob]    
+  ]
+  
   ifelse species = "WO" [
     set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean-wo)) ;per meter squared
     set weevil-probability wo-weevil-prob]
@@ -1233,7 +1261,7 @@ bo-weevil-prob
 bo-weevil-prob
 0
 1
-0.3491
+0.625
 0.01
 1
 NIL
@@ -1902,7 +1930,7 @@ wo-weevil-prob
 wo-weevil-prob
 0
 1
-0.2357
+0.3679
 0.01
 1
 NIL
@@ -1915,8 +1943,8 @@ CHOOSER
 129
 weevil-scenario
 weevil-scenario
-"fixedaverage" "random" "random-match" "hee" "custom"
-0
+"fixedaverage" "random" "random-match" "hee" "treat-diff" "custom"
+3
 
 CHOOSER
 1098

@@ -100,10 +100,10 @@ focus.year = 26
 correlation.test(sens.test,'none','seedclass4',focus.year)
 
 #Sensitivity partitioning (Xu and Gertner 2008)
-inp.covs <- as.data.frame(scale(sens.test.actual$lhc))
-out.vals <- sens.test.actual$out$none$seedclass4[focus.year,]
+inp.covs <- as.data.frame(scale(sens.test.actual.shelter$lhc))
+out.vals <- sens.test.actual.shelter$out$shelter$seedclass123[focus.year,]
 
-varPart(out.vals,inp.covs,3)
+varPart(out.vals,inp.covs,4)
 
 #Communality coefficients
 library(yhat)
@@ -115,4 +115,6 @@ inp.lm <- lm(out.vals~pDispersal+weibSc)
 com.coeff <- calc.yhat(inp.lm)
 
 detach(inp.covs)
+
+
 

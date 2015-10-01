@@ -165,8 +165,8 @@ correlation.test <- function(input,harvest,metric,year){
 varPart <- function(response, inputs, digits=3){
   
   #Create empty output object and add names
-  out <- as.data.frame(matrix(data=NA,nrow=(dim(inputs)[2]+1),ncol=7))
-  names(out) <- c('parameter','parV','parUV','parCV','S','Su','Sc')
+  out <- as.data.frame(matrix(data=NA,nrow=(dim(inputs)[2]+1),ncol=8))
+  names(out) <- c('parameter','parV','parUV','parCV','S','Su','Sc','%U')
   out[,1] <- c(colnames(inputs),'sum')
   
   #Iterate over i input covariates and calculate variances
@@ -225,14 +225,14 @@ varPart <- function(response, inputs, digits=3){
     out[i,5] <- parV/v
     out[i,6] <- parUV/v
     out[i,7] <- parCv/v
-    
+    out[i,8] <- out[i,6]/out[i,5]
     
   }
   
   #calculate column means and return output
-  out[(dim(inputs)[2]+1),2:7] <- colSums(out[1:(dim(inputs)[2]),2:7])
+  out[(dim(inputs)[2]+1),2:8] <- colSums(out[1:(dim(inputs)[2]),2:8])
   
-  for(i in 2:7){
+  for(i in 2:8){
     out[,i] <- round(out[,i],digits=digits)
   }
   
