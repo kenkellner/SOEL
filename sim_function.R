@@ -56,7 +56,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #'random' for randomly selecting a year of HEE data
                        #'priorgood' or 'priorbad' for two good/bad mast years just before harvest
                        mast.scenario = 'fixedaverage',
-                       #Weevil scenario, 'fixedaverage', 'random', 'random-match', 'hee', or 'custom'
+                       #Weevil scenario, 'fixedaverage', 'random', 'random-match', 
+                       #'hee', 'treat-diff', or 'custom'
                        weevil.scenario = 'fixedaverage',
                        prob.weevil = 0.3,
                        #Dispersal scenario, 'fixedaverage', 'custom', 'treat-diff', 'yearly-diff',
