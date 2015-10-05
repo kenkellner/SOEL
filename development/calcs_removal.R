@@ -1,57 +1,64 @@
+#Removal function
 
-acorneh <- read.csv('../oak-mast/data/hee_acorn_eh.csv',header=T)
-acorncovs <- read.csv('../oak-mast/data/hee_acorn_covs.csv',header=T)
-treedata <- read.csv('data/hee_treedata.csv')
-codes <- read.csv('data/treecodes.csv',header=T)
-add <- read.csv('data/remadd.csv')
+rem = read.csv('data/ibm_removal.csv',header=T)
 
-weev <- rep(0,length=dim(acorneh)[1])
-for (i in 1:length(weev)){
-  if(sum(acorneh[i,10:17],na.rm=T)>0){
-    weev[i] <- 1
-  }
-}
+library(dplyr)
+disp = read.csv('data/ibm_dispersal.csv',header=T)
+disp <- disp[disp$clear==0,]
+disp$dist[is.na(disp$dist)] <- 0
+disp$dist[1973] <- 24.5
+disp <- rbind(filter(disp,Treecode!=4),
+                  filter(disp,Treecode==4,year12==0))
+disp <- disp[disp$squirrel==0,]
 
-new = data.frame(acorncovs$treecode,acorncovs$yearcode,acorncovs$species,
-            acorncovs$open,acorncovs$deer,acorncovs$rem,weev)
-names(new)<-c('treecode','yearcode','species','open','deer','rem','weev')
-new = new[new$open==1|new$deer==1,c(1:3,6,7)]
-
-newcode <- rep(NA,dim(add)[1])
-add$tree = as.character(add$tree)
-for (i in 1:length(newcode)){
-  newcode[i] <- codes$Treecode[which(add$tree[i]==codes$Tree)]
-}
-
-add = data.frame(add,newcode)
-add = add[add$exclosure%in%c('Open','Deer'),]
-
-new2 = data.frame(treecode=add$newcode,yearcode=add$year,species=add$species,
-                  rem=add$removed,weev=add$weevil)
-
-fulldata = rbind(new,new2)
-
-n.edge = n.shelter = rep(0,dim(fulldata)[1])
-for (i in 1:dim(fulldata)[1]){
-  if(fulldata$yearcode[i]>3){
-    n.edge[i] <- treedata$edge[fulldata$treecode[i]]
-    n.shelter[i] <- treedata$shelter[fulldata$treecode[i]]
-  }
-}
-
-full <- data.frame(fulldata,edge=n.edge,shelter=n.shelter)
-
-final <- full[full$edge==0,]
-
-mast = rep(NA,dim(final)[1])
+mast = rep(NA,dim(rem)[1])
 for (i in 1:length(mast)){
-  mast[i] <- mean(womast[final$yearcode[i]],bomast[final$yearcode[i]])
+  mast[i] <- mean(mastwo[rem$yearcode[i]],mastbo[rem$yearcode[i]])
 }
 
-rm <- glm(rem~species+shelter+weev,data=final,family='binomial')
+library(MASS)
+
+#Treat x yearly
+rm <- glmmPQL(rem~species+shelter+weev,data=rem,family='binomial',random= ~ 1 | yearcode)
 summary(rm)
 
-rm <- glmmPQL(rem~species+shelter+weev,data=final,family='binomial',random= ~ 1 | yearcode)
+#treat
+rm <- glm(rem~species+shelter+weev,data=rem,family='binomial')
+summary(rm)
+#yearly
+rm <- glmmPQL(rem~species+weev,data=rem,family='binomial',random= ~ 1 | yearcode)
+summary(rm)
+#neither
+rm <- glm(rem~species+weev,data=rem,family='binomial')
 summary(rm)
 
+#Dispersal trees only
+
+yearcode <- rep(1,dim(disp)[1])
+mast <- rep(NA,dim(disp)[1])
+for (i in 1:length(yearcode)){
+  if(disp$year12[i]==1){yearcode[i]=2}
+  if(disp$year13[i]==1){yearcode[i]=3}
+  if(disp$year14[i]==1){yearcode[i]=4}
+  mast[i] <- mean(mastbo[yearcode[i]],mastwo[yearcode[i]])
+}
+
+rm <- glmmPQL(removed~wo+shelter+mast,data=disp,family='binomial',random= ~ 1 | yearcode)
+summary(rm)
+
+#Test function
+
+remprob <- function(n, shelter,wo,weev){
+  hold <- 0.519 - 0.162*wo + 0.129*shelter - 2.00*weev + rnorm(n,0,0.6322)
+  out <- (1 +exp(-1*hold))^(-1)
+  return(out)
+}
+
+#remprob <- function(n, shelter,wo,weev){
+#  hold <- 0.8614 - 1.21*wo + 0.4137*shelter + rnorm(n,0,1.129)
+#  out <- (1 +exp(-1*hold))^(-1)
+#  return(out)
+#}
+
+hist(remprob(100,1,1,1))
 
