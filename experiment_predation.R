@@ -17,24 +17,25 @@ weevil.dispersal.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                 ram.max = 5000)
 save(weevil.dispersal.average,file='output/predation/weevil_dispersal_average.Rdata')
 
-weevil.notreateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                 burnin=20,nyears=30,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
-                                weevil.scenario = "hee",
+                                weevil.scenario = "yearly-diff",
+                                dispersal.scenario = "fixedaverage",
                                 force.processors = 12,
                                 ram.max = 5000)
-save(weevil.notreateff,file='output/predation/weevil_notreateff.Rdata')
+save(weevil.yearlyeff,file='output/predation/weevil_yearlyeff.Rdata')
 
-dispersal.notreateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                 burnin=20,nyears=30,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
-                                weevil.scenario = "hee",
+                                weevil.scenario = "fixedaverage",
                                 dispersal.scenario = "yearly-diff",
                                 force.processors = 12,
                                 ram.max = 5000)
-save(dispersal.notreateff,file='output/predation/dispersal_notreateff.Rdata')
+save(dispersal.yearlyeff,file='output/predation/dispersal_yearlyeff.Rdata')
 
 
 weevil.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
@@ -42,6 +43,7 @@ weevil.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                               harvests = c('none','shelterwood'),
                               mast.scenario = "hee",
                               weevil.scenario = "treat-diff",
+                              dispersal.scenario = "fixedaverage",
                               force.processors = 12,
                               ram.max = 5000)
 save(weevil.treateff,file='output/predation/weevil_treateff.Rdata')
@@ -50,20 +52,41 @@ dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                    burnin=20,nyears=30,
                                    harvests = c('none','shelterwood'),
                                    mast.scenario = "hee",
-                                   weevil.scenario = "hee",
-                                   dispersal.scenario = "treat-yearly-diff",
+                                   weevil.scenario = "fixedaverage",
+                                   dispersal.scenario = "treat-diff",
                                    force.processors = 12,
                                    ram.max = 5000)
 save(dispersal.treateff,file='output/predation/dispersal_treateff.Rdata')
 
+weevil.dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+                                        burnin=20,nyears=30,
+                                        harvests = c('none','shelterwood'),
+                                        mast.scenario = 'hee',
+                                        weevil.scenario = 'yearly-diff',
+                                        dispersal.scenario = "yearly-diff",
+                                        force.processors = 12,
+                                        ram.max = 5000)
+save(weevil.dispersal.yearlyeff,file='output/predation/weevil_dispersal_yearlyeff.Rdata')
+
 weevil.dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=20,nyears=30,
+                                        harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',
                                         weevil.scenario = 'treat-diff',
-                                        dispersal.scenario = "treat-yearly-diff",
+                                        dispersal.scenario = "treat-diff",
                                         force.processors = 12,
                                         ram.max = 5000)
 save(weevil.dispersal.treateff,file='output/predation/weevil_dispersal_treateff.Rdata')
+
+weevil.dispersal.treatyearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+                                        burnin=20,nyears=30,
+                                        harvests = c('none','shelterwood'),
+                                        mast.scenario = 'hee',
+                                        weevil.scenario = 'yearly-treat-diff',
+                                        dispersal.scenario = "yearly-treat-diff",
+                                        force.processors = 12,
+                                        ram.max = 5000)
+save(weevil.dispersal.treatyearlyeff,file='output/predation/weevil_dispersal_treatyearlyeff.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
