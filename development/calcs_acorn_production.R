@@ -1,6 +1,6 @@
 
 tree <- read.csv('data/hee_treedata.csv',header=T)
-prod <- read.csv('data/hee_production.csv',header=T)
+prod <- read.csv('../oak-mast/data/ibm_production.csv',header=T)
 
 com <- cbind(tree,prod)[,c('species','X2006','X2007','X2008','X2009','X2010','X2011',
                           'X2012','X2013','X2014')]
@@ -12,6 +12,7 @@ bo <- com[com$species==0,]
 ###WO
 
 1 / (colMeans(wo,na.rm=T)/0.34) # yearly
+womast = (1 / (colMeans(wo,na.rm=T)/0.34))[2:10]
 
 #Mast year
 hist(unlist(wo[,c(3,6,10)])/0.34)
@@ -53,6 +54,8 @@ text(100,0.02,expression(lambda*" = 0.08518"),cex=2)
 ####BO
 
 1 / (colMeans(bo,na.rm=T)/0.34) # yearly
+
+bomast = (1 / (colMeans(bo,na.rm=T)/0.34))[2:10] # yearly
 
 #Mast year
 hist(unlist(bo[,c(3,6,8,10)])/0.34)
