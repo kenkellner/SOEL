@@ -10,7 +10,7 @@ covs = c('pDispersal','weibSc','pDispEaten','pCache','pUndispEaten','pWeevil',
          'lamAcorn','pBrowse','meanGr','meanSurv')
 
 corm <- matrix(data=NA,nrow=10,ncol=10)
-corm[,10] <- corm[9:10,] <- 0
+corm[,9:10] <- corm[9:10,] <- 0
 corm[9,9] <- 1
 corm[10,10] <- 1
 
@@ -31,15 +31,22 @@ for (i in 1:(length(covs)-2)){
 
 #Parameter sampling distribution arguments
 
-qarg.sd <- list(pDispersal=list(mean=mean(psummary[,1],na.rm=T),sd=sd(psummary[,1],na.rm=T)),
-                weibSc=list(mean=mean(psummary[,2],na.rm=T),sd=sd(psummary[,2],na.rm=T)),
-                pDispEaten=list(mean=mean(psummary[,4],na.rm=T),sd=sd(psummary[,4],na.rm=T)),
-                pCache=list(mean=mean(psummary[,5],na.rm=T),sd=sd(psummary[,5],na.rm=T)),
-                pUndispEaten=list(mean=mean(psummary[,6],na.rm=T),sd=sd(psummary[,6],na.rm=T)),
-                pWeevil=list(mean=mean(psummary[,7],na.rm=T),sd=sd(psummary[,7],na.rm=T)),
-                lamAcorn=list(mean=mean(psummary[,8],na.rm=T),sd=sd(psummary[,8],na.rm=T)),
-                pBrowse=list(mean=mean(psummary[,9],na.rm=T),sd=sd(psummary[,9],na.rm=T)),
-                meanGr=list(mean=1.24,sd=0.125),meanSurv=list(mean=-0.600,sd=0.114))
+#Narrower ranges (1 sd around mean)
+mn <- colMeans(psummary,na.rm=T)
+adj <- apply(psummary,2,sd,na.rm=T)
+up <- mn+adj
+lw <- mn-adj
+qarg.sd <- list(pDispersal=list(min=lw[1],max=up[1]),
+                    weibSc=list(min=lw[2],max=up[2]),
+                    pDispEaten=list(min=lw[3],max=up[3]),
+                    pCache=list(min=lw[4],max=1),
+                    pUndispEaten=list(min=lw[5],max=1),
+                    pWeevil=list(min=lw[6],max=up[6]),
+                    lamAcorn=list(min=0,max=up[7]),
+                    pBrowse=list(min=lw[8],max=up[8]),
+                    meanGr=list(min=(1.24-0.125),max=(1.24+0.125)),
+                    meanSurv=list(min=(-.6-0.114),max=(-.6+0.114))
+                    )
 
 
 
@@ -69,6 +76,9 @@ qarg.wide <- list(pDispersal=list(min=0,max=1),
 
 #Narrower ranges (10% around mean)
 mn <- colMeans(psummary,na.rm=T)
+
+apply(psummary,2,sd,na.rm=T)
+
 adj <- .1*colMeans(psummary,na.rm=T)
 up <- mn+adj
 lw <- mn-adj
@@ -91,7 +101,7 @@ sens.test.sd <- forest.sim(nreps=504,burnin=50,nyears=60,
                               harvests = c('none'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
-                              covs=covs,q="qnorm",
+                              covs=covs,q="qunif",
                               qarg=qarg.sd,
                               corm=corm)
 

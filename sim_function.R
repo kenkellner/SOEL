@@ -236,7 +236,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
         NLCommand(paste('set seedling-scenario ','\"',seedling.scenario,'\"',sep=""))
         NLCommand(paste('set browse-scenario ','\"',browse.scenario,'\"',sep=""))
         NLCommand(paste('set drought-prob',prob.drought))
-        if(seedling.scenario = "custom"){
+        if(seedling.scenario == "custom"){
           NLCommand(paste('set mean-growth',mean.growth))
           NLCommand(paste('set mean-survival',mean.survival))
         }
