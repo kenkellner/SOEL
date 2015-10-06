@@ -91,9 +91,16 @@ save(weevil.dispersal.treatyearlyeff,file='output/predation/weevil_dispersal_tre
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
 runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
+
+setwd('output/predation')
+zip('predation.zip',files=list.files())
+setwd('../..')
+
 pbPost('note','Analysis Complete',
-       paste('Predation experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
+       paste('Predation experiment on rbrutus16 complete after',runtime,'minutes. Sending files and shutting down instance.'),
        devices='Nexus 6')
+
+pbPost('file',url='output/predation/predation.zip')
 
 #Shut down instance 
 system('sudo shutdown -h now')
