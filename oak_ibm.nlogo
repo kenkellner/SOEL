@@ -492,11 +492,13 @@ to set-scenario
   ;Seedling survival and growth
   if seedling-scenario = "custom" [
     ;Transform raw mean growth/survival values to input into models 
-    let ms ln (mean-survival / (1 - mean-survival)) 
+    ;let ms ln (mean-survival / (1 - mean-survival)) 
 
-    let sign 0
-    if mean-growth > 0 [set sign 1] if mean-growth < 0 [set sign -1]   
-    let mg (sign * ln(abs(mean-growth) + 1))
+    ;let sign 0
+    ;if mean-growth > 0 [set sign 1] if mean-growth < 0 [set sign -1]   
+    ;let mg (sign * ln(abs(mean-growth) + 1))
+    let mg mean-growth
+    let ms mean-survival 
    
     set surv-params (list ms 0.101 0.366 0.576)
     set growth-params (list mg 0.248 -0.94 -0.488 0.116 1.188)    
