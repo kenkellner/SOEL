@@ -101,7 +101,7 @@ sens.test.sd <- forest.sim(nreps=504,burnin=50,nyears=60,
                               harvests = c('none'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
-                              covs=covs,q="qnorm",
+                              covs=covs,q="qunif",
                               qarg=qarg.sd,
                               corm=corm)
 
