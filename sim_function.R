@@ -45,7 +45,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Seedling growth/survival scenario; options are
                        #'fixedaverage' or 'randomdrought'
                        #'#Only works when seedlings = 'hee'
-                       seed.scenario = 'fixedaverage',
+                       seedling.scenario = 'fixedaverage',
                        prob.drought = 0.2,
                        #Browse scenario (also only works when seedlings = 'hee')
                        #'fixedaverage', 'hee' for yearly variation, or 'custom' to set manually
@@ -63,10 +63,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Dispersal scenario, 'fixedaverage', 'custom', 'treat-diff', 'yearly-diff',
                        #'treat-yearly-diff', or 'random'
                        dispersal.scenario = 'fixedaverage',
-                       #Dispersal kernal type, exponential or weibull
-                       dispersal.distrib = 'weibull',
                        #Acorn transition probabilities (list) to use if above is set to custom
-                       acorn = list(disperse=0.41,disperse.exp=5.185,weibSc=7.578,weibSh=1.292,
+                       acorn = list(disperse=0.41,weibSc=7.578,
                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                        #Maximum yearly seedling growth if 'simple' is selected
                        maxgrowth = 0.9,
@@ -174,17 +172,18 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       mast.scenario <- "custom"
       weevil.scenario <- "custom"
       dispersal.scenario <- "custom"
-      dispersal.distrib <- "weibull"
-      seed.scenario <- "randomdrought"
+      seedling.scenario <- "custom"
       browse.scenario <- "custom"
       
+      mean.growth <- lhc$meanGr
+      mean.survival <- lhc$meanSurv
       prob.browsed <- lhc$pBrowse[i]
       prob.weevil <- lhc$pWeevil[i]
-      prob.drought <- lhc$pDrought[i]
+      prob.drought <- 0
       mast.val <- lhc$lamAcorn[i]
       
-      acorn <- list(disperse=lhc$pDispersal[i],disperse.exp=5.185,weibSc=lhc$weibSc[i],
-                    weibSh=lhc$weibSh[i],disperse.eaten=lhc$pDispEaten[i],
+      acorn <- list(disperse=lhc$pDispersal[i],weibSc=lhc$weibSc[i],
+                    disperse.eaten=lhc$pDispEaten[i],
                     cache.prob=lhc$pCache[i],undisperse.eaten=lhc$pUndispEaten[i])
     }
     
@@ -224,12 +223,9 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
         NLCommand(paste('set wo-weevil-prob',prob.weevil))
         NLCommand(paste('set bo-weevil-prob',prob.weevil))
         NLCommand(paste('set dispersal-scenario ','\"',dispersal.scenario,'\"',sep=""))
-        NLCommand(paste('set dispersal-distrib ','\"',dispersal.distrib,'\"',sep=""))
         if(dispersal.scenario == "custom"){
           NLCommand(paste('set disperse-prob',acorn$disperse))
-          NLCommand(paste('set disperse-dist',acorn$disperse.exp))
           NLCommand(paste('set weibSc',acorn$weibSc))
-          NLCommand(paste('set weibSh',acorn$weibSh))
           NLCommand(paste('set disperse-eaten-prob',acorn$disperse.eaten))
           NLCommand(paste('set cache-prob',acorn$cache.prob))
           NLCommand(paste('set undisp-eaten-prob',acorn$undisperse.eaten))
@@ -237,9 +233,13 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       }
       if(seedlings == "hee"){
         NLCommand(paste('set prob-browsed',prob.browsed))
-        NLCommand(paste('set seed-scenario ','\"',seed.scenario,'\"',sep=""))
+        NLCommand(paste('set seedling-scenario ','\"',seedling.scenario,'\"',sep=""))
         NLCommand(paste('set browse-scenario ','\"',browse.scenario,'\"',sep=""))
         NLCommand(paste('set drought-prob',prob.drought))
+        if(seedling.scenario = "custom"){
+          NLCommand(paste('set mean-growth',mean.growth))
+          NLCommand(paste('set mean-survival',mean.survival))
+        }
         }
       if(seedlings == "simple"){NLCommand(paste('set seedling-growth',maxgrowth))}
     }

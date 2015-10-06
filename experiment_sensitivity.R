@@ -6,15 +6,16 @@ library(RPushbullet)
 #Generate correlation matrix for Latin hypercube sampling
 psummary <- read.csv('data/param_summary.csv',header=T)[1:9,]
 
-covs = c('pDispersal','weibSc','weibSh','pDispEaten','pCache','pUndispEaten','pWeevil',
-         'lamAcorn','pBrowse','pDrought')
+covs = c('pDispersal','weibSc','pDispEaten','pCache','pUndispEaten','pWeevil',
+         'lamAcorn','pBrowse','meanGr','meanSurv')
 
 corm <- matrix(data=NA,nrow=10,ncol=10)
-corm[,10] <- corm[10,] <- 0
+corm[,10] <- corm[9:10,] <- 0
+corm[9,9] <- 1
 corm[10,10] <- 1
 
-for (i in 1:(length(covs)-1)){
-  for (j in 1:(length(covs)-1)){
+for (i in 1:(length(covs)-2)){
+  for (j in 1:(length(covs)-2)){
     
     if(i==j){corm[i,j]=1
     }else{
@@ -29,6 +30,19 @@ for (i in 1:(length(covs)-1)){
   }}
 
 #Parameter sampling distribution arguments
+
+qarg.sd <- list(pDispersal=list(mean=mean(psummary[,1],na.rm=T),sd=sd(psummary[,1],na.rm=T)),
+                weibSc=list(mean=mean(psummary[,2],na.rm=T),sd=sd(psummary[,2],na.rm=T)),
+                pDispEaten=list(mean=mean(psummary[,4],na.rm=T),sd=sd(psummary[,4],na.rm=T)),
+                pCache=list(mean=mean(psummary[,5],na.rm=T),sd=sd(psummary[,5],na.rm=T)),
+                pUndispEaten=list(mean=mean(psummary[,6],na.rm=T),sd=sd(psummary[,6],na.rm=T)),
+                pWeevil=list(mean=mean(psummary[,7],na.rm=T),sd=sd(psummary[,7],na.rm=T)),
+                lamAcorn=list(mean=mean(psummary[,8],na.rm=T),sd=sd(psummary[,8],na.rm=T)),
+                pBrowse=list(mean=mean(psummary[,9],na.rm=T),sd=sd(psummary[,9],na.rm=T)),
+                meanGr=list(mean=1.24,sd=0.125),meanSurv=list(mean=-0.600,sd=0.114))
+
+
+
 #Based on actual ranges
 qarg.actual <- list(pDispersal=list(min=min(psummary[,1],na.rm=T),max=max(psummary[,1],na.rm=T)),
                     weibSc=list(min=min(psummary[,2],na.rm=T),max=max(psummary[,2],na.rm=T)),
@@ -39,7 +53,7 @@ qarg.actual <- list(pDispersal=list(min=min(psummary[,1],na.rm=T),max=max(psumma
                     pWeevil=list(min=min(psummary[,7],na.rm=T),max=max(psummary[,7],na.rm=T)),
                     lamAcorn=list(min=min(psummary[,8],na.rm=T),max=max(psummary[,8],na.rm=T)),
                     pBrowse=list(min=min(psummary[,9],na.rm=T),max=max(psummary[,9],na.rm=T)),
-                    pDrought=list(min=0,max=1))
+                    meanGr=list(mean=1.24,sd=0.125),meanSurv=list(mean=-0.600,sd=0.114))
 
 #Wider ranges
 qarg.wide <- list(pDispersal=list(min=0,max=1),
@@ -69,25 +83,30 @@ qarg.narrow <- list(pDispersal=list(min=lw[1],max=up[1]),
                     pBrowse=list(min=lw[9],max=up[9]),
                     pDrought=list(min=0.5-0.1*0.5,max=0.5+0.1*0.5))
 
+######################################################################
+
 start.time <- Sys.time()
 
-sens.test.actual <- forest.sim(nreps=504,burnin=20,nyears=26,
+sens.test.sd <- forest.sim(nreps=504,burnin=50,nyears=60,
                               harvests = c('none'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
-                              covs=covs,q="qunif",
-                              qarg=qarg.actual,
+                              covs=covs,q="qnorm",
+                              qarg=qarg.sd,
                               corm=corm)
 
 
-save(sens.test.actual,file='output/sens_test_actual.Rdata')
+save(sens.test.sd,file='output/sens_test_sd.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
 runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
+
 pbPost('note','Analysis Complete',
        paste('Sensitivity experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
        devices='Nexus 6')
+
+pbPost('file',url='output/sens_test_sd.Rdata')
 
 #Shut down instance 
 system('sudo shutdown -h now')

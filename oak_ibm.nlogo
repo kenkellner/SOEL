@@ -49,7 +49,7 @@ turtles-own [in-core]
 
 breed [oaks oak]
 oaks-own [species light age dbh height canopy-radius canopy-density actual-growth ba acorn-mean seedling sprout? fAL
-  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality density browsed 
+  Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality density browsed indeffect
   ]
 
 breed [maples maple]
@@ -90,7 +90,7 @@ to setup
   set bo-weev-list [0.1396 0.2057 0.6250 0.9545 0.3744 0.1310 0.1304 0.3424 0.2389]
   set wo-weev-list [0.0198 0.1919 0.3679 0.8571 0.1786 0.1176 0.1695 0.1429 0.0761]
   
-  set mast-year-index 0
+  set mast-year-index random 9
    
   ifelse HEE-mean = TRUE [
     init-stand adjust TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
@@ -125,7 +125,7 @@ to go
    germinate-mast 
   ]
   
-  if seedlings = "simple" OR seedlings = "hee" [
+  if seedlings = "hee" [
     ask oaks with [seedling = TRUE] [
       grow-seedling
       check-seedling-survival
@@ -441,7 +441,6 @@ end
 to set-scenario
   
   let random-index random 9
-  if dispersal-scenario = "random" [set random-index ((random 4) + 5)] 
   
   ;Acorn production
   if mast-scenario = "custom" [
@@ -491,32 +490,37 @@ to set-scenario
   set mast-mean-comb mean (list mast-mean-wo mast-mean-bo)
   
   ;Seedling survival and growth
-  if seed-scenario = "fixedaverage" [
+  if seedling-scenario = "custom" [
+    ;Transform raw mean growth/survival values to input into models 
+    let ms ln (mean-survival / (1 - mean-survival)) 
+
+    let sign 0
+    if mean-growth > 0 [set sign 1] if mean-growth < 0 [set sign -1]   
+    let mg (sign * ln(abs(mean-growth) + 1))
+   
+    set surv-params (list ms 0.101 0.366 0.576)
+    set growth-params (list mg 0.248 -0.94 -0.488 0.116 1.188)    
+  ] 
+  if seedling-scenario = "fixedaverage" [
     ; intercept species canopy age
     set surv-params (list -0.6 0.101 0.366 0.576)
     ; intercept seedSD browse canopy species obsSD
-    set growth-params (list 1.24 0.248 -0.94 -0.488 0.166 1.188)
-  ]
-  
-  if seed-scenario = "randomdrought" [
-    
+    set growth-params (list 1.24 0.248 -0.94 -0.488 0.116 1.188)
+  ] 
+  if seedling-scenario = "randomdrought" [    
     ;drought conditions
     ifelse random-float 1 < drought-prob [
       set surv-params (list -0.531 0.197 0.528 0.44)
-      set growth-params (list 0.911 0.157 -0.871 -0.238 0.085 1.016)
-      ]
-    ;non-drought
-    [
-      set surv-params (list -0.531 0.197 0.528 0.44)
-      set growth-params (list 2.091 0.199 -0.976 -1.733 0.468 1.468)
-    ]    
+      set growth-params (list 0.911 0.157 -0.871 -0.238 0.085 1.016)]  
+    [;non-drought
+      set surv-params (list 2.596 0 -0.733 0)
+      set growth-params (list 2.091 0.199 -0.976 -1.733 0.468 1.468)] 
   ]
   
   ;Browsing
   if browse-scenario = "fixedaverage" [set prob-browsed 0.1058] 
   if browse-scenario = "hee" [set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)]  
   if browse-scenario = "custom" [ ]
-  
   
   ;Weevil scenarios
   if weevil-scenario = "custom" [ ]
@@ -549,7 +553,7 @@ to set-scenario
    
   ;Dispersal scenarios
   if dispersal-scenario = "custom" [    
-    set core-acorn-params-bo (list disperse-prob disperse-prob weibSh disperse-eaten-prob disperse-eaten-prob undisp-eaten-prob)
+    set core-acorn-params-bo (list disperse-prob disperse-prob weibSc disperse-eaten-prob disperse-eaten-prob undisp-eaten-prob)
     set core-acorn-params-wo core-acorn-params-bo
     set buffer-acorn-params-bo core-acorn-params-bo
     set buffer-acorn-params-wo core-acorn-params-bo
@@ -605,7 +609,7 @@ to produce-acorns
   if weevil-scenario != "custom" [
    
    ifelse species = "BO" [set weevil-probability buffer-weev-prob-bo][set weevil-probability buffer-weev-prob-wo]
-   if in-core = TRUE and harvest-type = "shelterwood" and ticks > harvest-year [
+   if in-core = TRUE and harvest-type = "shelterwood" and ticks > burnin [
      ifelse species = "BO" [set weevil-probability core-weev-prob-bo][set weevil-probability core-weev-prob-wo]   
      ]  
   ]
@@ -649,19 +653,22 @@ to disperse-mast
   ifelse random-float 1 < rem-prob [
     
     ;;new approach to dispersal to avoid openings
-    let startx xcor let starty ycor    
-    loop [
-      right random 360
-      ;;based on HEE data
-      set disp-dist random-weibull 1.400 (item 2 acorn-params)
-      forward disp-dist
-      ifelse [shade] of patch-here > 0.2 [stop]
-      [set xcor startx set ycor starty]      
-      ]
+    let startx xcor let starty ycor
+    right random 360
+    ;;based on HEE data
+    set disp-dist random-weibull 1.400 (item 2 acorn-params)
+    forward disp-dist
     
+    ;lots of trouble getting this to work
+    ;while [[shade] of patch-here < 0.2][
+    ;  set xcor startx set ycor starty
+    ;  set disp-dist random-weibull 1.400 (item 2 acorn-params)
+    ;  forward disp-dist
+    ;]
+   
     ;;check to see if still in core area after being dispersed
     check-in-core
-    ifelse harvest-type = "shelterwood" and ticks > harvest-year and in-core = TRUE [set acorn-params core-acorn-params]
+    ifelse harvest-type = "shelterwood" and ticks > burnin and in-core = TRUE [set acorn-params core-acorn-params]
     [set acorn-params buffer-acorn-params]
     
     let pcache 0
@@ -703,6 +710,7 @@ to germinate-mast
       set seedling TRUE   
       set hidden? TRUE
       set height 0.092 ;based on HEE seedlings
+      set indeffect (random-normal 0 item 1 growth-params)
     ]]
     die
 end
@@ -712,37 +720,18 @@ to grow-seedling
   set light (1 - [shade] of patch-here)
   ifelse random-float 1 < prob-browsed [set browsed 1][set browsed 0]
   
-  ifelse seedlings = "hee" [
-    ;ifelse random-float 1 < 0.0699 and light > 0.8 [
-    ;  set actual-growth (min list 150 random-exponential 52.18) / 100
-    ;][
-    ;let sp-ef 0
-    ;if species = "WO" [set sp-ef 1.73]
-    ;set actual-growth max list 0 (4.485 + random-normal 0 1.934 - 3.014 * (1 - light) 
-    ;  + sp-ef - 4.892 * browsed + random-normal 0 9.151) / 100
-    ;]
+  let sp-ef 0
+  if species = "WO" [set sp-ef 1]
+  let growthpred ((item 0 growth-params) + indeffect
+  + (item 2 growth-params) * browsed + (item 3 growth-params) * (1 - light)     
+  + (item 4 growth-params) * sp-ef + (random-normal 0 item 5 growth-params))
     
-    let sp-ef 0
-    if species = "WO" [set sp-ef 1]
-    let growthpred ((item 0 growth-params) + (random-normal 0 item 1 growth-params) 
-    + (item 2 growth-params) * browsed + (item 3 growth-params) * (1 - light)     
-    + (item 4 growth-params) * sp-ef + (random-normal 0 item 5 growth-params))
+  set actual-growth (inv-neglog growthpred) / 100
     
-    set actual-growth (inv-neglog growthpred) / 100
-    
-    if actual-growth < 0 [set actual-growth 0]
-   
-  ][
-  
-  let max-growth seedling-growth  ;growth is height-based 
-  set fAL light-growth-index light "intermediate"
-  set actual-growth (max-growth * fAL)
-  
-  ]
-  
+  if actual-growth < 0 [set actual-growth 0]
+
   set height (height + actual-growth)
 
-  
   if height > 1.37 [ ;When seedling reaches dbh 0.01, height = 2.039
     
     set dbh max list 0 ((-1.88 + 0.01372 * (height * 100)) / 100)
@@ -951,6 +940,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   ;;Create saplings
   create-oaks dens-adjust * n-sap-oak [
     set dbh max list 0.015 ((random-normal 14.9 5) / 100)
+    ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
     init-params
     set age round (Amax * (dbh * 100) / Dmax)
     loop [
@@ -1083,8 +1073,8 @@ to calc-global-vars ;;Calculate global reporter values
   ifelse total-acorns > 0 [set pct-germ (new-seedlings / total-acorns)][set pct-germ 0]
   ifelse total-bo-acorns > 0 [set pct-bo-germ (new-bo-seedlings / total-bo-acorns)][set pct-bo-germ 0]
   ifelse total-wo-acorns > 0 [set pct-wo-germ (new-wo-seedlings / total-wo-acorns)][set pct-wo-germ 0]
-  set regen-dens (count oaks with [height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
-  set regen-stump-dens (count oaks with [sprout? = TRUE and height >= 1.37 and height < 5 and in-core = TRUE]) / adjust
+  set regen-dens (count oaks with [height >= 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
+  set regen-stump-dens (count oaks with [sprout? = TRUE and height >= 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
   
 end
 
@@ -1168,10 +1158,10 @@ to conduct-harvest
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-220
-10
-935
-746
+167
+12
+882
+748
 70
 70
 5.0
@@ -1195,10 +1185,10 @@ ticks
 30.0
 
 BUTTON
-34
-40
-97
-73
+23
+41
+86
+74
 NIL
 setup
 NIL
@@ -1227,10 +1217,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-104
-40
-167
-73
+93
+41
+156
+74
 NIL
 go
 T
@@ -1244,10 +1234,10 @@ NIL
 0
 
 SLIDER
-1020
-655
-1195
-688
+467
+909
+642
+942
 DegDays
 DegDays
 1980
@@ -1259,10 +1249,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1021
-693
-1193
-726
+468
+947
+640
+980
 wt-dist
 wt-dist
 0.1
@@ -1274,10 +1264,10 @@ m
 HORIZONTAL
 
 SLIDER
-1021
-733
-1193
-766
+468
+987
+640
+1020
 available-N
 available-N
 0
@@ -1289,10 +1279,10 @@ kg/ha/yr
 HORIZONTAL
 
 MONITOR
-33
-203
-101
-248
+14
+573
+82
+618
 BA (m2/ha)
 basal-area
 2
@@ -1300,10 +1290,10 @@ basal-area
 11
 
 SLIDER
-1102
-134
-1218
-167
+794
+811
+910
+844
 bo-weevil-prob
 bo-weevil-prob
 0
@@ -1315,33 +1305,18 @@ NIL
 HORIZONTAL
 
 SLIDER
-1116
-306
-1228
-339
+795
+925
+907
+958
 germ-prob
 germ-prob
 0
 1
-0.77
+0.79
 0.01
 1
 NIL
-HORIZONTAL
-
-SLIDER
-1022
-388
-1194
-421
-seedling-growth
-seedling-growth
-0
-1.37
-0.6
-0.01
-1
-m
 HORIZONTAL
 
 SLIDER
@@ -1375,10 +1350,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-33
-254
-100
-299
+14
+622
+81
+667
 qDBH (cm)
 qdbh
 2
@@ -1386,10 +1361,10 @@ qdbh
 11
 
 MONITOR
-108
-203
-176
-248
+89
+573
+157
+618
 BA (ft2/ac)
 basal-area-ft
 2
@@ -1397,10 +1372,10 @@ basal-area-ft
 11
 
 MONITOR
-111
-254
-176
-299
+88
+623
+153
+668
 qDBH (in)
 qdbh-in
 2
@@ -1408,10 +1383,10 @@ qdbh-in
 11
 
 MONITOR
-35
-306
-99
-351
+14
+672
+78
+717
 Trees/Ha
 dens
 2
@@ -1419,10 +1394,10 @@ dens
 11
 
 MONITOR
-112
-306
-175
-351
+88
+673
+151
+718
 Trees/Ac
 dens-ac
 2
@@ -1430,10 +1405,10 @@ dens-ac
 11
 
 PLOT
-8
-357
-208
-507
+894
+640
+1054
+760
 Basal Area
 Years
 m2/ha
@@ -1448,10 +1423,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot basal-area"
 
 PLOT
-9
-516
-209
-666
+1056
+640
+1234
+760
 BA Proportion
 Years
 NIL
@@ -1534,10 +1509,10 @@ Initial Forest\n
 1
 
 SLIDER
-1022
-771
-1194
-804
+469
+1025
+641
+1058
 wilt
 wilt
 0
@@ -1549,10 +1524,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-985
-606
-1062
-651
+222
+1015
+299
+1060
 NIL
 sitequal-woak
 2
@@ -1560,10 +1535,10 @@ sitequal-woak
 11
 
 MONITOR
-1065
-606
-1142
-651
+382
+1014
+459
+1059
 NIL
 sitequal-maple
 2
@@ -1571,10 +1546,10 @@ sitequal-maple
 11
 
 MONITOR
-1146
-606
-1226
-651
+300
+1014
+380
+1059
 NIL
 sitequal-poplar
 2
@@ -1582,29 +1557,29 @@ sitequal-poplar
 11
 
 TEXTBOX
-1057
-465
-1207
-483
+229
+878
+379
+896
 Site Conditions
 14
 0.0
 1
 
 TEXTBOX
-1043
-10
-1193
-28
-Oak Regen Parameters
+60
+199
+210
+217
+Scenarios
 14
 0.0
 1
 
 TEXTBOX
-301
+295
 71
-451
+445
 89
 Output
 14
@@ -1612,40 +1587,40 @@ Output
 1
 
 TEXTBOX
-46
-83
-196
-101
+35
+84
+185
+102
 Harvest Controls
 14
 0.0
 1
 
 CHOOSER
-33
-107
-171
-152
+17
+108
+155
+153
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-2
+0
 
 TEXTBOX
-65
-15
-215
-33
+54
+16
+204
+34
 Start Model
 14
 0.0
 1
 
 SLIDER
-25
-703
-197
-736
+22
+773
+194
+806
 light-extinct
 light-extinct
 0.00016667
@@ -1657,10 +1632,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-26
-741
-198
-774
+23
+811
+195
+844
 density-dep
 density-dep
 0.5
@@ -1672,20 +1647,20 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-52
-682
-202
-700
+49
+752
+199
+770
 Tuning Parameters
 14
 0.0
 1
 
 SWITCH
-1031
-486
-1178
-519
+226
+903
+373
+936
 manual-site-qual
 manual-site-qual
 0
@@ -1693,10 +1668,10 @@ manual-site-qual
 -1000
 
 SLIDER
-1008
-523
-1100
-556
+225
+942
+317
+975
 sqwoak
 sqwoak
 0
@@ -1708,10 +1683,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1106
-522
-1198
-555
+323
+941
+415
+974
 sqboak
 sqboak
 0
@@ -1723,10 +1698,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1008
-558
-1100
-591
+225
+977
+317
+1010
 sqmap
 sqmap
 0
@@ -1738,10 +1713,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1105
-558
-1197
-591
+322
+977
+414
+1010
 sqpop
 sqpop
 0
@@ -1753,10 +1728,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-246
-62
-418
-95
+194
+63
+366
+96
 x-core
 x-core
 10
@@ -1768,9 +1743,9 @@ m
 HORIZONTAL
 
 SLIDER
-246
+193
 102
-418
+365
 135
 y-core
 y-core
@@ -1783,10 +1758,10 @@ m
 HORIZONTAL
 
 SLIDER
-247
-139
-419
-172
+193
+140
+365
+173
 buffer
 buffer
 0
@@ -1798,10 +1773,10 @@ m
 HORIZONTAL
 
 SLIDER
-19
-157
+20
+158
+155
 191
-190
 burnin
 burnin
 0
@@ -1813,30 +1788,30 @@ years
 HORIZONTAL
 
 CHOOSER
-971
-300
-1109
-345
+946
+788
+1084
+833
 seedlings
 seedlings
-"none" "simple" "hee"
-2
+"none" "hee"
+1
 
 CHOOSER
-958
-34
-1050
-79
+20
+220
+158
+265
 mast-scenario
 mast-scenario
 "random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom"
 1
 
 SWITCH
-1052
-425
-1160
-458
+796
+1000
+904
+1033
 sprouting
 sprouting
 0
@@ -1844,10 +1819,10 @@ sprouting
 -1000
 
 SLIDER
-986
-178
-1100
-211
+672
+847
+786
+880
 disperse-prob
 disperse-prob
 0
@@ -1859,25 +1834,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-986
-219
-1098
-252
-disperse-dist
-disperse-dist
-0
-10
-5.185
-0.001
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1101
-219
-1217
-252
+672
+886
+788
+919
 disperse-eaten-prob
 disperse-eaten-prob
 0
@@ -1889,25 +1849,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-987
-256
-1100
-289
+795
+888
+908
+921
 cache-prob
 cache-prob
 0
 1
-0.288
+0.286
 0.001
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1104
-256
-1218
-289
+672
+923
+786
+956
 undisp-eaten-prob
 undisp-eaten-prob
 0
@@ -1919,10 +1879,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1097
-351
-1212
-384
+673
+1000
+788
+1033
 prob-browsed
 prob-browsed
 0
@@ -1934,20 +1894,20 @@ NIL
 HORIZONTAL
 
 CHOOSER
-1054
-33
-1146
-78
-seed-scenario
-seed-scenario
-"fixedaverage" "randomdrought"
+19
+368
+158
+413
+seedling-scenario
+seedling-scenario
+"custom" "fixedaverage" "randomdrought"
 1
 
 SLIDER
-986
-352
-1094
-385
+34
+471
+142
+504
 drought-prob
 drought-prob
 0
@@ -1959,20 +1919,20 @@ NIL
 HORIZONTAL
 
 CHOOSER
-1148
-33
-1240
-78
+19
+416
+158
+461
 browse-scenario
 browse-scenario
-"fixedaverage" "hee" "custom"
-0
+"custom" "fixedaverage" "hee"
+1
 
 SLIDER
-981
-134
-1099
-167
+673
+811
+791
+844
 wo-weevil-prob
 wo-weevil-prob
 0
@@ -1984,79 +1944,194 @@ NIL
 HORIZONTAL
 
 CHOOSER
-996
-84
-1135
-129
+19
+269
+158
+314
 weevil-scenario
 weevil-scenario
-"fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
-3
+"custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
+1
 
 CHOOSER
-1098
-84
-1237
-129
+19
+319
+158
+364
 dispersal-scenario
 dispersal-scenario
-"fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
-3
-
-CHOOSER
-1105
-171
-1200
-216
-dispersal-distrib
-dispersal-distrib
-"exponential" "weibull"
-0
+"custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
+1
 
 SLIDER
-698
-760
-790
-793
+673
+776
+765
+809
 mast-val
 mast-val
 0
 3
-0.09
+0.03
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-796
-759
-888
-792
+794
+848
+886
+881
 weibSc
 weibSc
 4
 12
-6
+5.89
 0.01
 1
 NIL
 HORIZONTAL
 
-SLIDER
-596
-758
-688
-791
-weibSh
-weibSh
+TEXTBOX
+676
+755
+826
+773
+Custom Oak Params
+14
+0.0
 1
-2
-1.5
+
+PLOT
+903
+265
+1208
+385
+New Seedlings
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"All" 1.0 0 -2674135 true "" "plot new-seedlings"
+"BO" 1.0 0 -16777216 true "" "plot new-bo-seedlings"
+"WO" 1.0 0 -7500403 true "" "plot new-wo-seedlings"
+
+PLOT
+905
+512
+1211
+632
+Sapling Density
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"All" 1.0 0 -2674135 true "" "plot seedlings-class4"
+"BO" 1.0 0 -16777216 true "" "plot seedbo-class4"
+"WO" 1.0 0 -7500403 true "" "plot seedwo-class4"
+
+PLOT
+905
+388
+1210
+508
+Seedling Density
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"All" 1.0 0 -2674135 true "" "plot seedlings-class123"
+"BO" 1.0 0 -16777216 true "" "plot seedbo-class123"
+"WO" 1.0 0 -7500403 true "" "plot seedwo-class123"
+
+PLOT
+903
+138
+1207
+258
+Percent Germination
+NIL
+NIL
+0.0
+10.0
+0.0
+0.03
+true
+true
+"" ""
+PENS
+"All" 1.0 0 -2674135 true "" "plot pct-germ"
+"BO" 1.0 0 -16777216 true "" "plot pct-bo-germ"
+"WO" 1.0 0 -7500403 true "" "plot pct-wo-germ"
+
+SLIDER
+672
+960
+786
+993
+mean-growth
+mean-growth
+0
+100
+2.45
+0.05
+1
+cm
+HORIZONTAL
+
+SLIDER
+794
+960
+906
+993
+mean-survival
+mean-survival
+0
+1
+0.35
 0.01
 1
 NIL
 HORIZONTAL
+
+PLOT
+904
+10
+1206
+130
+Acorns Produced
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"All" 1.0 0 -2674135 true "" "plot total-acorns"
+"BO" 1.0 0 -16777216 true "" "plot total-bo-acorns"
+"WO" 1.0 0 -7500403 true "" "plot total-wo-acorns"
 
 @#$#@#$#@
 ## WHAT IS IT?
