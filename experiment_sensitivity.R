@@ -123,27 +123,21 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
-focus.year = 36
-
-#Simple correlation test
-correlation.test(sens.test,'none','seedclass4',focus.year)
-
 #Sensitivity partitioning (Xu and Gertner 2008)
-inp.covs <- as.data.frame(scale(sens.test.sd$lhc))
-out.vals <- sens.test.sd$out$none$seedclass123[focus.year,]
 
+#Pctgerm (year 36)
+inp.covs <- as.data.frame(scale(sens.test.sd$lhc))
+out.vals <- sens.test.sd$out$none$pctgerm[36,]
 varPart(out.vals,inp.covs,4)
 
-#Communality coefficients
-library(yhat)
+#Seedlings (total at year 36)
+out.vals <- sens.test.sd$out$none$seedclass123[36,]
+varPart(out.vals,inp.covs,4)
 
-attach(inp.covs)
+#Seedlings (total new seedlings accumulated 30-40)
+out.vals <- colSums(sens.test.sd$out$none$newseedlings[30:40,])
+varPart(out.vals,inp.covs,4)
 
-inp.lm <- lm(out.vals~pDispersal+weibSc)
-
-com.coeff <- calc.yhat(inp.lm)
-
-detach(inp.covs)
-
-
-
+#Saplings (total at year 36)
+out.vals <- sens.test.sd$out$none$seedclass4[36,]
+varPart(out.vals,inp.covs,4)

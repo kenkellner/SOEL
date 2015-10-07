@@ -141,32 +141,13 @@ analyze.ibm <- function(datalist,harvest,metric,year,cont=FALSE,vals=NULL){
   return(out)
 }
 
-correlation.test <- function(input,harvest,metric,year){
-  
-  nparams <- dim(input$lhc)[2]
-  
-  dep.var <- eval(parse(text=paste('input$out$',harvest,'$',metric,'[',year,',]',sep="")))
-  
-  out <- as.data.frame(matrix(data=NA,nrow=nparams,ncol=2))
-  
-  for (i in 1:nparams){
-    out[i,1] <- names(input[[1]])[i]
-    hold <- eval(parse(text=paste('input$lhc[,',i,']',sep="")))
-    out[i,2] <- cor(dep.var,hold)
-  }
-  
-  out <- out[order(abs(out[,2]),decreasing=TRUE),]
-  names(out) <- c('parameter','correlation')
-  return(out)
-}
-
 #Function to decompose explained variance (and sensitivities) to uncorrelated and correlated portions
 #based on Xu and Gertner 2008
 varPart <- function(response, inputs, digits=3){
   
   #Create empty output object and add names
-  out <- as.data.frame(matrix(data=NA,nrow=(dim(inputs)[2]+1),ncol=8))
-  names(out) <- c('parameter','parV','parUV','parCV','S','Su','Sc','%U')
+  out <- as.data.frame(matrix(data=NA,nrow=(dim(inputs)[2]+1),ncol=9))
+  names(out) <- c('parameter','parV','parUV','parCV','S','Su','Sc','%U','cor')
   out[,1] <- c(colnames(inputs),'sum')
   
   #Iterate over i input covariates and calculate variances
@@ -226,6 +207,7 @@ varPart <- function(response, inputs, digits=3){
     out[i,6] <- parUV/v
     out[i,7] <- parCv/v
     out[i,8] <- out[i,6]/out[i,5]
+    out[i,9] <- cor(response,inputs[,i])
     
   }
   
