@@ -645,7 +645,7 @@ to disperse-mast
   ]
   
   let acorn-params buffer-acorn-params
-  if harvest-type = "shelterwood" and ticks > harvest-year and in-core = TRUE [set acorn-params core-acorn-params]
+  if harvest-type = "shelterwood" and ticks > burnin and in-core = TRUE [set acorn-params core-acorn-params]
   
   ;;move mast via "dispersers"
   ;;removal probability - HEE dispersal data for WO
@@ -1606,7 +1606,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-0
+2
 
 TEXTBOX
 54
@@ -1963,7 +1963,7 @@ CHOOSER
 dispersal-scenario
 dispersal-scenario
 "custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
-1
+3
 
 SLIDER
 673
