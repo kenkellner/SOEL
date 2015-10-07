@@ -123,14 +123,14 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
-focus.year = 26
+focus.year = 36
 
 #Simple correlation test
 correlation.test(sens.test,'none','seedclass4',focus.year)
 
 #Sensitivity partitioning (Xu and Gertner 2008)
-inp.covs <- as.data.frame(scale(sens.test.actual.shelter$lhc))
-out.vals <- sens.test.actual.shelter$out$shelter$seedclass123[focus.year,]
+inp.covs <- as.data.frame(scale(sens.test.sd$lhc))
+out.vals <- sens.test.sd$out$none$seedclass123[focus.year,]
 
 varPart(out.vals,inp.covs,4)
 
