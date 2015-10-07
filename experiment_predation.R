@@ -8,7 +8,7 @@ start.time <- Sys.time()
 
 #Run experiment and save results
 weevil.dispersal.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                                burnin=20,nyears=30,
+                                burnin=30,nyears=40,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
                                 weevil.scenario = "fixedaverage",
@@ -18,7 +18,7 @@ weevil.dispersal.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
 save(weevil.dispersal.average,file='output/predation/weevil_dispersal_average.Rdata')
 
 weevil.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                                burnin=20,nyears=30,
+                                burnin=30,nyears=40,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
                                 weevil.scenario = "yearly-diff",
@@ -28,7 +28,7 @@ weevil.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
 save(weevil.yearlyeff,file='output/predation/weevil_yearlyeff.Rdata')
 
 dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                                burnin=20,nyears=30,
+                                burnin=30,nyears=40,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
                                 weevil.scenario = "fixedaverage",
@@ -39,7 +39,7 @@ save(dispersal.yearlyeff,file='output/predation/dispersal_yearlyeff.Rdata')
 
 
 weevil.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                              burnin=20,nyears=30,
+                              burnin=30,nyears=40,
                               harvests = c('none','shelterwood'),
                               mast.scenario = "hee",
                               weevil.scenario = "treat-diff",
@@ -49,7 +49,7 @@ weevil.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
 save(weevil.treateff,file='output/predation/weevil_treateff.Rdata')
 
 dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                                   burnin=20,nyears=30,
+                                   burnin=30,nyears=40,
                                    harvests = c('none','shelterwood'),
                                    mast.scenario = "hee",
                                    weevil.scenario = "fixedaverage",
@@ -59,7 +59,7 @@ dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
 save(dispersal.treateff,file='output/predation/dispersal_treateff.Rdata')
 
 weevil.dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                                        burnin=20,nyears=30,
+                                        burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',
                                         weevil.scenario = 'yearly-diff',
@@ -69,7 +69,7 @@ weevil.dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=3
 save(weevil.dispersal.yearlyeff,file='output/predation/weevil_dispersal_yearlyeff.Rdata')
 
 weevil.dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                                        burnin=20,nyears=30,
+                                        burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',
                                         weevil.scenario = 'treat-diff',
@@ -79,7 +79,7 @@ weevil.dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36
 save(weevil.dispersal.treateff,file='output/predation/weevil_dispersal_treateff.Rdata')
 
 weevil.dispersal.treatyearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
-                                        burnin=20,nyears=30,
+                                        burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',
                                         weevil.scenario = 'yearly-treat-diff',

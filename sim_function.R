@@ -175,8 +175,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
       seedling.scenario <- "custom"
       browse.scenario <- "custom"
       
-      mean.growth <- lhc$meanGr
-      mean.survival <- lhc$meanSurv
+      mean.growth <- lhc$meanGr[i]
+      mean.survival <- lhc$meanSurv[i]
       prob.browsed <- lhc$pBrowse[i]
       prob.weevil <- lhc$pWeevil[i]
       prob.drought <- 0
