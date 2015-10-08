@@ -111,3 +111,66 @@ for (i in 2:10){
   if (out [i] == 1){start = 0.25}
 }
 
+#model
+
+mastdata <- cbind(species=com[,1],com[,2:10]/0.34)
+
+prod <- as.matrix(mastdata[,2:10])
+prod = prod[species==1,]
+
+species <- as.vector(mastdata[,1])
+
+shelter <- matrix(NA,nrow=113,ncol=9)
+shelter[,1:3] <- 0
+shelter[,4:9] <- treedata$shelter
+
+jags.data <- list(prod=prod,species=species,shelter=shelter,ntrees=dim(prod)[1],
+                  nyears=9)
+
+params <- c('grand.mean',#'tree.sd',
+            'year.sd'
+            #'b.species','b.shelter'
+            )
+
+modFile <- 'development/model_prod.R'
+
+library(jagsUI)
+
+
+prod.model <- jags(data=jags.data,inits=NULL,parameters.to.save=params,model.file=modFile,
+                   n.chains=3,n.iter=10000,n.burnin=5000,n.thin=2,parallel=TRUE)
+
+#Test model
+
+sim.data <- matrix(NA,nrow=113,ncol=9)
+tree.eff <- vector(length=113)
+year.eff <- vector(length=9)
+
+for (i in 1:9){
+  year.eff[i] <- rnorm(1,0,1.207)
+}
+
+for (i in 1:113){
+  
+  #tree.eff[i] <- rnorm(1,0,0.709)
+  
+  for (j in 1:9){
+    
+    mn <- 2.054 + year.eff[j]
+    #+ tree.eff[i] 
+    
+    
+    #fin <- 250
+    #while(fin>249){
+      #fin <- rweibull(1,1,exp(mn))
+      fin <- rexp(1,1/exp(mn))
+    #}
+    sim.data[i,j] <- fin
+    
+  }
+}
+hist(sim.data)
+
+
+
+

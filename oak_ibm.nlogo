@@ -448,30 +448,30 @@ to set-scenario
     set mast-mean-bo mast-val
   ]
   if mast-scenario = "fixedaverage" [
-    set mast-mean-wo 0.08518
-    set mast-mean-bo 0.09033
+    set mast-mean-wo 11.740
+    set mast-mean-bo 11.071
   ]
   if mast-scenario = "fixedbad" [
-    set mast-mean-wo 0.11657
-    set mast-mean-bo 0.26672
+    set mast-mean-wo 8.579
+    set mast-mean-bo 3.749
   ]
   if mast-scenario = "fixedgood" [
-    set mast-mean-wo 0.04475
-    set mast-mean-bo 0.06030
+    set mast-mean-wo 22.346
+    set mast-mean-bo 16.584
   ]
   if mast-scenario = "random" [
-    set mast-mean-wo item random-index wo-mast-list
-    set mast-mean-bo item random-index bo-mast-list
+    set mast-mean-wo max (list exp(2.085 + random-normal 0 1.532) 50)
+    set mast-mean-bo max (list exp(1.979 + random-normal 0 1.486) 50) 
   ]
   if mast-scenario = "hee" [
-    set mast-mean-wo item mast-year-index wo-mast-list
-    set mast-mean-bo item mast-year-index bo-mast-list
+    set mast-mean-wo 1 / (item mast-year-index wo-mast-list)
+    set mast-mean-bo 1 / (item mast-year-index bo-mast-list)
   ]
   
   if mast-scenario = "priorgood" [
     ifelse ticks = (harvest-year - 1) OR ticks = (harvest-year - 2) [
-      set mast-mean-wo 0.04475
-      set mast-mean-bo 0.06030
+      set mast-mean-wo 22.346
+      set mast-mean-bo 16.584
       ][
       set mast-mean-wo one-of wo-mast-list
       set mast-mean-bo one-of bo-mast-list
@@ -479,18 +479,19 @@ to set-scenario
   ]
   if mast-scenario = "priorbad" [
     ifelse ticks = (harvest-year - 1) OR ticks = (harvest-year - 2) [
-      set mast-mean-wo 0.11567
-      set mast-mean-bo 0.26672
+      set mast-mean-wo 8.579
+      set mast-mean-bo 3.749
       ][
       set mast-mean-wo one-of wo-mast-list
       set mast-mean-bo one-of bo-mast-list
       ]    
   ]
   
-  set mast-mean-comb mean (list mast-mean-wo mast-mean-bo)
+  ;Models are in rate scale rather than lambda
+  set mast-mean-comb 1 / (mean (list mast-mean-wo mast-mean-bo))
   
   ;Seedling survival and growth
-  if seedling-scenario = "custom" [
+  if seedling-scenario = "sensitivity" [
     ;Transform raw mean growth/survival values to input into models 
     ;let ms ln (mean-survival / (1 - mean-survival)) 
 
@@ -552,6 +553,13 @@ to set-scenario
     set buffer-weev-prob-bo (gen-weev-prob 0 0 TRUE TRUE randN)
     set buffer-weev-prob-wo (gen-weev-prob 1 0 TRUE TRUE randN) 
   ] 
+  if weevil-scenario = "sensitivity" [
+    
+    set core-weev-prob-bo (1 + exp(-1 * bo-weevil-prob)) ^ (-1)
+    set core-weev-prob-wo core-weev-prob-bo
+    set buffer-weev-prob-bo core-weev-prob-bo
+    set buffer-weev-prob-wo core-weev-prob-wo
+  ]
    
   ;Dispersal scenarios
   if dispersal-scenario = "custom" [    
@@ -586,6 +594,19 @@ to set-scenario
     set buffer-acorn-params-bo (gen-acorn-params 0 0 TRUE TRUE randN)
     set buffer-acorn-params-wo (gen-acorn-params 1 0 TRUE TRUE randN)
   ]
+  if dispersal-scenario = "sensitivity" [
+    
+    let dp (1 + exp(-1 * disperse-prob)) ^ (-1)
+    let wc exp(weibSc)
+    let dep (1 + exp(-1 * disperse-eaten-prob)) ^ (-1)
+    let uep (1 + exp(-1 * undisp-eaten-prob)) ^ (-1)
+        
+    set core-acorn-params-bo (list dp dp wc dep dep uep)
+    set core-acorn-params-wo core-acorn-params-bo
+    set buffer-acorn-params-bo core-acorn-params-bo
+    set buffer-acorn-params-wo core-acorn-params-bo
+    
+  ]
     
   set mast-year-index (mast-year-index + 1)
   if mast-year-index = 9 [set mast-year-index 0]
@@ -600,7 +621,7 @@ to produce-acorns
     set mast-mean mast-mean-wo set weevil-probability wo-weevil-prob 
     ]
   
-  set acorns-produced (pi * canopy-radius ^ 2 * random-exponential (1 / mast-mean)) ;per meter squared
+  set acorns-produced (pi * canopy-radius ^ 2 * random-exponential mast-mean) ;per meter squared
      
   if in-core = TRUE [
     set acorn-count (acorn-count + acorns-produced)
@@ -608,7 +629,7 @@ to produce-acorns
     [set wo-acorn-count (wo-acorn-count + acorns-produced)]   
     ]  
   
-  if weevil-scenario != "custom" [
+  if weevil-scenario != "custom" and weevil-scenario != "sensitivity" [
    
    ifelse species = "BO" [set weevil-probability buffer-weev-prob-bo][set weevil-probability buffer-weev-prob-wo]
    if in-core = TRUE and harvest-type = "shelterwood" and ticks > burnin [
@@ -674,12 +695,17 @@ to disperse-mast
     [set acorn-params buffer-acorn-params]
     
     let pcache 0
-    ifelse dispersal-scenario = "yearly-diff" or dispersal-scenario = "yearly-treat-diff" [
+    if dispersal-scenario = "yearly-diff" or dispersal-scenario = "yearly-treat-diff" [
       let cache-mean -2.4986 + 0.08858 * disp-dist + random-normal 0 1.663
-      set pcache (1 + exp(-1 * cache-mean)) ^ (-1)
-    ][let cache-mean -2.4986 + 0.08858 * disp-dist
       set pcache (1 + exp(-1 * cache-mean)) ^ (-1)]
-       
+    
+    if dispersal-scenario = "fixedaverage" or dispersal-scenario = "treat-diff"[
+      let cache-mean -2.4986 + 0.08858 * disp-dist
+      set pcache (1 + exp(-1 * cache-mean)) ^ (-1)]
+      
+    if dispersal-scenario = "custom" [set pcache cache-prob]
+    if dispersal-scenario = "sensitivity" [set pcache (1 + exp(-1 * cache-prob)) ^ (-1)]
+      
     ;;probability of being cached
     ifelse random-float 1 < pcache [
       set cached TRUE
@@ -1606,7 +1632,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-2
+0
 
 TEXTBOX
 54
@@ -1807,7 +1833,7 @@ CHOOSER
 mast-scenario
 mast-scenario
 "random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom"
-1
+7
 
 SWITCH
 796
@@ -1963,7 +1989,7 @@ CHOOSER
 dispersal-scenario
 dispersal-scenario
 "custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
-3
+1
 
 SLIDER
 673
@@ -1973,9 +1999,9 @@ SLIDER
 mast-val
 mast-val
 0
-3
-0.03
-0.01
+50
+11
+1
 1
 NIL
 HORIZONTAL

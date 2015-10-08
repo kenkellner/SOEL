@@ -22,7 +22,7 @@ treat.reorg <- function(datalist){
 }
 
 #Function to summarize data from a particular year and metric
-gen.dataset <- function(datalist,metric,year,cont=FALSE,vals=NULL){
+gen.dataset <- function(datalist,metric,year=NULL,cont=FALSE,vals=NULL){
   
   temp <- treat.reorg(datalist)
   
@@ -42,7 +42,10 @@ gen.dataset <- function(datalist,metric,year,cont=FALSE,vals=NULL){
     
     for (j in 1:length(temp[[1]])){
       
-      dat.add <- eval(parse(text=paste('temp[[i]][[j]]$',metric,'[',year,',]',sep="")))
+      if (metric == "seedlingsum"){dat.add <- temp[[i]][[j]]$seedlingsum
+      } else {
+      dat.add <- eval(parse(text=paste('temp[[i]][[j]]$',metric,'[',year,',]',sep="")))}
+      
       temp.harv <- rep(names(temp)[i],length(dat.add))
       if(!cont){temp.treat <- rep(names(temp[[1]])[j],length(dat.add))}
       if(cont){temp.treat <- as.numeric(rep(vals[j],length(dat.add)))}
@@ -113,27 +116,38 @@ gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplo
   if(singleplot){par(mfrow=c(1,1))}
 }
 
-analyze.ibm <- function(datalist,harvest,metric,year,cont=FALSE,vals=NULL){
+add.newseedlings <- function(datalist,startyear,stopyear){
+  
+  for (i in 1:length(datalist)){
+    for (j in 1:(length(datalist[[1]])-1)){
+      hold <- colSums(datalist[[i]][[j]]$newseedlings[startyear:stopyear,])
+      datalist[[i]][[j]]$seedlingsum = hold
+    }
+  }
+  
+  return(datalist)
+  
+}
+
+analyze.ibm <- function(datalist,metric,year,cont=FALSE,vals=NULL){
   
   require(pgirmess)
   
   dat <- gen.dataset(datalist,metric,year,cont,vals)
-  dat <- dat[dat$harvest == harvest,]
   
+  harvest <- as.factor(dat$harvest)
+ 
   if(!cont){
-    dat[,3] <- as.factor(dat[,3])
-    a <- aov(dat[,1] ~ dat[,3])
+    scenario <- as.factor(dat$scenario)
+    a <- aov(dat[,1] ~ harvest*scenario)
     a.mc <- TukeyHSD(a)
-  
-    b <- kruskal.test(dat[,1] ~ dat[,3])
-    b.mc <- kruskalmc(dat[,1], dat[,3])
     
-    out <- list(anova=a,anova.mc=a.mc,kruskal=b,kruskal.mc=b.mc)
+    out <- list(anova=a,anova.mc=a.mc)
   }
   
   if(cont){
-    dat[,3] ~ as.numeric(dat[,3])
-    a <- lm(dat[,1] ~ dat[,3])
+    dat[,3] ~ as.numeric(indep)
+    a <- lm(dat[,1] ~ indep)
     
     out <- a
   }

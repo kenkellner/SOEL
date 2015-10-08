@@ -124,3 +124,24 @@ pbPost('file',url='output/predation/predation.zip')
 
 #Shut down instance 
 system('sudo shutdown -h now')
+
+source('utility_functions.R')
+
+datalist <- list(avg=weevil.dispersal.average,trt=weevil.treateff,yrly=weevil.yearlyeff,
+                 treat.yrly=weevil.treatyearlyeff)
+gen.figures(datalist,'seedclass123',36,c(0,15000))
+
+
+datalist <- list(avg=weevil.dispersal.average,trt=dispersal.treateff,yrly=dispersal.yearlyeff,
+                 treat.yrly=dispersal.treatyearlyeff)
+
+datalist <- add.newseedlings(datalist,30,40)
+gen.figures(datalist,'seedlingsum',36,c(0,30000),singleplot=T)
+test1 = analyze.ibm(datalist,'pctgerm',year=36)
+gen.figures(datalist,'seedclass123',36,c(0,17000),singleplot=T)
+test2 = analyze.ibm(datalist,'seedclass123',year=36)
+gen.figures(datalist,'seedlingsum',36,c(0,30000),singleplot=T)
+test3 = analyze.ibm(datalist,metric='seedlingsum')
+print(model.tables(test3$anova,"means"),digits=3)
+
+test4 = analyze.ibm(datalist,metric='seedclass4',year=36)
