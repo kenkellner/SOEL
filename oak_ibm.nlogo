@@ -358,46 +358,46 @@ to-report gen-acorn-params [spec shelt yearly treat rem-re]
       let ue (1 + exp(-1 * ue-mean)) ^ (-1)
       report (list rem rem-weev dist de de-cached ue)
     ][ ;yearly = FALSE
-      let rem-mean 0.35772 + 0.2268 * shelt - 0.1215 * spec
+      let rem-mean 0.519 + 0.129 * shelt - 0.162 * spec
       let rem (1 + exp(-1 * rem-mean)) ^ (-1)
-      let remw-mean 0.35772 + 0.2268 * shelt - 0.1215 * spec - 1.788
-      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)      
-      let dist exp(2.174 - 0.106 * shelt)      
-      let de-mean 2.1287 + 0.4146 * shelt
+      let remw-mean 0.519 + 0.129 * shelt - 0.162 * spec - 2.00
+      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
+      let dist exp(2.071 - 0.115 * shelt)
+      let de-mean 1.4956 + 0.5817 * shelt
       let de (1 + exp(-1 * de-mean)) ^ (-1)
-      let de-cached-mean 2.1287 + 0.4146 * shelt - 4.1941
-      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1)       
-      let ue-mean 0.5773 + 1.0833 * shelt + 2.0126 * spec
+      let de-cached-mean 1.4956 + 0.5817 * shelt - 5.4178
+      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1) 
+      let ue-mean -0.179 + 1.609 * shelt + 1.4714 * spec
       let ue (1 + exp(-1 * ue-mean)) ^ (-1)
       report (list rem rem-weev dist de de-cached ue)
     ]]
   [;treat = FALSE, yearly = TRUE
     ifelse yearly = TRUE [
-      let rem-mean 0.5341 - 0.1541 * spec + rem-re
+      let rem-mean 0.519 + rem-re - 0.162 * spec
       let rem (1 + exp(-1 * rem-mean)) ^ (-1)
-      let remw-mean 0.5341 - 0.1541 * spec + rem-re
-      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)          
-      let dist exp(2.034 + 0.111 * mast-mean-comb)           
-      let de-mean 1.6926 + 1.1206 * mast-mean-comb
+      let remw-mean 0.519 + rem-re - 0.162 * spec - 2.00
+      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
+      let dist exp(2.071 + 0.114 * mast-mean-comb)
+      let de-mean 1.4956 + 1.1414 * mast-mean-comb
       let de (1 + exp(-1 * de-mean)) ^ (-1)
-      let de-cached-mean 1.6926 + 1.1206 * mast-mean-comb - 5.4208
-      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1)             
-      let ue-mean 0.3966 + 1.2766 * spec + 1.0751 * mast-mean-comb
+      let de-cached-mean 1.4956 + 1.1414 * mast-mean-comb - 5.4178
+      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1) 
+      let ue-mean -0.179 + 1.4714 * spec + 1.2051 * mast-mean-comb
       let ue (1 + exp(-1 * ue-mean)) ^ (-1)
-      report (list rem rem-weev dist de de-cached ue)      
+      report (list rem rem-weev dist de de-cached ue)  
     ][ ; yearly = FALSE
-      let rem-mean 0.3782 - 0.1133 * spec
+      let rem-mean 0.519 - 0.162 * spec
       let rem (1 + exp(-1 * rem-mean)) ^ (-1)
-      let remw-mean 0.3782 - 0.1133 * spec - 1.784
-      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)               
-      let dist exp(2.136)                
-      let de-mean 2.2718
+      let remw-mean 0.519 - 0.162 * spec - 2.00
+      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
+      let dist exp(2.071)
+      let de-mean 1.4956
       let de (1 + exp(-1 * de-mean)) ^ (-1)
-      let de-cached-mean 2.2718 - 4.1921
-      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1)               
-      let ue-mean 0.8812 + 1.883 * spec
+      let de-cached-mean 1.4956 - 5.4178
+      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1) 
+      let ue-mean -0.179 + 1.4714 * spec
       let ue (1 + exp(-1 * ue-mean)) ^ (-1)
-      report (list rem rem-weev dist de de-cached ue) 
+      report (list rem rem-weev dist de de-cached ue)   
     ]]  
       
   ;pRemoval, pRemoval given weeviled, weibSh, pDispEaten, pDispEatencache, pUndispEaten
@@ -413,17 +413,17 @@ to-report gen-weev-prob [spec shelt yearly treat rem-re]
       let prob (1 + exp(-1 * weevmean)) ^ (-1)
       report prob
     ][;yearly = FALSE
-      let weevmean -1.1987 - 0.4372 * spec - 0.31 * shelt
+      let weevmean -1.08 - 0.8249 * spec - 0.4438 * shelt
       let prob (1 + exp(-1 * weevmean)) ^ (-1)
       report prob
     ]]
   [;treat = FALSE, yearly = TRUE
     ifelse yearly = TRUE [
-      let weevmean -1.1193 - 0.8317 * spec + 0.7153 * mast-mean-comb + rem-re
+      let weevmean -1.08 - 0.8249 * spec + 0.7324 * mast-mean-comb + rem-re
       let prob (1 + exp(-1 * weevmean)) ^ (-1)
       report prob
   ][ ; yearly = FALSE
-      let weevmean -1.2255 - 0.4584 * spec
+      let weevmean -1.08 - 0.8249 * spec
       let prob (1 + exp(-1 * weevmean)) ^ (-1)
       report prob
   ]]
