@@ -534,7 +534,7 @@ to set-scenario
     set buffer-weev-prob-wo (gen-weev-prob 1 0 FALSE FALSE 0)    
   ]  
   if weevil-scenario = "yearly-diff" [
-    let randN random-normal 0 0.992
+    let randN random-normal 0 1.01
     set core-weev-prob-bo (gen-weev-prob 0 1 TRUE FALSE randN)
     set core-weev-prob-wo (gen-weev-prob 1 1 TRUE FALSE randN)
     set buffer-weev-prob-bo (gen-weev-prob 0 0 TRUE FALSE randN)
@@ -575,7 +575,7 @@ to set-scenario
     set buffer-acorn-params-wo (gen-acorn-params 1 0 FALSE FALSE 0)
   ]
   if dispersal-scenario = "yearly-diff" [
-    let randN random-normal 0 0.6305
+    let randN random-normal 0 0.6322
     set core-acorn-params-bo (gen-acorn-params 0 1 TRUE FALSE randN)
     set core-acorn-params-wo (gen-acorn-params 1 1 TRUE FALSE randN)
     set buffer-acorn-params-bo (gen-acorn-params 0 0 TRUE FALSE randN)
