@@ -145,3 +145,79 @@ test3 = analyze.ibm(datalist,metric='seedlingsum')
 print(model.tables(test3$anova,"means"),digits=3)
 
 test4 = analyze.ibm(datalist,metric='seedclass4',year=36)
+##################################################################
+datalist <- list(avg=weevil.dispersal.average,trt=dispersal.treateff,yrly=dispersal.yearlyeff,
+                 treat.yrly=dispersal.treatyearlyeff)
+datalist <- add.newseedlings(datalist,30,40)
+gen.barplot(datalist,"seedlingsum",ylim=c(0,29000),
+            ylab="Total New Seedlings / ha Over 10 Yr",xlab="Model",
+            names=c('Constant','Treat','Year','Treat x Year'),
+            legend=c('No Harvest','Shelterwood'),
+            legx=1,legy=25000)
+
+test = analyze.ibm(datalist,metric='seedlingsum')
+print(model.tables(test3$anova,"means"),digits=3)
+
+t = gen.dataset(datalist,'seedlingsum')
+t$harvest = as.factor(t$harvest)
+
+time = rep(0,length=length(t$seedlingsum))
+trt = rep(0,length=length(t$seedlingsum))
+
+trt[which(t$scenario%in%c('trt','treat.yrly'))] = 1
+time[which(t$scenario%in%c('yrly','treat.yrly'))] = 1
+
+
+t$scenario = as.factor(t$scenario)
+
+contrasts(t$scenario) = c(0,0,1,-1)
+
+a = aov(seedlingsum~harvest + trt + time + harvest*trt + harvest*time 
+       ,data=t)
+a = aov(seedlingsum~harvest*trt*time,data=t)
+summary.lm(a)
+
+
+
+
+##Weevils
+datalist <- list(avg=weevil.dispersal.average,trt=weevil.treateff,yrly=weevil.yearlyeff,
+                 treat.yrly=weevil.treatyearlyeff)
+datalist <- add.newseedlings(datalist,30,40)
+gen.barplot(datalist,"seedlingsum",ylim=c(0,25000),
+            ylab="Total New Seedlings / ha Over 10 Yr",xlab="Model",
+            names=c('Constant','Treat','Year','Treat x Year'),
+            legend=c('No Harvest','Shelterwood'),
+            legx=1,legy=25000)
+test = analyze.ibm(datalist,metric='seedlingsum')
+
+
+##################################################################
+datalist <- list(avg=weevil.dispersal.average,trt=dispersal.treateff,yrly=dispersal.yearlyeff,
+                 treat.yrly=dispersal.treatyearlyeff)
+datalist <- add.newseedlings(datalist,30,40)
+gen.barplot(datalist,"seedclass4",ylim=c(0,300),year=40,
+            ylab="Saplings (> 1.4 m) / ha",xlab="Model",
+            names=c('Constant','Treat','Year','Treat x Year'),
+            legend=c('No Harvest','Shelterwood'),
+            legx=1,legy=300)
+
+t2 <- gen.dataset(datalist,'seedclass4',40)
+mod <- aov(seedclass4~harvest+trt+time+harvest*time+harvest*trt,data=t2)
+summary.lm(mod)
+
+test = analyze.ibm(datalist,metric='seedclass4',year=40)
+print(model.tables(test3$anova,"means"),digits=3)
+
+##Weevils
+datalist <- list(avg=weevil.dispersal.average,trt=weevil.treateff,yrly=weevil.yearlyeff,
+                 treat.yrly=weevil.treatyearlyeff)
+datalist <- add.newseedlings(datalist,30,40)
+gen.barplot(datalist,"seedclass4",ylim=c(0,300),year=40,
+            ylab="Saplings (> 1.4 m) / ha",xlab="Model",
+            names=c('Constant','Treat','Year','Treat x Year'),
+            legend=c('No Harvest','Shelterwood'),
+            legx=1,legy=300)
+test = analyze.ibm(datalist,metric='seedclass4',year=40)
+
+

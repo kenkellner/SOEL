@@ -59,61 +59,46 @@ gen.dataset <- function(datalist,metric,year=NULL,cont=FALSE,vals=NULL){
 }
 
 #Function to generate quick summary figures
-gen.figures <- function(datalist,metric,year,ylim,cont=FALSE,vals=NULL,singleplot=FALSE,specify.main=NULL){
+gen.barplot <- function(datalist,metric,year,ylim,names=NULL,xlab=NULL,
+                        ylab=NULL,cont=FALSE,vals=NULL,specify.main=NULL,
+                        legend=NULL,legx=NULL,legy=NULL){
   
   dat <- gen.dataset(datalist,metric,year,cont,vals)
-  
-  if(singleplot){
-    if(length(unique(dat$harvest))==2){par(mfrow=c(2,1))}
-    if(length(unique(dat$harvest))==4){par(mfrow=c(2,2))}
-  }
-  
+
   cols <- c('red','blue','green','orange')
   
-  for (i in 1:length(unique(dat$harvest))){
-    temp <- dat[dat$harvest == unique(dat$harvest)[i],]
-    
-    means <- sds <- vector(length = length(unique(temp$scenario)))
-    
-    for (j in 1:length(unique(temp$scenario))){
+  scenlist <- unique(dat$scenario)
+  nscenarios <- length(scenlist)
+  harvlist <- unique(dat$harvest)
+  nharvest <- length(harvlist)
+  
+  bardata <- sds <- matrix(NA,nrow=nharvest,ncol=nscenarios)
+  
+  for (i in 1:nharvest){
+
+    for (j in 1:nscenarios){
       
-      hold <- as.numeric(temp[temp$scenario==unique(temp$scenario)[j],1])
-      means[j] <- mean(hold,na.rm=T)
-      sds[j] <- sd(hold,na.rm=T)
-    }
-    
-    if(!cont){
-      
-    brp <- barplot(means,ylab=metric,xlab="",names=unique(temp$scenario),
-                    main=unique(dat$harvest)[i],col=cols[i],
-                    ylim=ylim,las=3)
-      for (k in 1:length(means)){
-          segments(brp[k],means[k]-sds[k],brp[k],means[k]+sds[k])
-      }
-    }
-    
-    if(cont){
-      
-      if(i==1){
-      
-      plot(vals,means,ylab=metric,xlab="Parameter Value",ylim=ylim,col=cols[i],
-           main=specify.main,type='o',lwd=3)
-      for (k in 1:length(means)){
-        segments(vals[k],means[k]-sds[k],vals[k],means[k]+sds[k])
-      }
-      legend('bottomleft',legend=c('none','clearcut','shelterwood','singletree'),
-             col=cols,lty=1)
-      }
-      if(i>1){
-        lines(vals,means,col=cols[i],
-             type='o',lwd=3)
-        for (k in 1:length(means)){
-          segments(vals[k],means[k]-sds[k],vals[k],means[k]+sds[k])
-      }}
-      
+      hold <- as.numeric(dat[dat$harvest==harvlist[i]&dat$scenario==scenlist[j],1])
+      bardata[i,j] <- mean(hold,na.rm=T)
+      sds[i,j] <- sd(hold,na.rm=T)/sqrt(36)*1.96
     }
   }
-  if(singleplot){par(mfrow=c(1,1))}
+  
+  out <<- bardata
+  
+  brp <- barplot(bardata,beside=T,ylab=ylab,
+                 ylim=ylim,names=names,xlab=xlab)
+  print(brp)
+  print(bardata)
+  print(sds)
+  for (i in 1:nharvest){
+    for (j in 1:nscenarios){
+    segments(x0=brp[i,j],y0=(bardata[i,j]-sds[i,j]),
+             x1=brp[i,j],y1=(bardata[i,j]+sds[i,j]),lwd=1)
+    }
+  }
+  
+  if(!is.null(legend)){legend(legx,legy,fill=gray.colors(nrow(bardata)),legend=legend)}
 }
 
 add.newseedlings <- function(datalist,startyear,stopyear){
