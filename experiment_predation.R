@@ -127,55 +127,75 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
-datalist <- list(avg=weevil.dispersal.average,trt=weevil.treateff,yrly=weevil.yearlyeff,
-                 treat.yrly=weevil.treatyearlyeff)
-gen.figures(datalist,'seedclass123',36,c(0,15000))
-
-
-datalist <- list(avg=weevil.dispersal.average,trt=dispersal.treateff,yrly=dispersal.yearlyeff,
-                 treat.yrly=dispersal.treatyearlyeff)
-
-datalist <- add.newseedlings(datalist,30,40)
-gen.figures(datalist,'seedlingsum',36,c(0,30000),singleplot=T)
-test1 = analyze.ibm(datalist,'pctgerm',year=36)
-gen.figures(datalist,'seedclass123',36,c(0,17000),singleplot=T)
-test2 = analyze.ibm(datalist,'seedclass123',year=36)
-gen.figures(datalist,'seedlingsum',36,c(0,30000),singleplot=T)
-test3 = analyze.ibm(datalist,metric='seedlingsum')
-print(model.tables(test3$anova,"means"),digits=3)
-
-test4 = analyze.ibm(datalist,metric='seedclass4',year=36)
 ##################################################################
 datalist <- list(avg=weevil.dispersal.average,trt=dispersal.treateff,yrly=dispersal.yearlyeff,
                  treat.yrly=dispersal.treatyearlyeff)
 datalist <- add.newseedlings(datalist,30,40)
-gen.barplot(datalist,"seedlingsum",ylim=c(0,29000),
-            ylab="Total New Seedlings / ha Over 10 Yr",xlab="Model",
-            names=c('Constant','Treat','Year','Treat x Year'),
-            legend=c('No Harvest','Shelterwood'),
-            legx=1,legy=25000)
 
+#Total New Seedlings over 10 Years
 test = analyze.ibm(datalist,metric='seedlingsum')
-print(model.tables(test3$anova,"means"),digits=3)
 
-t = gen.dataset(datalist,'seedlingsum')
-t$harvest = as.factor(t$harvest)
+h = gen.dataset(datalist,'seedlingsum')
 
-time = rep(0,length=length(t$seedlingsum))
-trt = rep(0,length=length(t$seedlingsum))
+h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
 
-trt[which(t$scenario%in%c('trt','treat.yrly'))] = 1
-time[which(t$scenario%in%c('yrly','treat.yrly'))] = 1
+op <- par(mar = c(5,4.5,2,2) + 0.1)
+bx = boxplot(seedlingsum~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',xlab="Model",
+             at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(12000,31000),ylab=expression("New Seedlings "~ ha^{-1}~"(10 Year Sum)"))
+axis(1,at=c(1.5,4,6.5,9),tick=F,
+     labels=c("Constant",'Treat','Year','Treat x Year'))
+abline(v=mean(c(2,3.5)))
+abline(v=mean(c(4.5,6)))
+abline(v=mean(c(7,8.5)))
+legend(0.5,31000,legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
+text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+1000),c('A','A','A','B','C','C','C','D'))
+
+##Saplings
+
+test = analyze.ibm(datalist,metric='regen',36)
+
+h = gen.dataset(datalist,'regen',36)
+
+h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
+
+op <- par(mar = c(5,4.5,2,2) + 0.1)
+bx = boxplot(regen~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',xlab="Model",
+             at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylab=expression("Seed-origin Saplings "~ ha^{-1}))
+axis(1,at=c(1.5,4,6.5,9),tick=F,
+     labels=c("Constant",'Treat','Year','Treat x Year'))
+abline(v=mean(c(2,3.5)))
+abline(v=mean(c(4.5,6)))
+abline(v=mean(c(7,8.5)))
+legend(0.5,250,legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
+text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+c(10,10,10,20,10,10,10,10)),
+     c('A','B','A','B','C','D','C','D'))
+
+#######
+#Pct Germ
+test = analyze.ibm(datalist,metric='pctgerm',36)
+
+h = gen.dataset(datalist,'pctgerm',36)
+
+h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
+
+op <- par(mar = c(5,4.5,2,2) + 0.1)
+bx = boxplot(pctgerm~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',xlab="Model",
+             at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(0.01,0.04),ylab=expression("Yearly Percent Emergence"))
+axis(1,at=c(1.5,4,6.5,9),tick=F,
+     labels=c("Constant",'Treat','Year','Treat x Year'))
+abline(v=mean(c(2,3.5)))
+abline(v=mean(c(4.5,6)))
+abline(v=mean(c(7,8.5)))
+legend(0.5,0.04,legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
+text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+c(0.002,0.003,0.004,0.002,0.002,0.0015,0.002,0.002)),
+     c('A','A','A','B','C','C','C','C'))
 
 
-t$scenario = as.factor(t$scenario)
 
-contrasts(t$scenario) = c(0,0,1,-1)
 
-a = aov(seedlingsum~harvest + trt + time + harvest*trt + harvest*time 
-       ,data=t)
-a = aov(seedlingsum~harvest*trt*time,data=t)
-summary.lm(a)
+
+
+
 
 
 
