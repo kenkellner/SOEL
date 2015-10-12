@@ -2,8 +2,6 @@ extensions [profiler matrix]
 globals [
   xcutoff ycutoff
   
-  surv-params growth-params
-  
   basal-area basal-area-ft basal-area-ovs   
   qdbh qdbh-in qdbh-ovs  
   dens dens-ac dens-ovs
@@ -26,14 +24,15 @@ globals [
   
   harvest-year shelter-phase
   
+  wo-mast-list bo-mast-list mast-year-index
   mast-mean-bo mast-mean-wo mast-mean-comb
   core-acorn-params-bo buffer-acorn-params-bo
   core-acorn-params-wo buffer-acorn-params-wo
   core-weev-prob-bo buffer-weev-prob-bo
   core-weev-prob-wo buffer-weev-prob-wo
-
+  surv-params growth-params
+  sens-params
   
-  wo-mast-list bo-mast-list mast-year-index bo-weev-list wo-weev-list
   acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters 
   regen-dens regen-stump-dens
   seedlings-class1 seedlings-class2 seedlings-class3 seedlings-class123 seedlings-class4 acorns-pertree
@@ -87,8 +86,6 @@ to setup
   
   set bo-mast-list [0.0827 0.0489 2.975 0.8809 0.0757 0.1153 0.0661 0.1415 0.05667]
   set wo-mast-list [0.1355 0.0665 0.1092 2.720 0.0367 0.136 0.1070 0.238 0.0406]
-  set bo-weev-list [0.1396 0.2057 0.6250 0.9545 0.3744 0.1310 0.1304 0.3424 0.2389]
-  set wo-weev-list [0.0198 0.1919 0.3679 0.8571 0.1786 0.1176 0.1695 0.1429 0.0761]
   
   set mast-year-index random 9
    
@@ -341,92 +338,29 @@ to regenerate
         
 end
 
-to-report gen-acorn-params [spec shelt yearly treat rem-re]
-  
-  ifelse treat = TRUE [
-    ifelse yearly = TRUE [
-      let rem-mean 0.519 + rem-re + 0.129 * shelt - 0.162 * spec
-      let rem (1 + exp(-1 * rem-mean)) ^ (-1)
-      let remw-mean 0.519 + rem-re + 0.129 * shelt - 0.162 * spec - 2.00
-      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
-      let dist exp(2.071 - 0.115 * shelt + 0.114 * mast-mean-comb)
-      let de-mean 1.4956 + 0.5817 * shelt + 1.1414 * mast-mean-comb
-      let de (1 + exp(-1 * de-mean)) ^ (-1)
-      let de-cached-mean 1.4956 + 0.5817 * shelt + 1.1414 * mast-mean-comb - 5.4178
-      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1) 
-      let ue-mean -0.179 + 1.609 * shelt + 1.4714 * spec + 1.2051 * mast-mean-comb
-      let ue (1 + exp(-1 * ue-mean)) ^ (-1)
-      report (list rem rem-weev dist de de-cached ue)
-    ][ ;yearly = FALSE
-      let rem-mean 0.519 + 0.129 * shelt - 0.162 * spec
-      let rem (1 + exp(-1 * rem-mean)) ^ (-1)
-      let remw-mean 0.519 + 0.129 * shelt - 0.162 * spec - 2.00
-      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
-      let dist exp(2.071 - 0.115 * shelt)
-      let de-mean 1.4956 + 0.5817 * shelt
-      let de (1 + exp(-1 * de-mean)) ^ (-1)
-      let de-cached-mean 1.4956 + 0.5817 * shelt - 5.4178
-      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1) 
-      let ue-mean -0.179 + 1.609 * shelt + 1.4714 * spec
-      let ue (1 + exp(-1 * ue-mean)) ^ (-1)
-      report (list rem rem-weev dist de de-cached ue)
-    ]]
-  [;treat = FALSE, yearly = TRUE
-    ifelse yearly = TRUE [
-      let rem-mean 0.519 + rem-re - 0.162 * spec
-      let rem (1 + exp(-1 * rem-mean)) ^ (-1)
-      let remw-mean 0.519 + rem-re - 0.162 * spec - 2.00
-      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
-      let dist exp(2.071 + 0.114 * mast-mean-comb)
-      let de-mean 1.4956 + 1.1414 * mast-mean-comb
-      let de (1 + exp(-1 * de-mean)) ^ (-1)
-      let de-cached-mean 1.4956 + 1.1414 * mast-mean-comb - 5.4178
-      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1) 
-      let ue-mean -0.179 + 1.4714 * spec + 1.2051 * mast-mean-comb
-      let ue (1 + exp(-1 * ue-mean)) ^ (-1)
-      report (list rem rem-weev dist de de-cached ue)  
-    ][ ; yearly = FALSE
-      let rem-mean 0.519 - 0.162 * spec
-      let rem (1 + exp(-1 * rem-mean)) ^ (-1)
-      let remw-mean 0.519 - 0.162 * spec - 2.00
-      let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
-      let dist exp(2.071)
-      let de-mean 1.4956
-      let de (1 + exp(-1 * de-mean)) ^ (-1)
-      let de-cached-mean 1.4956 - 5.4178
-      let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1) 
-      let ue-mean -0.179 + 1.4714 * spec
-      let ue (1 + exp(-1 * ue-mean)) ^ (-1)
-      report (list rem rem-weev dist de de-cached ue)   
-    ]]  
-      
+to-report gen-acorn-params [remint distint deint ueint treat yearly yearef spec]
+
+  let rem-mean remint + (treat * 0.129) + (yearly * yearef) + (spec * -0.162)
+  let rem (1 + exp(-1 * rem-mean)) ^ (-1)
+  let remw-mean rem-mean - 2.00
+  let rem-weev (1 + exp(-1 * remw-mean)) ^ (-1)
+  let dist exp(distint + (treat * -0.115) + (yearly * 0.114 * mast-mean-comb))
+  let de-mean deint + (treat * 0.5817) + (yearly * 1.1414 * mast-mean-comb)
+  let de (1 + exp(-1 * de-mean)) ^ (-1)
+  let de-cached-mean de-mean - 5.4178
+  let de-cached (1 + exp(-1 * de-cached-mean)) ^ (-1)
+  let ue-mean ueint + (treat * 1.609) + (spec * 1.4714) + (yearly * 1.2051 * mast-mean-comb)
+  let ue (1 + exp(-1 * ue-mean)) ^ (-1)
+  report (list rem rem-weev dist de de-cached ue)
   ;pRemoval, pRemoval given weeviled, weibSh, pDispEaten, pDispEatencache, pUndispEaten
   ;caching probability is calculated separately
- 
-end
+end   
 
-to-report gen-weev-prob [spec shelt yearly treat rem-re]
+to-report gen-weev-prob [intercept treat yearly yearef spec]
   
-  ifelse treat = TRUE [
-    ifelse yearly = TRUE [
-      let weevmean -1.08 - 0.8249 * spec - 0.4438 * shelt + 0.7324 * mast-mean-comb + rem-re
-      let prob (1 + exp(-1 * weevmean)) ^ (-1)
-      report prob
-    ][;yearly = FALSE
-      let weevmean -1.08 - 0.8249 * spec - 0.4438 * shelt
-      let prob (1 + exp(-1 * weevmean)) ^ (-1)
-      report prob
-    ]]
-  [;treat = FALSE, yearly = TRUE
-    ifelse yearly = TRUE [
-      let weevmean -1.08 - 0.8249 * spec + 0.7324 * mast-mean-comb + rem-re
-      let prob (1 + exp(-1 * weevmean)) ^ (-1)
-      report prob
-  ][ ; yearly = FALSE
-      let weevmean -1.08 - 0.8249 * spec
-      let prob (1 + exp(-1 * weevmean)) ^ (-1)
-      report prob
-  ]]
+  let weevmean intercept + (treat * -0.4438) + (yearly * (0.7324 * mast-mean-comb + yearef)) + (spec * -0.8249)
+  let prob (1 + exp(-1 * weevmean)) ^ (-1)
+  report prob
    
 end
 
@@ -486,24 +420,98 @@ to set-scenario
       set mast-mean-bo one-of bo-mast-list
       ]    
   ]
+  if mast-scenario = "sensitivity" [
+    set mast-mean-wo max (list exp(item 0 sens-params) 50)
+    set mast-mean-bo max (list exp(item 0 sens-params) 50)
+  ]
   
   ;Models are in rate scale rather than lambda
   set mast-mean-comb 1 / (mean (list mast-mean-wo mast-mean-bo))
   
-  ;Seedling survival and growth
-  if seedling-scenario = "sensitivity" [
-    ;Transform raw mean growth/survival values to input into models 
-    ;let ms ln (mean-survival / (1 - mean-survival)) 
-
-    ;let sign 0
-    ;if mean-growth > 0 [set sign 1] if mean-growth < 0 [set sign -1]   
-    ;let mg (sign * ln(abs(mean-growth) + 1))
-    let mg mean-growth
-    let ms mean-survival 
-   
-    set surv-params (list ms 0.101 0.366 0.576)
-    set growth-params (list mg 0.248 -0.94 -0.488 0.116 1.188)    
+  ;Weevil scenarios
+  if weevil-scenario = "custom" [ ]
+  if weevil-scenario = "fixedaverage" [    
+    set buffer-weev-prob-bo (gen-weev-prob -1.08 0 0 0 0)
+    set buffer-weev-prob-wo (gen-weev-prob -1.08 0 0 0 1)   
+    set core-weev-prob-bo buffer-weev-prob-bo
+    set core-weev-prob-wo buffer-weev-prob-wo
+  ]  
+  if weevil-scenario = "yearly-diff" [
+    let randN random-normal 0 1.01
+    set buffer-weev-prob-bo (gen-weev-prob -1.08 0 1 randN 0)
+    set buffer-weev-prob-wo (gen-weev-prob -1.08 0 1 randN 1)   
+    set core-weev-prob-bo buffer-weev-prob-bo
+    set core-weev-prob-wo buffer-weev-prob-wo
   ] 
+  if weevil-scenario = "treat-diff" [    
+    set buffer-weev-prob-bo (gen-weev-prob -1.08 0 0 0 0)
+    set buffer-weev-prob-wo (gen-weev-prob -1.08 0 0 0 1)   
+    set core-weev-prob-bo (gen-weev-prob -1.08 1 0 0 0)
+    set core-weev-prob-wo (gen-weev-prob -1.08 1 0 0 1)
+  ]  
+  if weevil-scenario = "yearly-treat-diff" [
+    let randN random-normal 0 1.01
+    set buffer-weev-prob-bo (gen-weev-prob -1.08 0 1 randN 0)
+    set buffer-weev-prob-wo (gen-weev-prob -1.08 0 1 randN 1)
+    set core-weev-prob-bo (gen-weev-prob -1.08 1 1 randN 0)
+    set core-weev-prob-wo (gen-weev-prob -1.08 1 1 randN 1)   
+  ] 
+  if weevil-scenario = "sensitivity" [   
+    set buffer-weev-prob-bo (gen-weev-prob (item 1 sens-params) 0 0 0 0)
+    set buffer-weev-prob-wo (gen-weev-prob (item 1 sens-params) 0 0 0 1)   
+    set core-weev-prob-bo buffer-weev-prob-bo
+    set core-weev-prob-wo buffer-weev-prob-wo
+  ]
+   
+  ;Dispersal scenarios
+  if dispersal-scenario = "custom" [    
+    set core-acorn-params-bo (list disperse-prob disperse-prob weibSc disperse-eaten-prob disperse-eaten-prob undisp-eaten-prob)
+    set core-acorn-params-wo core-acorn-params-bo
+    set buffer-acorn-params-bo core-acorn-params-bo
+    set buffer-acorn-params-wo core-acorn-params-bo
+  ]
+  if dispersal-scenario = "fixedaverage" [    
+    set buffer-acorn-params-bo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 0 0 0)
+    set buffer-acorn-params-wo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 0 0 1)
+    set core-acorn-params-bo buffer-acorn-params-bo
+    set core-acorn-params-wo buffer-acorn-params-wo
+  ]
+  if dispersal-scenario = "yearly-diff" [
+    let randN random-normal 0 0.6322
+    set buffer-acorn-params-bo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 1 randN 0)
+    set buffer-acorn-params-wo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 1 randN 1)
+    set core-acorn-params-bo buffer-acorn-params-bo
+    set core-acorn-params-wo buffer-acorn-params-wo
+  ]
+  if dispersal-scenario = "treat-diff" [
+    set buffer-acorn-params-bo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 0 0 0)
+    set buffer-acorn-params-wo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 0 0 1)
+    set core-acorn-params-bo (gen-acorn-params 0.519 2.071 1.496 -0.179 1 0 0 0)
+    set core-acorn-params-wo (gen-acorn-params 0.519 2.071 1.496 -0.179 1 0 0 1)
+  ]
+  if dispersal-scenario = "yearly-treat-diff" [
+    let randN random-normal 0 0.6322
+    set buffer-acorn-params-bo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 1 randN 0)
+    set buffer-acorn-params-wo (gen-acorn-params 0.519 2.071 1.496 -0.179 0 1 randN 1)
+    set core-acorn-params-bo (gen-acorn-params 0.519 2.071 1.496 -0.179 1 1 randN 0)
+    set core-acorn-params-wo (gen-acorn-params 0.519 2.071 1.496 -0.179 1 1 randN 1)
+  ]
+  if dispersal-scenario = "sensitivity" [ 
+    set buffer-acorn-params-bo (gen-acorn-params (item 2 sens-params) (item 3 sens-params) (item 5 sens-params) (item 6 sens-params) 0 0 0 0)
+    set buffer-acorn-params-wo (gen-acorn-params (item 2 sens-params) (item 3 sens-params) (item 5 sens-params) (item 6 sens-params) 0 0 0 1)
+    set core-acorn-params-bo buffer-acorn-params-bo
+    set core-acorn-params-wo buffer-acorn-params-wo
+  ]
+  
+  ;Browsing
+  if browse-scenario = "fixedaverage" [set prob-browsed 0.1058] 
+  if browse-scenario = "hee" [
+    ;set later
+    ;set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)
+    ]  
+  if browse-scenario = "custom" [ ]
+
+  ;Seedling survival and growth
   if seedling-scenario = "fixedaverage" [
     ; intercept species canopy age
     set surv-params (list -0.6 0.101 0.366 0.576)
@@ -519,95 +527,11 @@ to set-scenario
       set surv-params (list 2.596 0 -0.733 0)
       set growth-params (list 2.091 0.199 -0.976 -1.733 0.468 1.468)] 
   ]
-  
-  ;Browsing
-  if browse-scenario = "fixedaverage" [set prob-browsed 0.1058] 
-  if browse-scenario = "hee" [set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)]  
-  if browse-scenario = "custom" [ ]
-  
-  ;Weevil scenarios
-  if weevil-scenario = "custom" [ ]
-  if weevil-scenario = "fixedaverage" [
-    set core-weev-prob-bo (gen-weev-prob 0 1 FALSE FALSE 0)
-    set core-weev-prob-wo (gen-weev-prob 1 1 FALSE FALSE 0)
-    set buffer-weev-prob-bo (gen-weev-prob 0 0 FALSE FALSE 0)
-    set buffer-weev-prob-wo (gen-weev-prob 1 0 FALSE FALSE 0)    
-  ]  
-  if weevil-scenario = "yearly-diff" [
-    let randN random-normal 0 1.01
-    set core-weev-prob-bo (gen-weev-prob 0 1 TRUE FALSE randN)
-    set core-weev-prob-wo (gen-weev-prob 1 1 TRUE FALSE randN)
-    set buffer-weev-prob-bo (gen-weev-prob 0 0 TRUE FALSE randN)
-    set buffer-weev-prob-wo (gen-weev-prob 1 0 TRUE FALSE randN) 
+  if seedling-scenario = "sensitivity" [
+    set surv-params (list (item 8 sens-params) 0.101 0.366 0.576)
+    set growth-params (list (item 9 sens-params) 0.248 -0.94 -0.488 0.116 1.188)    
   ] 
-  if weevil-scenario = "treat-diff" [
-    set core-weev-prob-bo (gen-weev-prob 0 1 FALSE TRUE 0)
-    set core-weev-prob-wo (gen-weev-prob 1 1 FALSE TRUE 0)
-    set buffer-weev-prob-bo (gen-weev-prob 0 0 FALSE TRUE 0)
-    set buffer-weev-prob-wo (gen-weev-prob 1 0 FALSE TRUE 0) 
-  ]  
-  if weevil-scenario = "yearly-treat-diff" [
-    let randN random-normal 0 1.01
-    set core-weev-prob-bo (gen-weev-prob 0 1 TRUE TRUE randN)
-    set core-weev-prob-wo (gen-weev-prob 1 1 TRUE TRUE randN)
-    set buffer-weev-prob-bo (gen-weev-prob 0 0 TRUE TRUE randN)
-    set buffer-weev-prob-wo (gen-weev-prob 1 0 TRUE TRUE randN) 
-  ] 
-  if weevil-scenario = "sensitivity" [
-    
-    set core-weev-prob-bo (1 + exp(-1 * bo-weevil-prob)) ^ (-1)
-    set core-weev-prob-wo core-weev-prob-bo
-    set buffer-weev-prob-bo core-weev-prob-bo
-    set buffer-weev-prob-wo core-weev-prob-wo
-  ]
-   
-  ;Dispersal scenarios
-  if dispersal-scenario = "custom" [    
-    set core-acorn-params-bo (list disperse-prob disperse-prob weibSc disperse-eaten-prob disperse-eaten-prob undisp-eaten-prob)
-    set core-acorn-params-wo core-acorn-params-bo
-    set buffer-acorn-params-bo core-acorn-params-bo
-    set buffer-acorn-params-wo core-acorn-params-bo
-  ]
-  if dispersal-scenario = "fixedaverage" [
-    set core-acorn-params-bo (gen-acorn-params 0 1 FALSE FALSE 0)
-    set core-acorn-params-wo (gen-acorn-params 1 1 FALSE FALSE 0)
-    set buffer-acorn-params-bo (gen-acorn-params 0 0 FALSE FALSE 0)
-    set buffer-acorn-params-wo (gen-acorn-params 1 0 FALSE FALSE 0)
-  ]
-  if dispersal-scenario = "yearly-diff" [
-    let randN random-normal 0 0.6322
-    set core-acorn-params-bo (gen-acorn-params 0 1 TRUE FALSE randN)
-    set core-acorn-params-wo (gen-acorn-params 1 1 TRUE FALSE randN)
-    set buffer-acorn-params-bo (gen-acorn-params 0 0 TRUE FALSE randN)
-    set buffer-acorn-params-wo (gen-acorn-params 1 0 TRUE FALSE randN)
-  ]
-  if dispersal-scenario = "treat-diff" [
-    set core-acorn-params-bo (gen-acorn-params 0 1 FALSE TRUE 0)
-    set core-acorn-params-wo (gen-acorn-params 1 1 FALSE TRUE 0)
-    set buffer-acorn-params-bo (gen-acorn-params 0 0 FALSE TRUE 0)
-    set buffer-acorn-params-wo (gen-acorn-params 1 0 FALSE TRUE 0)
-  ]
-  if dispersal-scenario = "yearly-treat-diff" [
-    let randN random-normal 0 0.6322
-    set core-acorn-params-bo (gen-acorn-params 0 1 TRUE TRUE randN)
-    set core-acorn-params-wo (gen-acorn-params 1 1 TRUE TRUE randN)
-    set buffer-acorn-params-bo (gen-acorn-params 0 0 TRUE TRUE randN)
-    set buffer-acorn-params-wo (gen-acorn-params 1 0 TRUE TRUE randN)
-  ]
-  if dispersal-scenario = "sensitivity" [
-    
-    let dp (1 + exp(-1 * disperse-prob)) ^ (-1)
-    let wc exp(weibSc)
-    let dep (1 + exp(-1 * disperse-eaten-prob)) ^ (-1)
-    let uep (1 + exp(-1 * undisp-eaten-prob)) ^ (-1)
-        
-    set core-acorn-params-bo (list dp dp wc dep dep uep)
-    set core-acorn-params-wo core-acorn-params-bo
-    set buffer-acorn-params-bo core-acorn-params-bo
-    set buffer-acorn-params-wo core-acorn-params-bo
-    
-  ]
-    
+     
   set mast-year-index (mast-year-index + 1)
   if mast-year-index = 9 [set mast-year-index 0]
      
@@ -702,9 +626,10 @@ to disperse-mast
     if dispersal-scenario = "fixedaverage" or dispersal-scenario = "treat-diff"[
       let cache-mean -2.4986 + 0.08858 * disp-dist
       set pcache (1 + exp(-1 * cache-mean)) ^ (-1)]
-      
+    if dispersal-scenario = "sensitivity" [
+      let cache-mean (item 4 sens-params) + 0.08858 * disp-dist
+      set pcache (1 + exp(-1 * cache-mean)) ^ (-1)]
     if dispersal-scenario = "custom" [set pcache cache-prob]
-    if dispersal-scenario = "sensitivity" [set pcache (1 + exp(-1 * cache-prob)) ^ (-1)]
       
     ;;probability of being cached
     ifelse random-float 1 < pcache [
@@ -746,10 +671,20 @@ end
 
 to grow-seedling
   set light (1 - [shade] of patch-here)
-  ifelse random-float 1 < prob-browsed [set browsed 1][set browsed 0]
-  
   let sp-ef 0
   if species = "WO" [set sp-ef 1]
+  let pbrowse 0
+  if browse-scenario = "custom" or browse-scenario = "fixedaverage"[set pbrowse prob-browsed]
+  if browse-scenario = "hee"[
+    let br-mean -3.194 + 0.039 * (height * 100) + 0.619 * sp-ef
+    set pbrowse (1 + exp(-1 * br-mean)) ^ (-1) 
+  ]
+  if browse-scenario = "sensitivity"[
+    let br-mean (item 7 sens-params) + 0.039 * (height * 100) + 0.619 * sp-ef
+    set pbrowse (1 + exp(-1 * br-mean)) ^ (-1) 
+  ]
+  ifelse random-float 1 < pbrowse [set browsed 1][set browsed 0]
+  
   let growthpred ((item 0 growth-params) + indeffect
   + (item 2 growth-params) * browsed + (item 3 growth-params) * (1 - light)     
   + (item 4 growth-params) * sp-ef + (random-normal 0 item 5 growth-params))
@@ -1832,7 +1767,7 @@ CHOOSER
 265
 mast-scenario
 mast-scenario
-"random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom"
+"random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom" "sensitivity"
 7
 
 SWITCH
@@ -1928,7 +1863,7 @@ CHOOSER
 413
 seedling-scenario
 seedling-scenario
-"custom" "fixedaverage" "randomdrought"
+"custom" "fixedaverage" "randomdrought" "sensitivity"
 1
 
 SLIDER
@@ -1953,7 +1888,7 @@ CHOOSER
 461
 browse-scenario
 browse-scenario
-"custom" "fixedaverage" "hee"
+"custom" "fixedaverage" "hee" "sensitivity"
 1
 
 SLIDER
@@ -1978,7 +1913,7 @@ CHOOSER
 314
 weevil-scenario
 weevil-scenario
-"custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
+"custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff" "sensitivity"
 1
 
 CHOOSER
@@ -1988,7 +1923,7 @@ CHOOSER
 364
 dispersal-scenario
 dispersal-scenario
-"custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff"
+"custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff" "sensitivity"
 1
 
 SLIDER
@@ -2504,7 +2439,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2.0
+NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

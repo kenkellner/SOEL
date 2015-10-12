@@ -169,22 +169,18 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     
     #Set variables if this is a sensitivity analysis
     if(sensitivity){
-      mast.scenario <- "custom"
-      weevil.scenario <- "custom"
-      dispersal.scenario <- "custom"
-      seedling.scenario <- "custom"
-      browse.scenario <- "custom"
+      mast.scenario <- "sensitivity"
+      weevil.scenario <- "sensitivity"
+      dispersal.scenario <- "sensitivity"
+      seedling.scenario <- "sensitivity"
+      browse.scenario <- "sensitivity"
       
-      mean.growth <- lhc$meanGr[i]
-      mean.survival <- lhc$meanSurv[i]
-      prob.browsed <- lhc$pBrowse[i]
-      prob.weevil <- lhc$pWeevil[i]
+      sens.params <- c(lhc$meanAcorn[i],lhc$pWeevil[i],lhc$pDispersal[i],lhc$weibSc[i],
+                       lhc$pCache[i],lhc$pDispEaten[i],lhc$pUndispEaten[i],lhc$pBrowse[i],
+                       lhc$meanGr[i],lhc$meanSurv[i])
       prob.drought <- 0
-      mast.val <- lhc$lamAcorn[i]
-      
-      acorn <- list(disperse=lhc$pDispersal[i],weibSc=lhc$weibSc[i],
-                    disperse.eaten=lhc$pDispEaten[i],
-                    cache.prob=lhc$pCache[i],undisperse.eaten=lhc$pUndispEaten[i])
+      NLCommand(paste('set sens-params',sens.params))
+
     }
     
     #Select harvest type, seedling type, etc.

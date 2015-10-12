@@ -2,10 +2,10 @@
 ##Seedling Survival Analysis##################
 ##############################################
 
-source('../seedling-survival/format_data.R')
+source('format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('../seedling-survival/data/seedlingmaster.csv')
+seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1)

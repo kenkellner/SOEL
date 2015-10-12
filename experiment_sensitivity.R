@@ -6,8 +6,8 @@ library(RPushbullet)
 #Generate correlation matrix for Latin hypercube sampling
 psummary <- read.csv('data/param_summary.csv',header=T)[1:9,]
 
-covs = c('pDispersal','weibSc','pDispEaten','pCache','pUndispEaten','pWeevil',
-         'lamAcorn','pBrowse','meanGr','meanSurv')
+covs = c('meanAcorn','pWeevil','pDispersal','weibSc','pCache','pDispEaten','pUndispEaten',
+         'pBrowse','meanGr','meanSurv')
 
 corm <- matrix(data=NA,nrow=10,ncol=10)
 corm[,9:10] <- corm[9:10,] <- 0
@@ -30,6 +30,25 @@ for (i in 1:(length(covs)-2)){
   }}
 
 #Parameter sampling distribution arguments
+
+#Intercept approach
+prange <- read.csv('data/param_ranges.csv',h=T)
+mn <- prange$intercept
+sds <- prange$se
+
+qarg.sd <- list(meanAcorn=list(mean=mn[1],sd=sds[1]),
+                pWeevil=list(mean=mn[2],sd=sds[2]),
+                pDispersal=list(mean=mn[13],sd=sds[3]),
+                weibSc=list(mean=mn[4],sd=sds[4]),
+                pCache=list(mean=mn[5],sd=sds[5]),
+                pDispEaten=list(mean=mn[6],sd=sds[6]),
+                pUndispEaten=list(mean=mn[7],sd=sds[7]),
+                pBrowse=list(mean=mn[8],sd=sds[8]),
+                meanGr=list(mean=mn[9],sd=sds[9]),
+                meanSurv=list(mean=mn[10],sd=sds[10])
+)
+
+
 
 #Narrower ranges (1 sd around mean)
 mn <- colMeans(psummary,na.rm=T)
@@ -97,16 +116,16 @@ qarg.narrow <- list(pDispersal=list(min=lw[1],max=up[1]),
 
 start.time <- Sys.time()
 
-sens.test.sd <- forest.sim(nreps=504,burnin=50,nyears=60,
+sens.test.int <- forest.sim(nreps=504,burnin=50,nyears=60,
                               harvests = c('none'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
-                              covs=covs,q="qunif",
-                              qarg=qarg.sd,
+                              covs=covs,q="qnorm",
+                              qarg=qarg.int,
                               corm=corm)
 
 
-save(sens.test.sd,file='output/sens_test_sd.Rdata')
+save(sens.test.int,file='output/sens_test_int.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
@@ -116,7 +135,7 @@ pbPost('note','Analysis Complete',
        paste('Sensitivity experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
        devices='Nexus 6')
 
-pbPost('file',url='output/sens_test_sd.Rdata')
+pbPost('file',url='output/sens_test_int.Rdata')
 
 #Shut down instance 
 system('sudo shutdown -h now')
