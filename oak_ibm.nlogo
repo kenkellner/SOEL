@@ -394,8 +394,8 @@ to set-scenario
     set mast-mean-bo 16.584
   ]
   if mast-scenario = "random" [
-    set mast-mean-wo max (list exp(2.001 + random-normal 0 1.126) 50)
-    set mast-mean-bo max (list exp(2.001 + random-normal 0 1.126) 50)
+    set mast-mean-wo min (list exp(2.001 + random-normal 0 1.126) 50)
+    set mast-mean-bo min (list exp(2.001 + random-normal 0 1.126) 50)
     ;set mast-mean-wo max (list exp(2.085 + random-normal 0 1.532) 50)
     ;set mast-mean-bo max (list exp(1.979 + random-normal 0 1.486) 50) 
   ]
@@ -423,8 +423,8 @@ to set-scenario
       ]    
   ]
   if mast-scenario = "sensitivity" [
-    set mast-mean-wo max (list exp(item 0 sens-params) 50)
-    set mast-mean-bo max (list exp(item 0 sens-params) 50)
+    set mast-mean-wo min (list exp(item 0 sens-params) 50)
+    set mast-mean-bo min (list exp(item 0 sens-params) 50)
   ]
   
   ;Models are in rate scale rather than lambda
@@ -2441,7 +2441,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2.0
+NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
