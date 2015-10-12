@@ -179,8 +179,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        lhc$pCache[i],lhc$pDispEaten[i],lhc$pUndispEaten[i],lhc$pBrowse[i],
                        lhc$meanGr[i],lhc$meanSurv[i])
       prob.drought <- 0
-      NLCommand(paste('set sens-params',sens.params))
-
+      
     }
     
     #Select harvest type, seedling type, etc.
@@ -242,6 +241,15 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     
     #Setup NetLogo model
     NLCommand("setup")
+    
+    if(sensitivity){
+      NLCommand('set sens-params',sens.params)
+      
+      #NLCommand(paste('set sens-params (list',sens.params[1],sens.params[2],sens.params[3],
+      #                sens.params[4],sens.params[5],sens.params[6],sens.params[7],sens.params[8],
+      #               sens.params[9],sens.params[10],')'))
+      
+    }
     
     #Run and save output
     temp <- NLDoReport(nyears, "go", reporters, as.data.frame=TRUE, df.col.names=rep.names)

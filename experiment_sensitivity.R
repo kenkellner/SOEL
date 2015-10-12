@@ -10,12 +10,9 @@ covs = c('meanAcorn','pWeevil','pDispersal','weibSc','pCache','pDispEaten','pUnd
          'pBrowse','meanGr','meanSurv')
 
 corm <- matrix(data=NA,nrow=10,ncol=10)
-corm[,9:10] <- corm[9:10,] <- 0
-corm[9,9] <- 1
-corm[10,10] <- 1
 
-for (i in 1:(length(covs)-2)){
-  for (j in 1:(length(covs)-2)){
+for (i in 1:(length(covs))){
+  for (j in 1:(length(covs))){
     
     if(i==j){corm[i,j]=1
     }else{
@@ -36,9 +33,9 @@ prange <- read.csv('data/param_ranges.csv',h=T)
 mn <- prange$intercept
 sds <- prange$se
 
-qarg.sd <- list(meanAcorn=list(mean=mn[1],sd=sds[1]),
+qarg.int <- list(meanAcorn=list(mean=mn[1],sd=sds[1]),
                 pWeevil=list(mean=mn[2],sd=sds[2]),
-                pDispersal=list(mean=mn[13],sd=sds[3]),
+                pDispersal=list(mean=mn[3],sd=sds[3]),
                 weibSc=list(mean=mn[4],sd=sds[4]),
                 pCache=list(mean=mn[5],sd=sds[5]),
                 pDispEaten=list(mean=mn[6],sd=sds[6]),
