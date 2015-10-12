@@ -394,8 +394,10 @@ to set-scenario
     set mast-mean-bo 16.584
   ]
   if mast-scenario = "random" [
-    set mast-mean-wo max (list exp(2.085 + random-normal 0 1.532) 50)
-    set mast-mean-bo max (list exp(1.979 + random-normal 0 1.486) 50) 
+    set mast-mean-wo max (list exp(2.001 + random-normal 0 1.126) 50)
+    set mast-mean-bo max (list exp(2.001 + random-normal 0 1.126) 50)
+    ;set mast-mean-wo max (list exp(2.085 + random-normal 0 1.532) 50)
+    ;set mast-mean-bo max (list exp(1.979 + random-normal 0 1.486) 50) 
   ]
   if mast-scenario = "hee" [
     set mast-mean-wo 1 / (item mast-year-index wo-mast-list)
@@ -403,7 +405,7 @@ to set-scenario
   ]
   
   if mast-scenario = "priorgood" [
-    ifelse ticks = (harvest-year - 1) OR ticks = (harvest-year - 2) [
+    ifelse ticks = (harvest-year) OR ticks = (harvest-year + 1) [
       set mast-mean-wo 22.346
       set mast-mean-bo 16.584
       ][
@@ -1567,7 +1569,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-0
+2
 
 TEXTBOX
 54
@@ -2439,7 +2441,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.1.0
+NetLogo 5.2.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

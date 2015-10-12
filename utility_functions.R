@@ -114,6 +114,17 @@ add.newseedlings <- function(datalist,startyear,stopyear){
   
 }
 
+add.seedorigin <- function(datalist){
+  
+  for (i in 1:length(datalist)){
+    for (j in 1:(length(datalist[[1]])-1)){
+      datalist[[i]][[j]]$seedorigin <- datalist[[i]][[j]]$regen - 
+        datalist[[i]][[j]]$regenstump
+    }
+  }
+  return(datalist)
+}
+
 analyze.ibm <- function(datalist,metric,year,cont=FALSE,vals=NULL){
   
   require(pgirmess)
