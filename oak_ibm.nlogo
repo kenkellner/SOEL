@@ -24,13 +24,15 @@ globals [
   
   harvest-year shelter-phase
   
+  prioryears mastsd
+  
   wo-mast-list bo-mast-list mast-year-index
   mast-mean-bo mast-mean-wo mast-mean-comb
   core-acorn-params-bo buffer-acorn-params-bo
   core-acorn-params-wo buffer-acorn-params-wo
   core-weev-prob-bo buffer-weev-prob-bo
   core-weev-prob-wo buffer-weev-prob-wo
-  surv-params growth-params
+  surv-params growth-params br-year-ef
   sens-params
   
   acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters 
@@ -404,24 +406,27 @@ to set-scenario
     set mast-mean-bo 1 / (item mast-year-index bo-mast-list)
   ]
   
-  if mast-scenario = "priorgood" [
-    ifelse ticks = (harvest-year) OR ticks = (harvest-year + 1) [
-      set mast-mean-wo 22.346
-      set mast-mean-bo 16.584
-      ][
-      set mast-mean-wo one-of wo-mast-list
-      set mast-mean-bo one-of bo-mast-list
+  if mast-scenario = "priordifference" [
+    if prioryears = 2 [
+      ifelse ticks = (burnin) OR ticks = (burnin + 1) [
+        set mast-mean-wo exp(2.001 + mastsd * 1.126)
+        set mast-mean-bo exp(2.001 + mastsd * 1.126)
+        ][
+        set mast-mean-wo min (list exp(2.001 + random-normal 0 1.126) 70)
+        set mast-mean-bo min (list exp(2.001 + random-normal 0 1.126) 70)
       ]    
-  ]
-  if mast-scenario = "priorbad" [
-    ifelse ticks = (harvest-year - 1) OR ticks = (harvest-year - 2) [
-      set mast-mean-wo 8.579
-      set mast-mean-bo 3.749
-      ][
-      set mast-mean-wo one-of wo-mast-list
-      set mast-mean-bo one-of bo-mast-list
+    ]
+    if prioryears = 1 [
+      ifelse ticks = (burnin + 1) [
+        set mast-mean-wo exp(2.001 + mastsd * 1.126)
+        set mast-mean-bo exp(2.001 + mastsd * 1.126)
+        ][
+        set mast-mean-wo min (list exp(2.001 + random-normal 0 1.126) 70)
+        set mast-mean-bo min (list exp(2.001 + random-normal 0 1.126) 70)
       ]    
+    ]
   ]
+
   if mast-scenario = "sensitivity" [
     set mast-mean-wo min (list exp(item 0 sens-params) 50)
     set mast-mean-bo min (list exp(item 0 sens-params) 50)
@@ -508,6 +513,7 @@ to set-scenario
   ;Browsing
   if browse-scenario = "fixedaverage" [set prob-browsed 0.1058] 
   if browse-scenario = "hee" [
+    set br-year-ef random-normal 0 0.59
     ;set later
     ;set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)
     ]  
@@ -678,11 +684,11 @@ to grow-seedling
   let pbrowse 0
   if browse-scenario = "custom" or browse-scenario = "fixedaverage"[set pbrowse prob-browsed]
   if browse-scenario = "hee"[
-    let br-mean -3.194 + 0.039 * (height * 100) + 0.619 * sp-ef
+    let br-mean -4.521 + 0.158 * (height * 100) - 0.00148 * (height * 100 * height * 100) + 0.372 * sp-ef + br-year-ef
     set pbrowse (1 + exp(-1 * br-mean)) ^ (-1) 
   ]
   if browse-scenario = "sensitivity"[
-    let br-mean (item 7 sens-params) + 0.039 * (height * 100) + 0.619 * sp-ef
+    let br-mean (item 7 sens-params) + 0.158 * (height * 100) - 0.00148 * (height * 100 * height * 100) + 0.372 * sp-ef
     set pbrowse (1 + exp(-1 * br-mean)) ^ (-1) 
   ]
   ifelse random-float 1 < pbrowse [set browsed 1][set browsed 0]
@@ -2441,7 +2447,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.1.0
+NetLogo 5.2.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

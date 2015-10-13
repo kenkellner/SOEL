@@ -82,13 +82,15 @@ sp <- c(species,species,species,species)
 ht <- as.matrix(cbind(ht.raw[,2],ht.raw[,4],
                      ht.raw[,6],ht.raw[,8]))
 ht <- c(as.vector(ht[,1]),as.vector(ht[,2]),as.vector(ht[,3]),as.vector(ht[,4]))
+ht2 <- ht*ht
 yr <- c(rep(1,580),rep(2,580),rep(3,580),rep(4,580))
 yr <- as.factor(yr)
 ind <- c(c(1:580),c(1:580),c(1:580),c(1:580))
 ind <- as.factor(ind)
-browsedata <- data.frame(br,sp,ht,yr,ind)
+browsedata <- data.frame(br,sp,ht,ht2,yr,ind)
+
 
 library(MASS)
 
-browse.mod <- glmmPQL(br~ht+sp,data=browsedata,family='binomial',random=~1|yr)
+browse.mod <- glmmPQL(br~ht+ht2+sp,data=browsedata,family='binomial',random=~1|yr)
 
