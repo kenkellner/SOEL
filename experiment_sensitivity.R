@@ -113,7 +113,7 @@ qarg.narrow <- list(pDispersal=list(min=lw[1],max=up[1]),
 
 start.time <- Sys.time()
 
-sens.test.int <- forest.sim(nreps=504,burnin=50,nyears=60,
+sens.test.int <- forest.sim(nreps=504,burnin=30,nyears=40,
                               harvests = c('none'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
@@ -123,6 +123,16 @@ sens.test.int <- forest.sim(nreps=504,burnin=50,nyears=60,
 
 
 save(sens.test.int,file='output/sens_test_int.Rdata')
+
+sens.test.int.nocorr <- forest.sim(nreps=504,burnin=30,nyears=40,
+                            harvests = c('none'),
+                            force.processors=12, ram.max=5000, 
+                            sensitivity=TRUE,
+                            covs=covs,q="qnorm",
+                            qarg=qarg.int)
+
+
+save(sens.test.int.nocorr,file='output/sens_test_int_nocorr.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
@@ -142,18 +152,18 @@ source('utility_functions.R')
 #Sensitivity partitioning (Xu and Gertner 2008)
 
 #Pctgerm (year 36)
-inp.covs <- as.data.frame(scale(sens.test.sd$lhc))
-out.vals <- sens.test.sd$out$none$pctgerm[36,]
+inp.covs <- as.data.frame(scale(sens.test.int$lhc))
+out.vals <- sens.test.int$out$none$pctgerm[36,]
 varPart(out.vals,inp.covs,4)
 
 #Seedlings (total at year 36)
-out.vals <- sens.test.sd$out$none$seedclass123[36,]
+out.vals <- sens.test.int$out$none$seedclass123[36,]
 varPart(out.vals,inp.covs,4)
 
 #Seedlings (total new seedlings accumulated 30-40)
-out.vals <- colSums(sens.test.sd$out$none$newseedlings[30:40,])
+out.vals <- colSums(sens.test.int$out$none$newseedlings[30:40,])
 varPart(out.vals,inp.covs,4)
 
 #Saplings (total at year 36)
-out.vals <- sens.test.sd$out$none$seedclass4[36,]
+out.vals <- sens.test.int$out$none$seedclass4[36,]
 varPart(out.vals,inp.covs,4)
