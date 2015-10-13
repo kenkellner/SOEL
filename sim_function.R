@@ -56,6 +56,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #'random' for randomly selecting a year of HEE data
                        #'priorgood' or 'priorbad' for two good/bad mast years just before harvest
                        mast.scenario = 'fixedaverage',
+                       prior.years = 1, mast.sd = 1,
                        #Weevil scenario, 'fixedaverage', 'random', 'random-match', 
                        #'hee', 'treat-diff', or 'custom'
                        weevil.scenario = 'fixedaverage',
@@ -78,6 +79,8 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Arguments for sensitivity test
                        covs = NULL, q = NULL, qarg = NULL, corm = NULL
                        ){
+  
+  require(parallel)
   
   #Model start time
   start.time <- Sys.time()
@@ -242,13 +245,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     #Setup NetLogo model
     NLCommand("setup")
     
-    if(sensitivity){
-      NLCommand('set sens-params',sens.params)
-      
-      #NLCommand(paste('set sens-params (list',sens.params[1],sens.params[2],sens.params[3],
-      #                sens.params[4],sens.params[5],sens.params[6],sens.params[7],sens.params[8],
-      #               sens.params[9],sens.params[10],')'))
-      
+    if(sensitivity){NLCommand('set sens-params',sens.params)}
+    if(mast-scenario == "priordifference"){
+      NLCommand(paste('set prioryears',prior.years))
+      NLCommand(paste('set mastsd',mast.sd))
     }
     
     #Run and save output

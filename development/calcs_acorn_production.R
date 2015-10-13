@@ -116,7 +116,8 @@ for (i in 2:10){
 mastdata <- cbind(species=com[,1],com[,2:10]/0.34)
 
 prod <- as.matrix(mastdata[,2:10])
-prod = prod[species==1,]
+prod[which(prod>100,arr.ind=T)]=NA
+#prod = prod[species==1,]
 
 species <- as.vector(mastdata[,1])
 
@@ -147,7 +148,7 @@ tree.eff <- vector(length=113)
 year.eff <- vector(length=9)
 
 for (i in 1:9){
-  year.eff[i] <- rnorm(1,0,1.207)
+  year.eff[i] <- rnorm(1,0,1.126)
 }
 
 for (i in 1:113){
@@ -156,10 +157,10 @@ for (i in 1:113){
   
   for (j in 1:9){
     
-    mn <- 2.054 + year.eff[j]
+    mn <- 2.001 + year.eff[j]
     #+ tree.eff[i] 
     
-    
+    print(exp(mn))
     #fin <- 250
     #while(fin>249){
       #fin <- rweibull(1,1,exp(mn))
