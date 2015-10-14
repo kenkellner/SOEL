@@ -536,8 +536,8 @@ to set-scenario
       set growth-params (list 2.091 0.199 -0.976 -1.733 0.468 1.468)] 
   ]
   if seedling-scenario = "sensitivity" [
-    set surv-params (list (item 8 sens-params) 0.101 0.366 0.576)
-    set growth-params (list (item 9 sens-params) 0.248 -0.94 -0.488 0.116 1.188)    
+    set growth-params (list (item 8 sens-params) 0.248 -0.94 -0.488 0.116 1.188)
+    set surv-params (list (item 9 sens-params) 0.101 0.366 0.576)    
   ] 
      
   set mast-year-index (mast-year-index + 1)
@@ -1575,7 +1575,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-2
+0
 
 TEXTBOX
 54
@@ -1776,7 +1776,7 @@ CHOOSER
 mast-scenario
 mast-scenario
 "random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom" "sensitivity"
-7
+8
 
 SWITCH
 796
@@ -1872,7 +1872,7 @@ CHOOSER
 seedling-scenario
 seedling-scenario
 "custom" "fixedaverage" "randomdrought" "sensitivity"
-1
+3
 
 SLIDER
 34
@@ -1897,7 +1897,7 @@ CHOOSER
 browse-scenario
 browse-scenario
 "custom" "fixedaverage" "hee" "sensitivity"
-1
+3
 
 SLIDER
 673
@@ -1922,7 +1922,7 @@ CHOOSER
 weevil-scenario
 weevil-scenario
 "custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff" "sensitivity"
-1
+5
 
 CHOOSER
 19
@@ -1932,7 +1932,7 @@ CHOOSER
 dispersal-scenario
 dispersal-scenario
 "custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff" "sensitivity"
-1
+5
 
 SLIDER
 673
