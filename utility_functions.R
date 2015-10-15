@@ -42,8 +42,11 @@ gen.dataset <- function(datalist,metric,year=NULL,cont=FALSE,vals=NULL){
     
     for (j in 1:length(temp[[1]])){
       
-      if (metric == "seedlingsum"){dat.add <- temp[[i]][[j]]$seedlingsum
-      } else {
+      if (metric == "seedlingsum"){dat.add <- temp[[i]][[j]]$seedlingsum}
+      if (metric == "acornsum"){dat.add <- temp[[i]][[j]]$acornsum}
+      if (metric == "pctgermmean"){dat.add <- temp[[i]][[j]]$pctgermmean}
+      
+      if (!metric%in%(c('seedlingsum','acornsum','pctgermmean'))) {
       dat.add <- eval(parse(text=paste('temp[[i]][[j]]$',metric,'[',year,',]',sep="")))}
       
       temp.harv <- rep(names(temp)[i],length(dat.add))
@@ -114,12 +117,36 @@ add.newseedlings <- function(datalist,startyear,stopyear){
   
 }
 
+add.acornsum <- function(datalist,startyear,stopyear){
+  
+  for (i in 1:length(datalist)){
+    for (j in 1:(length(datalist[[1]])-1)){
+      hold <- colSums(datalist[[i]][[j]]$totacorns[startyear:stopyear,])
+      datalist[[i]][[j]]$acornsum = hold
+    }
+  }
+  
+  return(datalist)
+  
+}
+
 add.seedorigin <- function(datalist){
   
   for (i in 1:length(datalist)){
     for (j in 1:(length(datalist[[1]])-1)){
       datalist[[i]][[j]]$seedorigin <- datalist[[i]][[j]]$regen - 
         datalist[[i]][[j]]$regenstump
+    }
+  }
+  return(datalist)
+}
+
+add.pctgermmean <- function(datalist,startyear,stopyear){
+  
+  for (i in 1:length(datalist)){
+    for (j in 1:(length(datalist[[1]])-1)){
+      datalist[[i]][[j]]$pctgermmean <- 
+        mean(datalist[[i]][[j]]$pctgerm[startyear:stopyear])
     }
   }
   return(datalist)
