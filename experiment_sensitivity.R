@@ -151,21 +151,34 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
+##########################################################
+
 #Sensitivity partitioning (Xu and Gertner 2008)
 
-#Pctgerm (year 36)
-inp.covs <- as.data.frame(scale(sens.test.int$lhc))
-out.vals <- sens.test.int$out$none$pctgerm[36,]
-varPart(out.vals,inp.covs,4)
+##Correlated
 
-#Seedlings (total at year 36)
-out.vals <- sens.test.int$out$none$seedclass123[36,]
+#Pctgerm (year 38)
+inp.covs <- as.data.frame(scale(sens.test.int$lhc))
+out.vals <- sens.test.int$out$none$pctgerm[37,]
 varPart(out.vals,inp.covs,4)
 
 #Seedlings (total new seedlings accumulated 30-40)
-out.vals <- colSums(sens.test.int$out$none$newseedlings[30:40,])
+out.vals <- colSums(sens.test.int$out$none$newseedlings[30:37,])
 varPart(out.vals,inp.covs,4)
 
 #Saplings (total at year 36)
 out.vals <- sens.test.int$out$none$seedclass4[36,]
+varPart(out.vals,inp.covs,4)
+
+#Uncorrelated
+inp.covs <- as.data.frame(scale(sens.test.int.nocorr$lhc))
+out.vals <- sens.test.int.nocorr$out$none$pctgerm[37,]
+varPart(out.vals,inp.covs,4)
+
+#Seedlings (total new seedlings accumulated 30-40)
+out.vals <- colSums(sens.test.int.nocorr$out$none$newseedlings[30:37,])
+varPart(out.vals,inp.covs,4)
+
+#Saplings (total at year 36)
+out.vals <- sens.test.int.nocorr$out$none$seedclass4[36,]
 varPart(out.vals,inp.covs,4)

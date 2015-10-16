@@ -317,11 +317,20 @@ text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+10),"A")
 
 datalist <- list(avg=weevil.dispersal.average,trt=weevil.dispersal.treateff,yrly=weevil.dispersal.yearlyeff,
                  treat.yrly=weevil.dispersal.treatyearlyeff)
-datalist <- add.newseedlings(datalist,30,38)
+datalist <- add.newseedlings(datalist,30,37)
 datalist <- add.seedorigin(datalist)
-datalist <- add.acornsum(datalist,30,38)
+datalist <- add.acornsum(datalist,30,37)
 
-test <- analyze.ibm(datalist,metric='acornsum')
-test$anova.mc
+h = gen.dataset(datalist,'acornsum')
 
-test <- analyze.ibm(datalist,metric='seedlingsum')
+h = gen.dataset(datalist,'pctgerm',30)
+for (i in 31:37){
+  h = rbind(h,gen.dataset(datalist,'pctgerm',i))
+}
+summary(aov(pctgerm~harvest*scenario,data=h))
+
+h = gen.dataset(datalist,'seedlingsum')
+summary(aov(seedlingsum~harvest*scenario,data=h))
+
+h = gen.dataset(datalist,'seedorigin',37)
+summary(aov(seedorigin~harvest*scenario,data=h))
