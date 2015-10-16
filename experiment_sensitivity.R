@@ -123,6 +123,7 @@ sens.test.int <- forest.sim(nreps=504,burnin=30,nyears=40,
 
 
 save(sens.test.int,file='output/sens_test_int.Rdata')
+pbPost('file',url='output/sens_test_int.Rdata')
 
 sens.test.int.nocorr <- forest.sim(nreps=504,burnin=30,nyears=40,
                             harvests = c('none'),
@@ -133,6 +134,7 @@ sens.test.int.nocorr <- forest.sim(nreps=504,burnin=30,nyears=40,
 
 
 save(sens.test.int.nocorr,file='output/sens_test_int_nocorr.Rdata')
+pbPost('file',url='output/sens_test_int_nocorr.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
@@ -142,7 +144,7 @@ pbPost('note','Analysis Complete',
        paste('Sensitivity experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
        devices='Nexus 6')
 
-pbPost('file',url='output/sens_test_int.Rdata')
+
 
 #Shut down instance 
 system('sudo shutdown -h now')

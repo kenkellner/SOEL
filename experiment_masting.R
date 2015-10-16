@@ -63,6 +63,52 @@ save(mast.priorgood2.2SD,file='output/mast/mast_priorgood2.2SD.Rdata')
 
 ##################################################################################
 
+mast.priorbad1.1SD <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+                                  burnin=30,nyears=40,
+                                  harvests = c('none','clearcut','shelterwood'),
+                                  mast.scenario = "priordifference",
+                                  prior.years = 1, mastsd = -1,
+                                  weevil.scenario = "fixedaverage",
+                                  dispersal.scenario = "fixedaverage",
+                                  force.processors = 12,
+                                  ram.max = 5000)
+save(mast.priorbad1.1SD,file='output/mast/mast_priorbad1.1SD.Rdata')
+
+mast.priorbad1.2SD <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+                                  burnin=30,nyears=40,
+                                  harvests = c('none','clearcut','shelterwood'),
+                                  mast.scenario = "priordifference",
+                                  prior.years = 1, mastsd = -2,
+                                  weevil.scenario = "fixedaverage",
+                                  dispersal.scenario = "fixedaverage",
+                                  force.processors = 12,
+                                  ram.max = 5000)
+save(mast.priorbad1.2SD,file='output/mast/mast_priorbad1.2SD.Rdata')
+
+mast.priorbad2.1SD <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+                                  burnin=30,nyears=40,
+                                  harvests = c('none','clearcut','shelterwood'),
+                                  mast.scenario = "priordifference",
+                                  prior.years = 2, mastsd = -1,
+                                  weevil.scenario = "fixedaverage",
+                                  dispersal.scenario = "fixedaverage",
+                                  force.processors = 12,
+                                  ram.max = 5000)
+save(mast.priorbad2.1SD,file='output/mast/mast_priorbad2.1SD.Rdata')
+
+mast.priorbad2.2SD <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+                                  burnin=30,nyears=40,
+                                  harvests = c('none','clearcut','shelterwood'),
+                                  mast.scenario = "priordifference",
+                                  prior.years = 2, mastsd = -2,
+                                  weevil.scenario = "fixedaverage",
+                                  dispersal.scenario = "fixedaverage",
+                                  force.processors = 12,
+                                  ram.max = 5000)
+save(mast.priorbad2.2SD,file='output/mast/mast_priorbad2.2SD.Rdata')
+
+##################################################################################
+
 end.time <- Sys.time() 
 runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
 pbPost('note','Analysis Complete',

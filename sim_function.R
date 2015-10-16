@@ -246,7 +246,7 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     NLCommand("setup")
     
     if(sensitivity){NLCommand('set sens-params',sens.params)}
-    if(mast-scenario == "priordifference"){
+    if(mast.scenario == "priordifference"){
       NLCommand(paste('set prioryears',prior.years))
       NLCommand(paste('set mastsd',mast.sd))
     }
