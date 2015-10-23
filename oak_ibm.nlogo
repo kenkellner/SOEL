@@ -408,7 +408,7 @@ to set-scenario
   
   if mast-scenario = "priordifference" [
     if prioryears = 2 [
-      ifelse ticks = (burnin) OR ticks = (burnin + 1) [
+      ifelse ticks = (burnin - 2) OR ticks = (burnin - 1) [
         set mast-mean-wo exp(2.001 + mastsd * 1.126)
         set mast-mean-bo exp(2.001 + mastsd * 1.126)
         ][
@@ -417,7 +417,7 @@ to set-scenario
       ]    
     ]
     if prioryears = 1 [
-      ifelse ticks = (burnin + 1) [
+      ifelse ticks = (burnin - 1) [
         set mast-mean-wo exp(2.001 + mastsd * 1.126)
         set mast-mean-bo exp(2.001 + mastsd * 1.126)
         ][
@@ -1575,7 +1575,7 @@ CHOOSER
 harvest-type
 harvest-type
 "none" "clearcut" "shelterwood" "singletree"
-0
+1
 
 TEXTBOX
 54
@@ -1752,7 +1752,7 @@ burnin
 burnin
 0
 100
-10
+5
 1
 1
 years
@@ -1775,8 +1775,8 @@ CHOOSER
 265
 mast-scenario
 mast-scenario
-"random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom" "sensitivity"
-8
+"random" "hee" "fixedaverage" "fixedgood" "fixedbad" "priorgood" "priorbad" "custom" "sensitivity" "priordifference"
+9
 
 SWITCH
 796
@@ -1872,7 +1872,7 @@ CHOOSER
 seedling-scenario
 seedling-scenario
 "custom" "fixedaverage" "randomdrought" "sensitivity"
-3
+1
 
 SLIDER
 34
@@ -1897,7 +1897,7 @@ CHOOSER
 browse-scenario
 browse-scenario
 "custom" "fixedaverage" "hee" "sensitivity"
-3
+1
 
 SLIDER
 673
@@ -1922,7 +1922,7 @@ CHOOSER
 weevil-scenario
 weevil-scenario
 "custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff" "sensitivity"
-5
+1
 
 CHOOSER
 19
@@ -1932,7 +1932,7 @@ CHOOSER
 dispersal-scenario
 dispersal-scenario
 "custom" "fixedaverage" "yearly-diff" "treat-diff" "yearly-treat-diff" "sensitivity"
-5
+1
 
 SLIDER
 673
