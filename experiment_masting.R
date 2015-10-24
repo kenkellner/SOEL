@@ -117,3 +117,35 @@ pbPost('note','Analysis Complete',
 
 #Shut down instance
 system('sudo shutdown -h now') 
+
+##################################################
+
+datalist = list(pg11=mast.priorgood1.1SD,pg21=mast.priorgood2.1SD,pg12=mast.priorgood1.2SD,
+                pg22=mast.priorgood2.2SD,pga=mast.average)
+datalist <- add.newseedlings(datalist,30,37)
+datalist <- add.seedorigin(datalist)
+
+s <- gen.dataset(datalist,'seedclass123',30)
+s$harvest <- as.factor(s$harvest)
+
+s$scenario = factor(s$scenario,c('pga','pg11','pg21','pg12','pg22'))
+s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
+
+test = aov(seedclass123~harvest*scenario,data=s)
+
+TukeyHSD(test)
+
+####
+
+s <- gen.dataset(datalist,'seedclass4',37)
+s$harvest <- as.factor(s$harvest)
+
+s$scenario = factor(s$scenario,c('pga','pg11','pg21','pg12','pg22'))
+s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
+
+test = aov(seedclass4~harvest*scenario,data=s)
+
+TukeyHSD(test)
+
+c('A','X','X','A','X','X','A','X','X','A','X','X','A','X','X')
+
