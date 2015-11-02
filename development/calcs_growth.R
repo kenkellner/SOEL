@@ -152,6 +152,32 @@ save(ibm.growth.output,file="output/ibm_growth_output.Rda")
 
 #equation 1.24 + rnorm(1,0,0.248) - 0.94 * browse - 0.488 * canopy + 0.116 * species + rnorm(1,0,1.188)
 
+simgrowth <- matrix(NA,nrow=nrow(growth),ncol=4)
+for (i in 1:dim(growth)[1]){
+  ymean <- rnorm(1,0,0.248)
+  for (j in 1:nsamples[i]){
+    simgrowth[i,j] <- 1.24 + ymean - 0.94*browse[i,j] + -0.488 * canopy[seed.plotcode[i]] + 0.116 * species[i] + rnorm(1,0,1.188)
+  }
+}
+
+par(mfrow=c(2,1))
+hist(growth[,1:4][growth>-10],freq=F,xlim=c(-4,4.5),ylim=c(0,0.50),
+     xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
+hist(simgrowth[,1:4][simgrowth>-10],freq=F,xlim=c(-4,4.5),ylim=c(0,0.50),
+     xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
+
+act.growth <- apply(growth,c(1,2),inv.neglog)
+act.sim <- apply(simgrowth,c(1,2),inv.neglog)
+
+par(mfrow=c(2,1))
+hist(act.sim[,1:4][act.sim>-10&act.sim<60],freq=F,xlim=c(-10,50),ylim=c(0,0.12),
+     xlab="Yearly Growth (cm)",main="Simulated Seedling Growth",col='gray',breaks=15)
+hist(act.growth[,1:4][act.growth[,1:4]>-10],freq=F,xlim=c(-10,50),ylim=c(0,0.12),
+     xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='lightgray',breaks=25,
+     add=F)
+
+
+
 #################################
 
 #First 2 years only

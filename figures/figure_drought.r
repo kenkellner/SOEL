@@ -41,5 +41,5 @@ bx = boxplot(seedorigin~harvest*scenario,data=s,col=gray.colors(3),
 axis(1,at=c(2,5,8,11,14,17,21),tick=T,
      labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
 abline(v=19)
-legend("topright",legend=c('No Harvest','Shelterwood','Clearcut'),fill=gray.colors(3))
+legend("topright",legend=c('No Harvest','Midstory Removal','Clearcut'),fill=gray.colors(3))
 text(1.5,100,'(b)',cex=1.5)

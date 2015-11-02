@@ -23,7 +23,7 @@ bx = boxplot(acornsum/1000~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
-legend(0.5,0.04,legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
+legend(0.5,0.04,legend=c("No Harvest","Midstory Removal"),fill=gray.colors(2))
 text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+15),"A")
 text(9.5,510,'(a)',cex=1.5)
 
@@ -39,12 +39,12 @@ h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
 
 op <- par(mar = c(5,4.5,2,2) + 0.1)
 bx = boxplot(pctgerm~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',
-             at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(0.0,0.05),ylab=expression("Yearly Percent Emergence"))
+             at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(0.0,0.07),ylab=expression("Yearly Percent Emergence"))
 #axis(1,at=c(1.5,4,6.5,9),tick=F)
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
-legend("topleft",legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
+legend("topleft",legend=c("No Harvest","Midstory Removal"),fill=gray.colors(2))
 text(c(1,2,3.5,4.5,6,7,8.5,9.5),
      (bx$stats[5,]+c(0.005,0.005,0.005,0.0055,0.0045,0.003,0.003,0.005)),
      c('A','A','A','B','C','C','C','C'))

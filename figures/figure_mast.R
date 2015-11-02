@@ -25,7 +25,7 @@ text(c(2,5.5,9,12.5,16),
      bx$stats[5,c(2,5,8,11,14)]+3000,
      c('A','B','C','D','E'))
 
-legend("topleft",legend=c('No Harvest','Shelterwood','Clearcut'),fill=gray.colors(3))
+legend("topleft",legend=c('No Harvest','Midstory Removal','Clearcut'),fill=gray.colors(3))
 text(17,9000,'(a)',cex=1.5)
 
 #############
