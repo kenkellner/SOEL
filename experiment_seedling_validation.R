@@ -384,7 +384,7 @@ segments(x0=7,y0=comb1[7],x1=10,y1=comb1[7],lty=2)
 
 box()
 adjust <- c(600,500,1000,600,600,600)
-for (i in 1:6){
+for (i in 1:3){
   segments(x0=structure[i],y0=comb1.new[i]-comb1.se.new[i],
            x1=structure[i],y1=comb1.new[i]+comb1.se.new[i])
   segments(x0=structure[i]-0.06,y0=comb1.new[i]+comb1.se.new[i],
@@ -439,5 +439,91 @@ box()
 abline(v=6)
 abline(v=11)
 
+#################################################
+#Alternate figure without model s and n
 
+comb1.new <- comb1[c(2,5,8)]
+comb1.se.new <- 1.96*comb1.se[c(2,5,8)]
+
+par(mfrow=c(2,1),
+    mar=c(4.1,4.1,2,0),
+    oma=c(0,0,1,1),
+    mgp=c(2.5,1,0))
+
+structure <- c(2.5,5.5,8.5)
+
+diff <- c(seedling.matrix,seedling.clear,seedling.shelt)
+
+plot(structure,comb1.new,ylim=c(0,8000),xlim=c(1.5,9.5),xaxt='n',xlab=''
+     ,ylab=expression('Seedlings'~ha^{-1}),main='Oak Seedling Density')
+axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
+legend('topleft',pch=c(21,21),pt.bg=c('white','black'),cex=1,
+       legend=c('SOEL','JABOWA'),bty='n')
+
+polygon(x=c(0,0,4,4),y=c(comb1[1]-comb1.se[1]*1.96,comb1[1]+comb1.se[1]*1.96,
+                         comb1[1]+comb1.se[1]*1.96,comb1[1]-comb1.se[1]*1.96),col='gray85',border=F)
+segments(x0=0,y0=comb1[1],x1=4,y1=comb1[1],lty=2)
+polygon(x=c(4,4,7,7),y=c(comb1[4]-comb1.se[4]*1.96,comb1[4]+comb1.se[4]*1.96,
+                         comb1[4]+comb1.se[4]*1.96,comb1[4]-comb1.se[4]*1.96),col='gray85',border=F)
+segments(x0=4,y0=comb1[4],x1=7,y1=comb1[4],lty=2)
+polygon(x=c(7,7,10,10),y=c(comb1[7]-comb1.se[7]*1.96,comb1[7]+comb1.se[7]*1.96,
+                           comb1[7]+comb1.se[7]*1.96,comb1[7]-comb1.se[7]*1.96),col='gray85',border=F)
+segments(x0=7,y0=comb1[7],x1=10,y1=comb1[7],lty=2)
+
+box()
+adjust <- c(600,500,1000,600,600,600)
+for (i in 1:3){
+  segments(x0=structure[i],y0=comb1.new[i]-comb1.se.new[i],
+           x1=structure[i],y1=comb1.new[i]+comb1.se.new[i])
+  segments(x0=structure[i]-0.06,y0=comb1.new[i]+comb1.se.new[i],
+           x1=structure[i]+0.06,y1=comb1.new[i]+comb1.se.new[i])
+  segments(x0=structure[i]-0.06,y0=comb1.new[i]-comb1.se.new[i],
+           x1=structure[i]+0.06,y1=comb1.new[i]-comb1.se.new[i])
+  #text(structure[i],comb1.new[i]+comb1.se.new[i]+adjust[i],diff[i],cex=0.8)
+}
+points(structure,comb1.new,pch=21,bg=rep(c('white','black'),3),
+       cex=1)
+abline(v=4)
+abline(v=7)
+
+#Bottom figure
+comb2.new <- comb2[c(2,5,7,10,12,15)]
+comb2.se.new <- 1.96*comb2.se[c(2,5,7,10,12,15)]
+
+structure <- c(2,3,5,6,8,9)
+
+diff <- c(sapling.matrix,sapling.clear,sapling.shelt)
+
+plot(structure,comb2.new,ylim=c(0,1100),xlim=c(1.5,9.5),xaxt='n',xlab=''
+     ,ylab=expression('Saplings'~ha^{-1}),main='Oak Sapling Density',pch=rep(c(21,21),3),
+     cex=1)
+axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
+
+polygon(x=c(0,0,4,4),y=c(comb2[1]-comb2.se[1]*1.96,comb2[1]+comb2.se[1]*1.96,
+                         comb2[1]+comb2.se[1]*1.96,comb2[1]-comb2.se[1]*1.96),col='gray85',border=F)
+segments(x0=0,y0=comb2[1],x1=4,y1=comb2[1],lty=2)
+polygon(x=c(4,4,7,7),y=c(comb2[6]-comb2.se[6]*1.96,comb2[6]+comb2.se[6]*1.96,
+                           comb2[6]+comb2.se[6]*1.96,comb2[6]-comb2.se[6]*1.96),col='gray85',border=F)
+segments(x0=4,y0=comb2[6],x1=7,y1=comb2[6],lty=2)
+polygon(x=c(7,7,10,10),y=c(comb2[11]-comb2.se[11]*1.96,comb2[11]+comb2.se[11]*1.96,
+                             comb2[11]+comb2.se[11]*1.96,comb2[11]-comb2.se[11]*1.96),col='gray85',border=F)
+segments(x0=7,y0=comb2[11],x1=10,y1=comb2[11],lty=2)
+
+adjust <- c(70,70,70,70,70,70,85,70,70,70,70,70)
+for (i in 1:6){
+  segments(x0=structure[i],y0=comb2.new[i]-comb2.se.new[i],
+           x1=structure[i],y1=comb2.new[i]+comb2.se.new[i])
+  segments(x0=structure[i]-0.1,y0=comb2.new[i]+comb2.se.new[i],
+           x1=structure[i]+0.1,y1=comb2.new[i]+comb2.se.new[i])
+  segments(x0=structure[i]-0.1,y0=comb2.new[i]-comb2.se.new[i],
+           x1=structure[i]+0.1,y1=comb2.new[i]-comb2.se.new[i])
+  #text(structure[i],comb2.new[i]+comb2.se.new[i]+adjust[i],diff[i],cex=0.8)
+}
+
+points(structure,comb2.new,pch=rep(c(21,21),3),bg=rep(c('white','black','white','black'),3),
+       cex=1)
+
+box()
+abline(v=4)
+abline(v=7)
 

@@ -2,8 +2,8 @@
 ##Site quality Example Figure
 png(filename='site.png',type='cairo',units='in',
     width=6,height=6.3,pointsize=12,res=96)
-par(mfrow=c(2,2),
-    mar=c(5.1,4.1,2.6,0),
+par(mfrow=c(3,2),
+    mar=c(4.1,4.1,2.6,0),
     oma=c(1,0,1,1))
 
 x <- seq(1980,5500,1)
@@ -25,6 +25,16 @@ x <- seq(0.5,10,0.01)
 y <- 1 - (0.933 / x)
 plot(x,y,type='l',lwd=2,xlab="Depth to Water Table (m)", main="Soil Saturation",
      ylab="",ylim=c(0,1.01),xlim=c(0,10))
+
+light <- seq(0,1,0.01)
+
+#Equation for intermediate tolerance
+yint.fit <- 1.371*(1 - exp(-2.227*(light-0.05)))
+
+#Check on plot - it works!
+
+plot(light,yint.fit,type='l',ylab=expression('Growth Response'),
+     xlab="Light",lwd=2,ylim=c(0,1.45),main='Light')
 dev.off()
 
 ###############################################################################
