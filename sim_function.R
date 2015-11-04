@@ -1,11 +1,10 @@
 ###########################################################
-## Function to control forest IBM simulations in NetLogo ##
+## Function to control SOEL simulations in NetLogo ##
 ###########################################################
 
 #Dependencies
 #Java (needed for NetLogo anyway)
 #install.packages('RNetLogo')
-require(parallel)
 
 #May need to manually set system paths to java install, e.g. below:
 #system('export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre')

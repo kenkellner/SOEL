@@ -1,31 +1,12 @@
 extensions [profiler matrix]
 globals [
+  
+  ;Setup Parameters
   xcutoff ycutoff
-  
-  basal-area basal-area-ft basal-area-ovs   
-  qdbh qdbh-in qdbh-ovs  
-  dens dens-ac dens-ovs
-  
-  ba-oak ba-oak-ovs
-  qdbh-oak qdbh-oak-ovs
-  dens-oak dens-oak-ovs
-  
-  ba-map ba-map-ovs
-  qdbh-map qdbh-map-ovs
-  dens-map dens-map-ovs
-  
-  ba-pop ba-pop-ovs
-  qdbh-pop qdbh-pop-ovs
-  dens-pop dens-pop-ovs
- 
-  prop-oak prop-tol prop-intol
-  
   sitequal-boak sitequal-woak sitequal-maple sitequal-poplar
-  
   harvest-year shelter-phase
   
-  prioryears mastsd
-  
+  ;Input Parameters
   wo-mast-list bo-mast-list mast-year-index
   mast-mean-bo mast-mean-wo mast-mean-comb
   core-acorn-params-bo buffer-acorn-params-bo
@@ -34,8 +15,25 @@ globals [
   core-weev-prob-wo buffer-weev-prob-wo
   surv-params growth-params br-year-ef
   sens-params
+  prioryears mastsd
   
-  acorn-count total-acorns total-seedlings new-seedlings pct-germ ;Oak regen reporters 
+  ;Overstory Output Parameters
+  basal-area basal-area-ft basal-area-ovs   
+  qdbh qdbh-in qdbh-ovs  
+  dens dens-ac dens-ovs  
+  ba-oak ba-oak-ovs
+  qdbh-oak qdbh-oak-ovs
+  dens-oak dens-oak-ovs
+  ba-map ba-map-ovs
+  qdbh-map qdbh-map-ovs
+  dens-map dens-map-ovs  
+  ba-pop ba-pop-ovs
+  qdbh-pop qdbh-pop-ovs
+  dens-pop dens-pop-ovs
+  prop-oak prop-tol prop-intol
+  
+  ;Regeneration Output Parameters
+  acorn-count total-acorns total-seedlings new-seedlings pct-germ 
   regen-dens regen-stump-dens
   seedlings-class1 seedlings-class2 seedlings-class3 seedlings-class123 seedlings-class4 acorns-pertree
   seedbo-class123 seedwo-class123 seedbo-class4 seedwo-class4
@@ -86,11 +84,12 @@ to setup
   
   calc-site-quality
   
+  ;HEE mast rotation
   set bo-mast-list [0.0827 0.0489 2.975 0.8809 0.0757 0.1153 0.0661 0.1415 0.05667]
   set wo-mast-list [0.1355 0.0665 0.1092 2.720 0.0367 0.136 0.1070 0.238 0.0406]
-  
   set mast-year-index random 9
-   
+  
+  ;HEE-based initial forest 
   ifelse HEE-mean = TRUE [
     init-stand adjust TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
     init-stand adjust FALSE mature-oak mature-maple mature-poplar sapling-oak sapling-maple sapling-poplar] ;User defined
@@ -374,7 +373,7 @@ end
 ;;;;;;;;                Early Oak Lifecycle Procedures                   ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-to set-scenario
+to set-scenario ;Set up parameter values for experiments
   
   let random-index random 9
   
@@ -398,8 +397,6 @@ to set-scenario
   if mast-scenario = "random" [
     set mast-mean-wo min (list exp(2.001 + random-normal 0 1.126) 50)
     set mast-mean-bo min (list exp(2.001 + random-normal 0 1.126) 50)
-    ;set mast-mean-wo max (list exp(2.085 + random-normal 0 1.532) 50)
-    ;set mast-mean-bo max (list exp(1.979 + random-normal 0 1.486) 50) 
   ]
   if mast-scenario = "hee" [
     set mast-mean-wo 1 / (item mast-year-index wo-mast-list)
@@ -514,8 +511,6 @@ to set-scenario
   if browse-scenario = "fixedaverage" [set prob-browsed 0.1058] 
   if browse-scenario = "hee" [
     set br-year-ef random-normal 0 0.59
-    ;set later
-    ;set prob-browsed one-of (list 0.091 0.0976 0.1793 0.0610)
     ]  
   if browse-scenario = "custom" [ ]
 
@@ -607,25 +602,17 @@ to disperse-mast
   
   ifelse random-float 1 < rem-prob [
     
-    ;;new approach to dispersal to avoid openings
-    let startx xcor let starty ycor
     right random 360
-    ;;based on HEE data
+    ;;Weibull dispersal distance based on HEE data
     set disp-dist random-weibull 1.400 (item 2 acorn-params)
     forward disp-dist
     
-    ;lots of trouble getting this to work
-    ;while [[shade] of patch-here < 0.2][
-    ;  set xcor startx set ycor starty
-    ;  set disp-dist random-weibull 1.400 (item 2 acorn-params)
-    ;  forward disp-dist
-    ;]
-   
     ;;check to see if still in core area after being dispersed
     check-in-core
     ifelse harvest-type = "shelterwood" and ticks > burnin and in-core = TRUE [set acorn-params core-acorn-params]
     [set acorn-params buffer-acorn-params]
     
+    ;Calculate probability of caching
     let pcache 0
     if dispersal-scenario = "yearly-diff" or dispersal-scenario = "yearly-treat-diff" [
       let cache-mean -2.4986 + 0.08858 * disp-dist + random-normal 0 1.663
@@ -639,7 +626,7 @@ to disperse-mast
       set pcache (1 + exp(-1 * cache-mean)) ^ (-1)]
     if dispersal-scenario = "custom" [set pcache cache-prob]
       
-    ;;probability of being cached
+    ;Check if acorn is cached and if it survives
     ifelse random-float 1 < pcache [
       set cached TRUE
       if random-float 1 < (item 4 acorn-params) [die]
@@ -677,10 +664,11 @@ to germinate-mast
 end
 
 
-to grow-seedling
+to grow-seedling ;Based on HEE data
   set light (1 - [shade] of patch-here)
   let sp-ef 0
   if species = "WO" [set sp-ef 1]
+  ;Calculate probability of being browsed
   let pbrowse 0
   if browse-scenario = "custom" or browse-scenario = "fixedaverage"[set pbrowse prob-browsed]
   if browse-scenario = "hee"[
@@ -826,11 +814,11 @@ to-report random-weibull [Wshape Wscale]
   report Wscale * (- ln(R)) ^ (1 / Wshape)
 end
 
-to check-in-core
+to check-in-core ;checks if agent is in the core or buffer area
   ifelse xcor < xcutoff and xcor > (-1 * xcutoff) and ycor < ycutoff and ycor > (-1 * ycutoff)[set in-core TRUE][set in-core FALSE]
 end
 
-to-report inv-neglog [x]
+to-report inv-neglog [x] ;neg-log transformation function
   ifelse x <= 1 [report (1 - exp(-1 * x))][report (exp(x) - 1)]
 end
 
@@ -872,8 +860,8 @@ to calc-site-quality
 end
 
 to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-maple n-sap-poplar]
-  
-  ;;Create adult trees
+  ;Simulate overstory of new forest stand
+  ;Create adult trees
   create-oaks dens-adjust * n-oak [ ;dens-adjust adds more trees when there is a buffer
     ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
     set dbh (random-normal 45.75 5) / 100
@@ -908,7 +896,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
 
   calc-light
   
-  ;;Create saplings
+  ;Create saplings
   create-oaks dens-adjust * n-sap-oak [
     set dbh max list 0.015 ((random-normal 14.9 5) / 100)
     ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
@@ -938,7 +926,7 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
   
 end
 
-to init-params
+to init-params ;initialize new sapling oaks with parameter values
   ifelse dbh < 0.1 [set shape "square"] [set size 2 set shape "tree"]
   set hidden? FALSE
   set actual-growth 0.02
@@ -987,7 +975,7 @@ to init-params
     
 end
 
-to calc-global-vars ;;Calculate global reporter values
+to calc-global-vars ;Calculate global reporter values
     
   let adjust (x-core * y-core) / 10000
   
@@ -1081,7 +1069,6 @@ to conduct-harvest
   
   if harvest-type = "clearcut" [
     ask turtles with [dbh > 0.01 and in-core = TRUE] [create-sprout]
-    ;set harvest-year harvest-year + 100
   ]
   
   if harvest-type = "singletree" [
@@ -1109,8 +1096,6 @@ to conduct-harvest
         set harvest-year (harvest-year + 8)
         if basal-area >= 16.1 [
           loop [
-            ;this code is broken
-            ;let potential min-one-of turtles with [breed != oaks and dbh >= 0.10 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [dbh]
             let potential min-one-of turtles with [age > 20 and in-core = TRUE] [light]
             ask potential [ifelse breed = oaks [create-sprout][die]]
             set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
@@ -1121,7 +1106,6 @@ to conduct-harvest
       [
         ask turtles with [age > 20 and in-core = TRUE] [create-sprout]
         set shelter-phase 1
-        ;set harvest-year (harvest-year + 100)
       ]
        
   ]]
