@@ -442,23 +442,34 @@ abline(v=11)
 #################################################
 #Alternate figure without model s and n
 
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+#pdf(file="../dissertation/figures/fig5-7.pdf",width=3.9,height=5,family="CM Roman",pointsize=9)
+
 comb1.new <- comb1[c(2,5,8)]
 comb1.se.new <- 1.96*comb1.se[c(2,5,8)]
 
-par(mfrow=c(2,1),
-    mar=c(4.1,4.1,2,0),
-    oma=c(0,0,1,1),
-    mgp=c(2.5,1,0))
+#par(mfrow=c(2,1),
+#    mar=c(4.1,4.1,2,0),
+#    oma=c(0,0,1,1),
+#    mgp=c(2.5,1,0))
+
+par(mar = c(3.5,4.5,1,2) + 0.1)
+par(fig=c(0,1,0.45,1),new=FALSE,mgp=c(2.5,1,0))
 
 structure <- c(2.5,5.5,8.5)
 
 diff <- c(seedling.matrix,seedling.clear,seedling.shelt)
 
 plot(structure,comb1.new,ylim=c(0,8000),xlim=c(1.5,9.5),xaxt='n',xlab=''
-     ,ylab=expression('Seedlings'~ha^{-1}),main='Oak Seedling Density')
-axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
-legend('topleft',pch=c(21,21),pt.bg=c('white','black'),cex=1,
-       legend=c('SOEL','JABOWA'),bty='n')
+     ,ylab=expression('Seedlings'~ha^{-1})
+     #,main='Oak Seedling Density'
+     )
+text(1.7,7700,'(a)',cex=1.5)
+#axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
+legend('bottomleft',pch=c(21,21),pt.bg=c('white','black'),cex=1,
+       legend=c('SOEL','JABOWA'))
 
 polygon(x=c(0,0,4,4),y=c(comb1[1]-comb1.se[1]*1.96,comb1[1]+comb1.se[1]*1.96,
                          comb1[1]+comb1.se[1]*1.96,comb1[1]-comb1.se[1]*1.96),col='gray85',border=F)
@@ -494,9 +505,14 @@ structure <- c(2,3,5,6,8,9)
 
 diff <- c(sapling.matrix,sapling.clear,sapling.shelt)
 
+par(fig=c(0,1,0,0.55),new=TRUE)
+
 plot(structure,comb2.new,ylim=c(0,1100),xlim=c(1.5,9.5),xaxt='n',xlab=''
-     ,ylab=expression('Saplings'~ha^{-1}),main='Oak Sapling Density',pch=rep(c(21,21),3),
+     ,ylab=expression('Saplings'~ha^{-1}),
+     #main='Oak Sapling Density'
+     pch=rep(c(21,21),3),
      cex=1)
+text(1.7,1050,'(b)',cex=1.5)
 axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
 
 polygon(x=c(0,0,4,4),y=c(comb2[1]-comb2.se[1]*1.96,comb2[1]+comb2.se[1]*1.96,
@@ -526,4 +542,6 @@ points(structure,comb2.new,pch=rep(c(21,21),3),bg=rep(c('white','black','white',
 box()
 abline(v=4)
 abline(v=7)
+
+dev.off()
 

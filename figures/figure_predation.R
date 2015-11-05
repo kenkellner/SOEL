@@ -10,12 +10,19 @@ datalist <- add.newseedlings(datalist,30,37)
 datalist <- add.seedorigin(datalist)
 datalist <- add.acornsum(datalist,30,37)
 
+
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+#pdf(file="../dissertation/figures/fig6-3.pdf",width=5,height=5,family="CM Roman",pointsize=8)
+
+
 par(fig=c(0,0.53,0.43,1),mgp=c(2.5,1,0),new=FALSE)
 h = gen.dataset(datalist,'acornsum')
 
 h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
 
-op <- par(mar = c(5,4.5,2,2) + 0.1)
+op <- par(mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(acornsum/1000~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',
              at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(500,875),
              ylab=expression("Acorns "~ ha^{-1}~"(7 Year Sum) x 1000"))
@@ -37,14 +44,15 @@ for (i in 31:37){
 
 h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
 
-op <- par(mar = c(5,4.5,2,2) + 0.1)
+op <- par(mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(pctgerm~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',
              at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(0.0,0.07),ylab=expression("Yearly Percent Emergence"))
 #axis(1,at=c(1.5,4,6.5,9),tick=F)
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
-legend("topleft",legend=c("No Harvest","Midstory Removal"),fill=gray.colors(2))
+legend("topleft",legend=c("No Harvest","Midstory Removal"),fill=gray.colors(2),
+       bg='white')
 text(c(1,2,3.5,4.5,6,7,8.5,9.5),
      (bx$stats[5,]+c(0.005,0.005,0.005,0.0055,0.0045,0.003,0.003,0.005)),
      c('A','A','A','B','C','C','C','C'))
@@ -59,7 +67,7 @@ h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
 bx = boxplot(seedlingsum~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',xlab="Scenario",
              at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(10000,25000),ylab=expression("New Seedlings "~ ha^{-1}~"(7 Year Sum)"))
 axis(1,at=c(1.5,4,6.5,9),tick=F,
-     labels=c("C",'TE','YE','TE x YE'))
+     labels=c("C",'TE','YE','TE + YE'))
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
@@ -79,7 +87,7 @@ bx = boxplot(seedorigin~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',xlab
              at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylab=expression("Seed-origin Saplings "~ ha^{-1} ~"(Year 7)"),
              ylim=c(80,250))
 axis(1,at=c(1.5,4,6.5,9),tick=F,
-     labels=c("C",'TE','YE','TE x YE'))
+     labels=c("C",'TE','YE','TE + YE'))
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
@@ -87,3 +95,5 @@ abline(v=mean(c(7,8.5)))
 text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+c(10,10,20,20,20,10,15,10)),
      c('A','B','A','B','C','D','C','D'))
 text(9.5,85,'(d)',cex=1.5)
+
+dev.off()

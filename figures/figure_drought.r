@@ -1,3 +1,7 @@
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+#pdf(file="../dissertation/figures/fig6-4.pdf",width=6,height=4,family="CM Roman",pointsize=9)
 
 par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE)
 
@@ -12,7 +16,7 @@ s$harvest <- as.factor(s$harvest)
 s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10','dn'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-op <- par(mar = c(5,4.5,2,2) + 0.1)
+op <- par(mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(seedlingsum~harvest*scenario,data=s,col=gray.colors(3),
              xlab="Drought Probability",
              at=c(1:18,20,21,22),
@@ -32,7 +36,7 @@ s$harvest <- as.factor(s$harvest)
 s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10','dn'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-op <- par(mar = c(5,4.5,2,2) + 0.1)
+op <- par(mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(seedorigin~harvest*scenario,data=s,col=gray.colors(3),
              xlab="Drought Probability",
              at=c(1:18,20,21,22),
@@ -41,5 +45,8 @@ bx = boxplot(seedorigin~harvest*scenario,data=s,col=gray.colors(3),
 axis(1,at=c(2,5,8,11,14,17,21),tick=T,
      labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
 abline(v=19)
-legend("topright",legend=c('No Harvest','Midstory Removal','Clearcut'),fill=gray.colors(3))
+legend("topright",legend=c('No Harvest','Midstory Removal','Clearcut'),fill=gray.colors(3),
+       bg='white')
 text(1.5,100,'(b)',cex=1.5)
+
+dev.off()

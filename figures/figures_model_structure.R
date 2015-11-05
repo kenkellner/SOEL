@@ -2,6 +2,12 @@
 ##Site quality Example Figure
 png(filename='site.png',type='cairo',units='in',
     width=6,height=6.3,pointsize=12,res=96)
+
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+pdf(file="../dissertation/figures/fig5-2.pdf",width=3.9,height=5,family="CM Roman",pointsize=9)
+
 par(mfrow=c(3,2),
     mar=c(4.1,4.1,2.6,0),
     oma=c(1,0,1,1))
@@ -92,10 +98,18 @@ legend("topleft",legend=c('Low','Intermediate','High'),lty=c(1,2,3),lwd=2,title=
 
 ##Density Figure
 
-par(mfrow=c(1,2),
-    mar=c(4.1,5.1,1.6,0),
-    oma=c(0,0,1,1),
-    mgp=c(2.5,1,0))
+#par(mfrow=c(2,1),
+#    mar=c(4.1,5.1,1.6,0),
+#    oma=c(0,0,1,1),
+#    mgp=c(2.5,1,0))
+
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+#pdf(file="../dissertation/figures/fig5-4.pdf",width=3.9,height=5.5,family="CM Roman",pointsize=9)
+
+par(mar = c(4,4.5,0.5,1) + 0.1)
+par(fig=c(0,1,0.43,1),new=FALSE,mgp=c(2.5,1,0))
 
 yearly <- read.csv('data/densityfigure_yearly_ba.csv',header=F)
 #in row 2, 1 = total basal area, 2 = ba-oak, 3 = ba-maple, 4 = ba-pop
@@ -125,30 +139,32 @@ lines(yearly.mean[,4],type='l',lty=1,lwd=3)
 lines(yearly.mean[,5],type='l',lty=1)
 lines(yearly.mean[,6],type='l',lty=1)
 abline(h=mean(as.numeric(yearly[3,])),lty=2)
-text(77,73,expression(italic(d)~'= 1'))
-text(95,49,expression(italic(d)~'= 2'))
+text(77,73,expression(italic(d)~'= 1'),cex=0.8)
+text(95,49,expression(italic(d)~'= 2'),cex=0.8)
 #text(113,33.5,'D=3')
 #text(123,29,'D=3.5')
 
 #text(170,yearly.mean[161,1]+1,'d=1')
 #text(170,yearly.mean[161,2],'d=2')
-text(173,yearly.mean[161,3]+1,expression(italic(d)~'= 3'))
-text(176.5,yearly.mean[161,4]+1,expression(bolditalic(d)~bold('= 3.5')),font=2)
-text(150,24.5,expression(italic(d)~'= 4'))
-text(125,15,expression(italic(d)~'= 5'))
+text(173,yearly.mean[161,3]+1,expression(italic(d)~'= 3'),cex=0.8)
+text(176.5,yearly.mean[161,4]+1,expression(bolditalic(d)~bold('= 3.5')),font=2,cex=0.8)
+text(150,24.5,expression(italic(d)~'= 4'),cex=0.8)
+text(125,15,expression(italic(d)~'= 5'),cex=0.8)
 arrows(x0=10,y0=50,x1=10,y1=31)
 text(13,53,'Harvest')
-text(10,80,'(a)',font=2,cex=1.5)
+text(10,80,'(a)',font=1,cex=1.5)
 
 final <- read.csv('data/densityfigure_final_ba.csv',header=T)
 
 bardata <- as.matrix(final[c(2,3,1),2:7])
 
-
+par(fig=c(0,1,0,0.45),new=TRUE)
 barplot(bardata,ylim=c(0,45),ylab=expression('Mean Final Basal Area'~(m^{2}/ha)),
         xlab=expression("Density Parameter Value"~italic(d)),
         names.arg=c('1','2','3',expression(bold('3.5')),'4','5'),
-        legend.text=c('Oak','Tulip Poplar','Sugar Maple'))
+        legend.text=c('Oak','Tulip Poplar','Sugar Maple'),
+        args.legend=list(x='topright'))
+box()
 #abline(h=29.2,lty=2)
 #abline(h=27.91,lty=2)
 abline(h=mean(as.numeric(yearly[3,])),lty=2)
@@ -157,7 +173,9 @@ segments(x0=3.8,y0=0,x1=3.8,y1=ht,lwd=4)
 segments(x0=4.8,y0=0,x1=4.8,y1=ht,lwd=4)
 segments(x0=3.8,y0=0,x1=4.8,y1=0,lwd=4)
 segments(x0=3.8,y0=ht,x1=4.8,y1=ht,lwd=4)
-text(0.5,42.5,'(b)',cex=1.5,font=2)
+text(0.5,42.5,'(b)',cex=1.5,font=1)
+
+dev.off()
 
 ################################################################################
 
@@ -182,6 +200,11 @@ for (i in 1:length(p.oak)){if(p.oak[i]>1){p.oak[i] = 1}}
 for (i in 1:length(p.maple)){if(p.maple[i]>1){p.maple[i] = 1}}
 for (i in 1:length(p.poplar)){if(p.poplar[i]>1){p.poplar[i] = 1}}
 
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+#pdf(file="../dissertation/figures/fig5-5.pdf",width=3.9,height=3.9,family="CM Roman",pointsize=9)
+par(mgp=c(3,1,0),mar = c(5,4.5,2,2) + 0.1)
 plot(dbhcm,p.boak,type='l',lty=1,ylim=c(0,1),xlim=c(0,80),lwd=2,
      ylab="Probability of Stump Sprouting",
      xlab="Tree DBH (cm)")
@@ -190,6 +213,7 @@ lines(dbhcm,p.maple,type='l',lty=2,lwd=2)
 lines(dbhcm,p.poplar,type='l',lty=3,lwd=2)
 legend('topright',legend=c('Black Oak','White Oak','Sugar Maple','Tulip Poplar'),
        lwd=2,col=c('black','darkgray','black','black'),lty=c(1,1,2,3))
+dev.off()
 
 ################################################################################
 
@@ -197,7 +221,12 @@ legend('topright',legend=c('Black Oak','White Oak','Sugar Maple','Tulip Poplar')
 
 comp <- read.csv('data/figuredata_compareharvest.csv',header=TRUE)
 
-par(mgp=c(2.5,1,0))
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+#pdf(file="../dissertation/figures/fig5-6.pdf",width=3.9,height=3.9,family="CM Roman",pointsize=9)
+
+par(mgp=c(3,1,0),mar = c(5,4.5,2,2) + 0.1)
 
 plot(comp$clearcut,type='l',lwd=2,lty=1,xlab="Years",
      ylab=expression('Basal Area'~(m^{2}/ha)),ylim=c(0,42))
@@ -206,7 +235,7 @@ lines(comp$singletree,type='l',lwd=2,lty=3)
 legend('topleft',c('Clearcut','Shelterwood','Single-tree'),lwd=2,lty=1:3)
 
 arrows(x0=20,y0=32,x1=10,y1=29,length=0.1)
-text(33,32,'Initial Harvest',cex=0.8)
+text(34.5,32,'Initial Harvest',cex=0.8)
 
 arrows(x0=40,y0=28.5,x1=32,y1=26.5,length=0.1)
 text(58,28.5,'2nd Selection Cut',cex=0.8)
@@ -216,6 +245,7 @@ text(40,21,'Shelterwood\n2nd Phase',cex=0.8)
 
 arrows(x0=38,y0=17,x1=28,y1=16,length=0.1)
 text(49,17,'3rd Phase',cex=0.8)
+dev.off()
 
 #############################################################
 
