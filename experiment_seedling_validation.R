@@ -445,7 +445,7 @@ abline(v=11)
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-#pdf(file="../dissertation/figures/fig5-7.pdf",width=3.9,height=5,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig5-7.pdf",width=3.9,height=5,family="CM Roman",pointsize=9)
 
 comb1.new <- comb1[c(2,5,8)]
 comb1.se.new <- 1.96*comb1.se[c(2,5,8)]
@@ -466,19 +466,20 @@ plot(structure,comb1.new,ylim=c(0,8000),xlim=c(1.5,9.5),xaxt='n',xlab=''
      ,ylab=expression('Seedlings'~ha^{-1})
      #,main='Oak Seedling Density'
      )
-text(1.7,7700,'(a)',cex=1.5)
+#text(1.7,7700,'(a)',cex=1.5)
 #axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
-legend('bottomleft',pch=c(21,21),pt.bg=c('white','black'),cex=1,
-       legend=c('SOEL','JABOWA'))
 
+
+#shadecol <- rgb(red=141,green=213,blue=18, maxColorValue=255)
+shadecol <- 'gray85'
 polygon(x=c(0,0,4,4),y=c(comb1[1]-comb1.se[1]*1.96,comb1[1]+comb1.se[1]*1.96,
-                         comb1[1]+comb1.se[1]*1.96,comb1[1]-comb1.se[1]*1.96),col='gray85',border=F)
+                         comb1[1]+comb1.se[1]*1.96,comb1[1]-comb1.se[1]*1.96),col=shadecol,border=F)
 segments(x0=0,y0=comb1[1],x1=4,y1=comb1[1],lty=2)
 polygon(x=c(4,4,7,7),y=c(comb1[4]-comb1.se[4]*1.96,comb1[4]+comb1.se[4]*1.96,
-                         comb1[4]+comb1.se[4]*1.96,comb1[4]-comb1.se[4]*1.96),col='gray85',border=F)
+                         comb1[4]+comb1.se[4]*1.96,comb1[4]-comb1.se[4]*1.96),col=shadecol,border=F)
 segments(x0=4,y0=comb1[4],x1=7,y1=comb1[4],lty=2)
 polygon(x=c(7,7,10,10),y=c(comb1[7]-comb1.se[7]*1.96,comb1[7]+comb1.se[7]*1.96,
-                           comb1[7]+comb1.se[7]*1.96,comb1[7]-comb1.se[7]*1.96),col='gray85',border=F)
+                           comb1[7]+comb1.se[7]*1.96,comb1[7]-comb1.se[7]*1.96),col=shadecol,border=F)
 segments(x0=7,y0=comb1[7],x1=10,y1=comb1[7],lty=2)
 
 box()
@@ -492,10 +493,14 @@ for (i in 1:3){
            x1=structure[i]+0.06,y1=comb1.new[i]-comb1.se.new[i])
   #text(structure[i],comb1.new[i]+comb1.se.new[i]+adjust[i],diff[i],cex=0.8)
 }
-points(structure,comb1.new,pch=21,bg=rep(c('white','black'),3),
+points(structure,comb1.new,pch=21,bg=rep(c('white','white'),3),
        cex=1)
 abline(v=4)
 abline(v=7)
+
+legend('topleft',pch=c(21,21,22),pt.bg=c('white','black',shadecol),
+       pt.cex=c(1,1,3),
+       legend=c('SOEL','JABOWA', 'HEE Data'),bty='n')
 
 #Bottom figure
 comb2.new <- comb2[c(2,5,7,10,12,15)]
@@ -512,17 +517,17 @@ plot(structure,comb2.new,ylim=c(0,1100),xlim=c(1.5,9.5),xaxt='n',xlab=''
      #main='Oak Sapling Density'
      pch=rep(c(21,21),3),
      cex=1)
-text(1.7,1050,'(b)',cex=1.5)
+#text(1.7,1050,'(b)',cex=1.5)
 axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
 
 polygon(x=c(0,0,4,4),y=c(comb2[1]-comb2.se[1]*1.96,comb2[1]+comb2.se[1]*1.96,
-                         comb2[1]+comb2.se[1]*1.96,comb2[1]-comb2.se[1]*1.96),col='gray85',border=F)
+                         comb2[1]+comb2.se[1]*1.96,comb2[1]-comb2.se[1]*1.96),col=shadecol,border=F)
 segments(x0=0,y0=comb2[1],x1=4,y1=comb2[1],lty=2)
 polygon(x=c(4,4,7,7),y=c(comb2[6]-comb2.se[6]*1.96,comb2[6]+comb2.se[6]*1.96,
-                           comb2[6]+comb2.se[6]*1.96,comb2[6]-comb2.se[6]*1.96),col='gray85',border=F)
+                           comb2[6]+comb2.se[6]*1.96,comb2[6]-comb2.se[6]*1.96),col=shadecol,border=F)
 segments(x0=4,y0=comb2[6],x1=7,y1=comb2[6],lty=2)
 polygon(x=c(7,7,10,10),y=c(comb2[11]-comb2.se[11]*1.96,comb2[11]+comb2.se[11]*1.96,
-                             comb2[11]+comb2.se[11]*1.96,comb2[11]-comb2.se[11]*1.96),col='gray85',border=F)
+                             comb2[11]+comb2.se[11]*1.96,comb2[11]-comb2.se[11]*1.96),col=shadecol,border=F)
 segments(x0=7,y0=comb2[11],x1=10,y1=comb2[11],lty=2)
 
 adjust <- c(70,70,70,70,70,70,85,70,70,70,70,70)

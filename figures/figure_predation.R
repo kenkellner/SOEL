@@ -97,3 +97,49 @@ text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+c(10,10,20,20,20,10,15,10)),
 text(9.5,85,'(d)',cex=1.5)
 
 dev.off()
+
+
+##################################
+
+#Without year effects
+op <- par(mar = c(5,4.5,1,2) + 0.1)
+cols <- c(rgb(red=141,green=213,blue=18, maxColorValue=255),
+          rgb(red=244,green=125,blue=66, maxColorValue=255))
+
+
+par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE)
+
+h = gen.dataset(datalist,'seedlingsum')
+h <- h[h$scenario%in%c('avg','trt'),]
+
+h$scenario = factor(h$scenario,c('avg','trt'))
+
+bx = boxplot(seedlingsum~scenario*harvest,data=h,col=cols,xaxt='n',xlab="Harvest",
+             at=c(1,2,3.5,4.5),ylim=c(9000,17000),ylab=expression("New Seedlings "~ ha^{-1}~"(7 Year Sum)"))
+axis(1,at=c(1.5,4),tick=F,
+     labels=c("None",'Shelterwood'))
+abline(v=mean(c(2,3.5)))
+
+#legend("topleft",legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
+text(c(1,2,3.5,4.5),
+     bx$stats[5,]+c(500,500,500,500),
+     c('A','A','A','B'))
+#text(9.5,10500,'(c)',cex=1.5)
+
+##########
+par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE)
+h = gen.dataset(datalist,'seedorigin',37)
+h <- h[h$scenario%in%c('avg','trt'),]
+
+h$scenario = factor(h$scenario,c('avg','trt'))
+
+bx = boxplot(seedorigin~scenario*harvest,data=h,col=cols,xaxt='n',xlab="Harvest",
+             at=c(1,2,3.5,4.5),ylab=expression("Seed-origin Saplings "~ ha^{-1} ~"(Year 7)"),
+             ylim=c(80,200))
+axis(1,at=c(1.5,4),tick=F,
+     labels=c("None",'Shelterwood'))
+abline(v=mean(c(2,3.5)))
+legend('topleft',legend=c("Control","Treatment Effect"),fill=cols,
+       title='Scenario')
+text(c(1,2,3.5,4.5),(bx$stats[5,]+c(10,10,10,10)),
+     c('A','A','B','B'))

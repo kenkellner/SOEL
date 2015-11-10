@@ -69,7 +69,7 @@ lines(bot,lty=1,col='gray45')
 lines(top.j,lty=1,col='gray45')
 lines(bot.j,lty=1,col='gray45')
 legend('bottomleft',legend=c('JABOWA','SOEL','HEE Data'),lty=c(1,2,0),lwd=c(1,1,0),
-       bty='n',pch=c(NA,NA,22),col=c('black','black','gray85'),
+       bty='n',pch=c(NA,NA,22),col=c('black','black','black'),
        pt.bg = c(NA,NA,'gray85'),pt.cex=c(NA,NA,3))
 
 par(fig=c(0.44,1,0.6,1),new=TRUE)
