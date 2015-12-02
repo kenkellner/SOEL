@@ -94,7 +94,7 @@ to setup
     init-stand adjust TRUE 89 11 9 95 499 163] [ ;Initial stand values based on Saunders and Arseneault 2013
     init-stand adjust FALSE mature-oak mature-maple mature-poplar sapling-oak sapling-maple sapling-poplar] ;User defined
   
-  ask patches [color-patches]
+  ;ask patches [color-patches]
   calc-global-vars
   set harvest-year burnin
   set shelter-phase 1
@@ -116,12 +116,12 @@ to go
     check-survival
     if breed = oaks and dbh >= 0.20 and seedlings != "none" [produce-acorns] ;based on Downs and McQuilkin 1944
   ]
-  ;movie-grab-view
+  movie-grab-view
   
   ask acorns [
    disperse-mast
   ]
-  ;movie-grab-view
+  movie-grab-view
   ask acorns[
    germinate-mast 
   ]
@@ -132,11 +132,11 @@ to go
       check-seedling-survival
     ]
   ]
-  ;movie-grab-view
+  movie-grab-view
   
   ask patches [
     regenerate
-    color-patches   
+    ;color-patches   
   ]
   
   conduct-harvest
@@ -148,13 +148,13 @@ end
 
 to record-movie
   setup
-  ;movie-start "earlymovie.mov"
-  movie-start "context.mov"
-  movie-set-frame-rate 10
-  ;movie-set-frame-rate 1.5
+  movie-start "earlymovie.mov"
+  ;movie-start "context.mov"
+  ;movie-set-frame-rate 5
+  movie-set-frame-rate 1
   movie-grab-view
-  ;repeat 3
-  repeat 30
+  repeat 3
+  ;repeat 30
   [go
     movie-grab-view ]
   ask turtles [set hidden? TRUE]
@@ -676,11 +676,11 @@ to germinate-mast
   if random-float 1 < germ [
     hatch-oaks 1 [
       set species temp
-      ;ifelse species = "WO" [set color white][set color  black]
+      ifelse species = "WO" [set color white][set color  black]
       set age 0
       set size 1
       set seedling TRUE   
-      set hidden? TRUE
+      ;set hidden? TRUE
       set shape "plant"
       set height 0.092 ;based on HEE seedlings
       set indeffect (random-normal 0 item 1 growth-params)

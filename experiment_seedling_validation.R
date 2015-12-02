@@ -445,7 +445,7 @@ abline(v=11)
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-pdf(file="../dissertation/figures/fig5-7.pdf",width=3.9,height=5,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig5-7.pdf",width=5,height=5,family="CM Roman",pointsize=10)
 
 comb1.new <- comb1[c(2,5,8)]
 comb1.se.new <- 1.96*comb1.se[c(2,5,8)]
@@ -549,4 +549,6 @@ abline(v=4)
 abline(v=7)
 
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig5-7.pdf")
 

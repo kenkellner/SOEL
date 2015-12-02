@@ -186,4 +186,6 @@ lines(top.j,lty=1,col='gray45')
 lines(bot.j,lty=1,col='gray45')
 
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig5-8.pdf")
 

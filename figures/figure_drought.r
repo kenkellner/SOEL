@@ -62,3 +62,38 @@ legend("topright",legend=c('No Harvest','Midstory Removal','Clearcut'),
 #text(1.5,100,'(b)',cex=1.5)
 
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig6-4.pdf")
+
+##For presentation
+op <- par(mar = c(5,4.5,1.5,2) + 0.1)
+bx = boxplot(seedlingsum~harvest*scenario,data=s,
+             xlab="Drought Probability",
+             at=c(1:18,20,21,22),
+             #col=gray.colors(3),
+             col=cols,
+             ylab=expression("Stems "~ ha^{-1}~"(7 Year Sum)"),
+             xaxt='n',
+             main="Seedlings")
+axis(1,at=c(2,5,8,11,14,17,21),tick=T,
+     labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
+abline(v=19)
+legend('topright',legend=c('No Harvest','Shelterwood','Clearcut'),fill=cols)
+
+
+bx = boxplot(seedorigin~harvest*scenario,data=s,
+             #col=gray.colors(3),
+             col=cols,
+             xlab="Drought Probability",
+             at=c(1:18,20,21,22),
+             ylab=expression("Stems "~ ha^{-1} ~"(Year 7)"),
+             xaxt='n',
+             main="Saplings")
+axis(1,at=c(2,5,8,11,14,17,21),tick=T,
+     labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
+abline(v=19)
+legend("topright",legend=c('No Harvest','Shelterwood','Clearcut'),
+       #fill=gray.colors(3),
+       fill=cols,
+       bg='white')
+#text(1.5,100,'(b)',cex=1.5)

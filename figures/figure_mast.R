@@ -57,3 +57,5 @@ text(c(1,2,3,4.5,5.5,6.5,8,9,10,11.5,12.5,13.5,15,16,17),
 text(16.5,90,'(b)',cex=1.5)
 
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig6-2.pdf")

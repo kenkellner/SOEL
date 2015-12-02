@@ -6,7 +6,7 @@ png(filename='site.png',type='cairo',units='in',
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-pdf(file="../dissertation/figures/fig5-2.pdf",width=3.9,height=5,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig5-2.pdf",width=5,height=5,family="CM Roman",pointsize=10)
 
 par(mfrow=c(3,2),
     mar=c(4.1,4.1,2.6,0),
@@ -42,6 +42,8 @@ yint.fit <- 1.371*(1 - exp(-2.227*(light-0.05)))
 plot(light,yint.fit,type='l',ylab=expression('Growth Response'),
      xlab="Light",lwd=2,ylim=c(0,1.45),main='Light')
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig5-2.pdf")
 
 ###############################################################################
 
@@ -106,7 +108,7 @@ legend("topleft",legend=c('Low','Intermediate','High'),lty=c(1,2,3),lwd=2,title=
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-#pdf(file="../dissertation/figures/fig5-4.pdf",width=3.9,height=5.5,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig5-4.pdf",width=5,height=5.5,family="CM Roman",pointsize=10)
 
 par(mar = c(4,4.5,0.5,1) + 0.1)
 par(fig=c(0,1,0.43,1),new=FALSE,mgp=c(2.5,1,0))
@@ -163,7 +165,7 @@ barplot(bardata,ylim=c(0,45),ylab=expression('Mean Final Basal Area'~(m^{2}/ha))
         xlab=expression("Density Parameter Value"~italic(d)),
         names.arg=c('1','2','3',expression(bold('3.5')),'4','5'),
         legend.text=c('Oak','Tulip Poplar','Sugar Maple'),
-        args.legend=list(x='topright'))
+        args.legend=list(x='topright',bty='n'))
 box()
 #abline(h=29.2,lty=2)
 #abline(h=27.91,lty=2)
@@ -176,6 +178,8 @@ segments(x0=3.8,y0=ht,x1=4.8,y1=ht,lwd=4)
 text(0.5,42.5,'(b)',cex=1.5,font=1)
 
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig5-4.pdf")
 
 ################################################################################
 
@@ -203,17 +207,19 @@ for (i in 1:length(p.poplar)){if(p.poplar[i]>1){p.poplar[i] = 1}}
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-#pdf(file="../dissertation/figures/fig5-5.pdf",width=3.9,height=3.9,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig5-5.pdf",width=5,height=3.9,family="CM Roman",pointsize=10)
 par(mgp=c(3,1,0),mar = c(5,4.5,2,2) + 0.1)
 plot(dbhcm,p.boak,type='l',lty=1,ylim=c(0,1),xlim=c(0,80),lwd=2,
      ylab="Probability of Stump Sprouting",
-     xlab="Tree DBH (cm)")
+     xlab="Tree dbh (cm)")
 lines(dbhcm,p.woak,type='l',lty=1,lwd=2,col='darkgray')
 lines(dbhcm,p.maple,type='l',lty=2,lwd=2)
 lines(dbhcm,p.poplar,type='l',lty=3,lwd=2)
 legend('topright',legend=c('Black Oak','White Oak','Sugar Maple','Tulip Poplar'),
        lwd=2,col=c('black','darkgray','black','black'),lty=c(1,1,2,3))
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig5-5.pdf")
 
 ################################################################################
 
@@ -224,7 +230,7 @@ comp <- read.csv('data/figuredata_compareharvest.csv',header=TRUE)
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-#pdf(file="../dissertation/figures/fig5-6.pdf",width=3.9,height=3.9,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig5-6.pdf",width=5,height=3.9,family="CM Roman",pointsize=9)
 
 par(mgp=c(3,1,0),mar = c(5,4.5,2,2) + 0.1)
 
@@ -246,6 +252,8 @@ text(40,21,'Shelterwood\n2nd Phase',cex=0.8)
 arrows(x0=38,y0=17,x1=28,y1=16,length=0.1)
 text(49,17,'3rd Phase',cex=0.8)
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig5-6.pdf")
 
 #############################################################
 

@@ -14,7 +14,7 @@ datalist <- add.acornsum(datalist,30,37)
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-#pdf(file="../dissertation/figures/fig6-3.pdf",width=5,height=5,family="CM Roman",pointsize=8)
+pdf(file="../dissertation/figures/fig6-3.pdf",width=5,height=5,family="CM Roman",pointsize=8)
 
 
 par(fig=c(0,0.53,0.43,1),mgp=c(2.5,1,0),new=FALSE)
@@ -97,25 +97,28 @@ text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+c(10,10,20,20,20,10,15,10)),
 text(9.5,85,'(d)',cex=1.5)
 
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig6-3.pdf")
 
 
 ##################################
 
 #Without year effects
-op <- par(mar = c(5,4.5,1,2) + 0.1)
+op <- par(mar = c(5,4.5,1.5,2) + 0.1)
 cols <- c(rgb(red=141,green=213,blue=18, maxColorValue=255),
           rgb(red=244,green=125,blue=66, maxColorValue=255))
 
 
-par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE)
+#par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE)
 
 h = gen.dataset(datalist,'seedlingsum')
 h <- h[h$scenario%in%c('avg','trt'),]
 
 h$scenario = factor(h$scenario,c('avg','trt'))
 
-bx = boxplot(seedlingsum~scenario*harvest,data=h,col=cols,xaxt='n',xlab="Harvest",
-             at=c(1,2,3.5,4.5),ylim=c(9000,17000),ylab=expression("New Seedlings "~ ha^{-1}~"(7 Year Sum)"))
+bx = boxplot(seedlingsum~scenario*harvest,data=h,col=cols,xaxt='n',xlab="Harvest Applied",
+             at=c(1,2,3.5,4.5),ylim=c(9000,17000),ylab=expression("Stems "~ ha^{-1}~"(7 Year Sum)"),
+             main="Seedlings")
 axis(1,at=c(1.5,4),tick=F,
      labels=c("None",'Shelterwood'))
 abline(v=mean(c(2,3.5)))
@@ -124,22 +127,24 @@ abline(v=mean(c(2,3.5)))
 text(c(1,2,3.5,4.5),
      bx$stats[5,]+c(500,500,500,500),
      c('A','A','A','B'))
+legend('topleft',legend=c("Model C","Model H"),fill=cols,
+      )
 #text(9.5,10500,'(c)',cex=1.5)
 
 ##########
-par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE)
+#par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE)
 h = gen.dataset(datalist,'seedorigin',37)
 h <- h[h$scenario%in%c('avg','trt'),]
 
 h$scenario = factor(h$scenario,c('avg','trt'))
 
-bx = boxplot(seedorigin~scenario*harvest,data=h,col=cols,xaxt='n',xlab="Harvest",
-             at=c(1,2,3.5,4.5),ylab=expression("Seed-origin Saplings "~ ha^{-1} ~"(Year 7)"),
-             ylim=c(80,200))
+bx = boxplot(seedorigin~scenario*harvest,data=h,col=cols,xaxt='n',xlab="Harvest Applied",
+             at=c(1,2,3.5,4.5),ylab=expression("Stems "~ ha^{-1} ~"(Year 7)"),
+             ylim=c(80,200),main="Saplings")
 axis(1,at=c(1.5,4),tick=F,
      labels=c("None",'Shelterwood'))
 abline(v=mean(c(2,3.5)))
-legend('topleft',legend=c("Control","Treatment Effect"),fill=cols,
-       title='Scenario')
+legend('topleft',legend=c("Model C","Model H"),fill=cols
+       )
 text(c(1,2,3.5,4.5),(bx$stats[5,]+c(10,10,10,10)),
      c('A','A','B','B'))
