@@ -104,15 +104,8 @@ legend("topleft",legend=c('Low','Intermediate','High'),lty=c(1,2,3),lwd=2,title=
 
 ##Density Figure
 
-#par(mfrow=c(2,1),
-#    mar=c(4.1,5.1,1.6,0),
-#    oma=c(0,0,1,1),
-#    mgp=c(2.5,1,0))
-
-#library(extrafont)
-#font_install('fontcm')
-#loadfonts()
-pdf(file="../dissertation/figures/fig5-4.pdf",width=5,height=5.5,family="CM Roman",pointsize=10)
+#pdf(file="../dissertation/figures/fig5-4.pdf",width=5,height=5.5,family="CM Roman",pointsize=10)
+pdf(file="appendices/figures/fig4.pdf",width=5,height=5.8,family="Helvetica",pointsize=10)
 
 par(mar = c(4,4.5,0.5,1) + 0.1)
 par(fig=c(0,1,0.43,1),new=FALSE,mgp=c(2.5,1,0))
@@ -179,11 +172,11 @@ segments(x0=3.8,y0=0,x1=3.8,y1=ht,lwd=4)
 segments(x0=4.8,y0=0,x1=4.8,y1=ht,lwd=4)
 segments(x0=3.8,y0=0,x1=4.8,y1=0,lwd=4)
 segments(x0=3.8,y0=ht,x1=4.8,y1=ht,lwd=4)
-text(0.5,42.5,'(b)',cex=1.5,font=1)
+text(0.5,41.5,'(b)',cex=1.5,font=1)
 
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig5-4.pdf")
+#embed_fonts("../dissertation/figures/fig4.pdf")
+embed_fonts("appendices/figures/fig4.pdf")
 
 ################################################################################
 
@@ -208,10 +201,9 @@ for (i in 1:length(p.oak)){if(p.oak[i]>1){p.oak[i] = 1}}
 for (i in 1:length(p.maple)){if(p.maple[i]>1){p.maple[i] = 1}}
 for (i in 1:length(p.poplar)){if(p.poplar[i]>1){p.poplar[i] = 1}}
 
-#library(extrafont)
-#font_install('fontcm')
-#loadfonts()
-pdf(file="../dissertation/figures/fig5-5.pdf",width=5,height=3.9,family="CM Roman",pointsize=10)
+#pdf(file="../dissertation/figures/fig5-5.pdf",width=5,height=3.9,family="CM Roman",pointsize=10)
+pdf(file="appendices/figures/fig5.pdf",width=5,height=3.9,family="Helvetica",pointsize=10)
+
 par(mgp=c(3,1,0),mar = c(5,4.5,2,2) + 0.1)
 plot(dbhcm,p.boak,type='l',lty=1,ylim=c(0,1),xlim=c(0,80),lwd=2,
      ylab="Probability of Stump Sprouting",
@@ -222,8 +214,8 @@ lines(dbhcm,p.poplar,type='l',lty=3,lwd=2)
 legend('topright',legend=c('Black Oak','White Oak','Sugar Maple','Tulip Poplar'),
        lwd=2,col=c('black','darkgray','black','black'),lty=c(1,1,2,3))
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig5-5.pdf")
+#embed_fonts("../dissertation/figures/fig55.pdf")
+embed_fonts("appendices/figures/fig5.pdf")
 
 ################################################################################
 
@@ -231,10 +223,8 @@ embed_fonts("../dissertation/figures/fig5-5.pdf")
 
 comp <- read.csv('data/figuredata_compareharvest.csv',header=TRUE)
 
-#library(extrafont)
-#font_install('fontcm')
-#loadfonts()
-pdf(file="../dissertation/figures/fig5-6.pdf",width=5,height=3.9,family="CM Roman",pointsize=9)
+#pdf(file="../dissertation/figures/fig5-6.pdf",width=5,height=3.9,family="CM Roman",pointsize=9)
+pdf(file="appendices/figures/fig6.pdf",width=5,height=3.9,family="Helvetica",pointsize=9)
 
 par(mgp=c(3,1,0),mar = c(5,4.5,2,2) + 0.1)
 
@@ -256,8 +246,7 @@ text(40,21,'Shelterwood\n2nd Phase',cex=0.8)
 arrows(x0=38,y0=17,x1=28,y1=16,length=0.1)
 text(49,17,'3rd Phase',cex=0.8)
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig5-6.pdf")
+embed_fonts("appendices/figures/fig6.pdf")
 
 #############################################################
 
