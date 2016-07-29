@@ -1,0 +1,351 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Arsclassica Article
+% LaTeX Template
+% Version 1.1 (10/6/14)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Lorenzo Pantieri (http://www.lorenzopantieri.net) with extensive modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+11pt, % Main document font size
+a4paper, % Paper type, use 'letterpaper' for US Letter paper
+oneside, % One page layout (no page indentation)
+%twoside, % Two page layout (page indentation for binding and different headers)
+headinclude,footinclude, % Extra spacing for the header and footer
+]{scrartcl}
+
+
+\input{structure.tex} % Include the structure.tex file which specified the document structure and layout
+
+\usepackage[margin=1in]{geometry}
+
+\bibliographystyle{plos2015}
+
+\usepackage[square,sort,comma,numbers]{natbib}
+
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{setspace}
+
+\usepackage{rotating}
+
+
+\hyphenation{Fortran hy-phen-ation} % Specify custom hyphenation points in words with dashes where you would like hyphenation to occur, or alternatively, don't put any dashes in a word to stop hyphenation altogether
+
+%----------------------------------------------------------------------------------------
+%	TITLE AND AUTHOR(S)
+%----------------------------------------------------------------------------------------
+
+\title{\normalfont\spacedallcaps{\textbf{SOEL}: \textbf{S}imulation of \textbf{e}arly \textbf{o}ak \textbf{l}ife history}} 
+\subtitle{\normalfont{An individual-based forest gap model focused on processes driving demography of early oak (\textit{Quercus}) life stages}}
+
+%\author{\spacedlowsmallcaps{Kenneth F. Kellner\textsuperscript{1}}}
+
+\author{\spacedallcaps{Kenneth F. Kellner\textsuperscript{1}}}
+
+\date{}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	HEADERS
+%----------------------------------------------------------------------------------------
+
+\renewcommand{\sectionmark}[1]{\markright{\spacedlowsmallcaps{#1}}} % The header for all pages (oneside) or for even pages (twoside)
+%\renewcommand{\subsectionmark}[1]{\markright{\thesubsection~#1}} % Uncomment when using the twoside option - this modifies the header on odd pages
+\lehead{\mbox{\llap{\small\thepage\kern1em\color{halfgray} \vline}\color{halfgray}\hspace{0.5em}\rightmark\hfil}} % The header style
+
+\pagestyle{scrheadings} % Enable the headers specified in this block
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS & LISTS OF FIGURES AND TABLES
+%----------------------------------------------------------------------------------------
+
+\maketitle % Print the title/author/date block
+
+\setcounter{tocdepth}{2} % Set the depth of the table of contents to show sections and subsections only
+
+\tableofcontents % Print the table of contents
+
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+%\section*{Abstract} % This section will not appear in the table of contents due to the star (\section*)
+
+%\lipsum[1] % Dummy text
+
+%----------------------------------------------------------------------------------------
+%	AUTHOR AFFILIATIONS
+%----------------------------------------------------------------------------------------
+
+{\let\thefootnote\relax\footnotetext{\textsuperscript{1} \textit{Department of Forestry and Natural Resources, Purdue University, West Lafayette, IN}}}
+
+%----------------------------------------------------------------------------------------
+
+%\newpage % Start the article content on the second page, remove this if you have a longer abstract that goes onto the second page
+
+\doublespacing
+
+\section{Introduction}
+
+Understanding the development and function of forests is a significant research challenge. Processes that drive tree reproduction (e.g. seed predation, dispersal, seedling herbivory, competition) occur on a short time scale relative to the potential lifespan of a tree (hundreds to thousands of years). Thus, the ultimate consequences of small perturbations to a forest ecosystem may take centuries to manifest. Empirical forest research typically has been limited to much shorter time intervals, which makes it difficult to ascertain what factors caused a forest to reach its current state and (perhaps more importantly) what the forest will look like in the future. Some forest research projects have collected or are working to collect long-term datasets [e.g. \citealp{Swank1988, Franklin1990, Bierregaard1992, Sheriff2002, Kalb2013}], but these projects are arguably the exception and not the rule. Historical patterns can be reconstructed using natural records like tree rings \citep{Speer2010}, fire scar chronologies \citep{Arno1977, Guyette2006}, pollen records \citep{Pitkanen1999}, or even woodrat middens \citep{Betancourt1990}. These approaches can help us understand trends in tree growth, climate, and vegetation composition over time but are less useful for understanding interactions between trees and other organisms or predicting the effects of new management strategies. To address the latter issues and many others, forest researchers have often turned to simulation modeling \citep{Liu1995, Mladenoff1999, Bugmann2001}. While modeling allows for great freedom in answering research questions, the complexity of the questions and the time interval in which they are addressed are limited by computational power and by the modeling framework (i.e., structure and parameterization). Thus, a wide variety of modeling frameworks have been developed, each with strengths and weaknesses, to address different types of forest research questions.
+
+These forest modeling frameworks can be organized conceptually by the degree to which a model incorporates details about individual organisms. At one end of this conceptual scale are forest ecosystem (or forest landscape) models \citep{Mladenoff1999}. Modeling detailed dynamics of individual trees (and/or individual tree species) is not a goal of these models; instead they focus on overall stand density, composition, and biomass. This approach sacrifices individual detail for tractability in estimating large-scale, long-term patterns at a landscape scale (i.e., effects of climate change or carbon fixation). Probably the best example is the LANDIS II model developed by Eric Gustafson, R. J. Scheller, and colleagues \citep{Mladenoff2004}.
+
+Matrix projection models track counts of individual organisms in discrete age, size, or life stage classes.  Within a given class, all individuals are considered identical. Matrices of transition probabilities (“vital rates”) are parameterized to describe how individuals move between the categories. Useful information about population dynamics is straightforward to obtain from matrix models; for example, the population’s asymptotic growth rate $\lambda$ and the stable age/size distribution can be calculated as the dominant eigenvalue and right dominant eigenvector, respectively, of the transition matrix \citep{Caswell2001}. These parameters are useful for assessing the trajectory of the population and how it is affected by different vital rates. Thus, they have been applied to a wide variety of plants and animals since they were introduced \citep{Leslie1945} including trees \citep{Liang2013}.
+
+For long-lived, relatively slow-growing organisms like trees, matrix projection models do have some disadvantages. First, trees in matrix models are usually classified based on size (e.g., height or diameter at breast height), even though size actually varies continuously \citep{Zuidema2010}. Thus, heterogeneous individuals in a given size class will be treated as identical, which introduces error. Increasing the number of discrete classes can reduce this error, at the cost of reduced sample size and therefore reduced precision in transition probability estimation \citep{Ellner2006}. Changing the number of discrete classes in the model can also influence elasticity and sensitivity measurements \citep{Enright1995}. Second, matrix models have only limited ability to incorporate variability in growth rates among individuals \citep{Zuidema2010}. For long-lived species especially, individual variability in growth may strongly influence population growth rate \citep{Zuidema2009}.
+
+Integral projection models (IPMs) are a logical extension to matrix models that address these disadvantages. The key difference between IPMs and matrix models is that while vital rates in matrix models are class-specific, in IPMs vital rates can be functions of the underlying continuous trait (e.g., size) \citep{Coulson2012}. This characteristic allows IPMs to incorporate individual variability in vital rates and relax the requirements for discrete classes \citep{Zuidema2010}. IPMs address these limitations of matrix models while still yielding similar information about population dynamics including population growth rate and stable size distribution \citep{Ellner2006}. While IPMs are flexible overall, some ecological processes are currently more challenging to incorporate into the IPM framework, including spatially explicit variability and dispersal [\citealp{Jongejans2008, Adler2010}, \textit{but see} \citealp{Jongejans2011}].  
+ 
+Individual-based models (IBMs; also called agent-based models) use a simulation approach to examine how an overall system (e.g. a population or community of organisms) affects, and is affected by, its autonomous component agents \citep{Grimm2005}. In ecology, they share a general structure with analytical approaches like matrix and integral projection models in that they are driven by an underlying set of ecological processes (e.g. survival and growth). Individual-based models allow for straightforward inclusion of spatially explicit processes, interaction between individuals, and adaptive behavior of individual agents, which are challenging to implement in analytical modeling approaches \citep{Grimm2005}. However, because they are based on simulation they give up some of the analytic results that can be obtained from matrix and integral projection modeling \citep{Jongejans2011}. Additionally, they typically require a large number of parameters and substantial computing power \citep{Grimm2005}.
+
+IBMs have a long history in forest modeling and have become increasingly popular in ecology in recent years owing to new software tailored to IBM analysis and increases in computing power \citep{Grimm2005}. Forest IBMs can take many forms but typically consist of a schedule of submodels or rules that govern the vital rates, movement, and interaction of individuals with each other and the environment over a series of time steps \citep{Bugmann2001, Grimm2005}. Among the first and most influential forest IBMs was JABOWA, which inspired a class of IBMs called “gap models” \citep{Botkin1993}. The basic structure of JABOWA consists of a number of independent 10 $\times$ 10 m cells, each containing a set of trees that regenerate and grow according to species-specific rules and compete for light with other trees in the same cell \citep{Botkin1993}. JABOWA was widely implemented, in part because of the ease with which it is parameterized (only 5-10 parameters per tree species are required), and also because the independent cells can be simulated sequentially to cut down on computing power required \citep{Bugmann2001}.
+
+Of course, the simplicity of the model detracts from realism; JABOWA makes many assumptions about the shape of tree crowns, trees in adjacent cells do not interact in any way, and ecological processes connecting adult and sapling trees (seed production, dispersal, etc.) are ignored. Other gap models built upon the foundation of JABOWA while adding additional realism, including FORET \citep{Shugart1977} and ZELIG \citep{Urban1990}. Among other additions, ZELIG added more detail to the simulation of tree crown shapes and allowed for large trees to shade adjacent cells \citep{Urban1992}. ZELIG has been further modified to examine the effects of herbivory on tree regeneration \citep{Seagle2001, Holm2013}. Even more complex forest IBMs like SORTIE have taken advantage of modern increases in computing power to offer a highly realistic representation of forest structure and plug-ins to simulate numerous ecological processes that drive forest dynamics, including seed production, dispersal, and herbivory \citep{Pacala1993}. Of course, in addition to their computational requirements, these more detailed modeling frameworks require many more parameters to be estimated (either from the literature or via experiments) than the original types of gap models and must be carefully calibrated to a specific region and forest type; thus, they may not be the most logical choice for simpler studies of forest dynamics.
+
+Forest simulation models have been employed to answer a wide variety of research questions across many study systems, regions, and forest types \citep{Bugmann2001a, Bugmann2001a}, but fine-scale ecological processes driving dynamics of early-tree life stages (e.g. seed predation, seed dispersal, and herbivory) have not been a major modeling focus [\textit{but see} e.g. \citealp{Seagle2001, Holm2013}]. One system that would benefit from a better understanding of how these processes ultimately influence regeneration and forest succession is the central hardwood forest region of the eastern United States \citep{Fralish2003}. Oak (\textit{Quercus}) is a dominant canopy species in this forest region providing key value to wildlife as a food resource \citep{Mcshea2000, Mcshea1993} and to humans as a timber species \citep{Johnson2009}. While dominant in the canopy, oak is typically absent from the forest midstory and understory in the central hardwoods; over time this is expected to result in oak being  replaced in the forest canopy by more shade-tolerant tree species (“oak regeneration failure”; \citep{Aldrich2005, Nowacki2008}).
+
+A primary culprit in oak regeneration failure is shifts in disturbance regimes, namely suppression of wildfires that favored regeneration of fire-adapted oak \citep{Abrams1992}. Timber harvesting is one way of reintroducing disturbance to promote oak regeneration \citep{Dey2002}, and a number of different silvicultural techniques have been developed to do so, with mixed success \citep{Morrissey2008, Swaim2016}. However, oak regeneration is also challenged by a multitude of other factors, including a large suite of seed predators and herbivores that rely on oak acorns and oak seedlings for food \citep{Mcshea2000, Mcshea1993, Mcshea2007}. Acorn-seed predator and oak seedling-herbivore interactions may themselves be affected by timber harvesting disturbance [e.g. \citealp{Bellocq2005, Lombardo2008, Miller2009, Crimmins2010, Kellner2014b}]. Understanding and predicting the outcome of these trophic interactions is challenging, but would be valuable for designing silvicultural prescriptions that promote oak regeneration.
+
+The ecological processes occurring in the early life stages of oak (i.e., acorn to seedling) occur over a short interval of time (a few years) relative to the oak life expectancy (hundreds of years). Observed and experimental data related to the early life history of oak is often similarly collected over short periods of time. This temporal and logistical limitation of oak studies makes it difficult to project the ultimate consequences of factors affecting early oak life stages on the final population or forest stand. We developed a model to bridge that gap; i.e., a simulation-based approach to determine how changes in parameters of oak early life stages ultimately affect the persistence of oak as a canopy dominant species in managed forest stands hundred(s) of years later. 
+
+\section{Selection of a Modeling Framework}
+\label{selection}
+
+The model structure was designed with several important considerations in mind. First, empirical data for parameterizing early oak life history processes were collected at the scale of individual acorns and seedlings \citep{Kellner2014b, Kellner2015a, Kellner2016}, meaning the forest ecosystem modeling approach (e.g. LANDIS), which occurs at the stand scale and does not track individual trees, was not appropriate. Second, early oak life history involves several spatially-explicit processes including acorn dispersal and interaction between oak seedlings and nearby competitors (primarily competition for light). Given these considerations, we judged an individual-based simulation model to be the most straightforward approach to incorporating field data into a spatially-explicit modeling framework.
+
+We therefore developed a spatially-explicit, individually-based model called SOEL: \textbf{S}imulation of \textbf{O}ak \textbf{E}arly \textbf{L}ife history. SOEL is composed of two primary submodels: the early life history submodel, and the contextual forest submodel simulating the forest in which the early life history submodel occurs (Figure~\ref{fig:1}). The early oak life history submodel tracks oaks from acorn to sapling and is governed by a set of key parameters parameterized using field data \citep{Kellner2014b, Kellner2015a, Kellner2016}. The contextual forest submodel simulates growth and mortality of sapling-size and larger trees. We did not have field data to parameterize the contextual forest submodel; thus, we adopted an existing modeling framework to do so, JABOWA \citep{Botkin1993}. JABOWA was selected due to its widespread use yet relatively simple parameterization; it was modified in several ways to match the spatially-explicit structure of the early oak life history submodel. An overview of the model is given in section~\ref{overview}, followed by a detailed description of the early life history submodel in section~\ref{earlylife} and the contextual forest submodel in section~\ref{contextual}.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.7]{figures/fig1.pdf}
+	\caption{Overview of SOEL structure including (a) the contextual forest submodel derived from JABOWA and (b) the early life history submodel parameterized with field data. Key parameters in (b) are in gray ovals. For probability parameters in (b), black arrows indicate the result of a ``success'' and gray arrows the result of a ``failure''.}
+	\label{fig:1}
+\end{figure}
+
+\section{Model Overview}
+\label{overview}
+
+SOEL is summarized below using the ODD (Overview, Design concepts, Details) protocol \citep{Grimm2010} and was implemented in the NetLogo 5.2.0 programming language \citep{Wilensky1999}. Model code for SOEL can be found in Appendix 2.
+
+\subsection{Purpose}
+
+The purpose of SOEL is to determine how processes involved in the early life history of oak (e.g., seed production, predation, dispersal, competition and herbivory) interact with timber harvest to drive oak regeneration, and ultimately forest succession, following harvest in a multi-species stand.
+
+\subsection{Entities, State Variables, and Scales}
+
+There are three types of entities included in SOEL: patches, trees, and seeds (specifically, acorns). Patches are 1 $\times$ 1 m in size and have one primary state variable: the amount of canopy cover in that patch. Canopy cover values range from 0 to 1, where 1 represents complete shade from tree canopies (no light passing through). These cover values are calculated based on the height and canopy radius of the trees in and around each patch and are used to calculate the light available to each tree. The simulated area consists of a “core” square area of patches surrounded by a buffer, both of which can be variable in size. The default is a 100 $\times$ 100 “core” grid of patches (1 ha) surrounded by a 20 patch (20 m) buffer on all sides for a total simulated area of 1.96 ha.
+
+Trees in the model are treated differently based on species, of which there are four: white oak, black oak, tulip poplar, and sugar maple. Tulip poplar was included in the model to represent oak competitors in recently harvested areas \citep{Jenkins1998}, while maple was included to represent oak competitors under mature forest canopies \citep{Nowacki2008}. Each tree species has its own set of parameters governing growth, survival, and reproduction under different environmental conditions. Oaks, the main focus of the model, are simulated in more detail than the other species. This difference manifests in two ways. First, oaks have three life stage categories: seeds (acorns), seedlings (\textless 1.4 m tall), and sapling/adult trees ($\geq$ 1.4 m tall). For sugar maple and tulip poplar, only sapling/adult trees are simulated. All life-stage categories have a state variable associated with spatial location within the simulated stand. Oak acorns have one additional primary binary state variable to indicate weevil infestation status. Oak seedlings are characterized by a single additional state variable, height. Sapling/adult trees have several additional state variables: (1) height; (2) diameter at breast height, dbh; (3) canopy radius, since canopies are assumed to be circular and flat; and (4) age. Oaks additionally have (5) fecundity in terms of average number of acorns produced per unit canopy area.
+
+\subsection{Process Overview and Scheduling}
+
+Each model time step represents one year. Broadly, four processes run in each time step in the following order: (1) tree growth (2) tree survival (3) tree reproduction (4) timber harvest, if applicable (Figure~\ref{fig:1}). The tree growth and survival process for sapling/adult trees (all species) is separate from the process for seedlings (oaks only; Figure~\ref{fig:1}); both depend on site characteristics, light availability, and species-specific parameters. Reproduction for oaks involves several sub-processes including acorn production, predation, dispersal, and germination (Figure~\ref{fig:1}). For the other tree species, reproduction is simpler and uses the JABOWA approach - saplings are spawned on patches directly, skipping the earlier life stages. When a timber harvest is conducted, trees are removed (equivalent to mortality) from the simulation based on a set of rules specific to the timber harvesting type; the timber harvesting options are clearcut (all trees removed every 100 years), shelterwood (all trees removed in three phases every 100 years), and single-tree selection (a subset of individual merchantable trees removed each year). The individual submodels are described in greater detail in sections~\ref{earlylife}-\ref{contextual}.
+
+\subsection{Design Concepts}
+
+In SOEL, light availability is the most important factor driving tree survival and growth. Trees implicitly “sense” light availability in the environment based on their height, and their growth and survival is scaled accordingly. The height and spatial configuration of trees leads to a key interaction influencing light availability; trees reduce the light available to surrounding shorter competitors (i.e., shade), and in turn are shaded by taller competitors. When stem density is high, individual trees will have little light available and so growth will slow and density-dependent mortality will be high. However, there are species-specific differences in the ability to tolerate shade so some tree species (e.g., tulip poplar) are more negatively affected by shade than others (e.g. sugar maple). Thus, via changes in survival and growth, abundance and distribution of each tree species is an emergent property of its ability to grow and survive under light conditions which vary across the landscape, with time, and with timber harvesting treatment.
+
+\subsection{Initialization}
+\label{initialization}
+
+The IBM is initialized by creating a mature (80-100 year old) forest stand. The basal area, dbh distribution, and species distribution of the tree species are based on pre-harvest forest survey data from the Hardwood Ecosystem Experiment (HEE), in the forest system on which the IBM is based \citep{Saunders2013}. The HEE tree distribution data (which included many more tree species than we are including in SOEL) was divided into three categories: oaks, shade-tolerant species, and shade-intolerant species (Table~\ref{tab:1}). An equal number of black and white oak trees of appropriate size were initialized to match the HEE data for oaks. Tulip poplars and sugar maples of appropriate size were initialized to match the basal area and size distribution of the pooled shade-intolerant and shade-tolerant species groups, respectively. Overstory trees of all species are assigned locations within the simulation in a random order; the assigned location is also random, subject to the constraint that the location is \textgreater 7 m from any other mature trees (to avoid unrealistic clusters of overstory trees). Midstory and understory oaks and tulip poplars are assigned random locations subject to the constraint that the location has at least 60\% full sunlight. Maple midstory and understory trees are assigned completely random locations throughout the simulation. Before any experiments are conducted on the simulated forest, a 30 time-step (30-year) burn-in is conducted to minimize the effects of the initial conditions. 
+
+\input{tables/tab1}
+
+\subsection{Input}
+
+All parameter values and initial conditions are controlled within the NetLogo modeling interface; no external data is read into the model. There are several primary variables set within NetLogo before each model run. First, the size of the simulated forest stand and the buffer around the stand are specified. Second, site conditions are specified (mean temperature, moisture, and soil fertility). Finally, the timber harvest treatment (clearcut, shelterwood, single-tree selection, or no harvest) is selected.
+
+\section{Early Life History Submodel}
+\label{earlylife}
+
+\subsection{Acorn Production}
+
+Oaks are a masting species, characterized by a boom-and-bust cycle of acorn production \citep{Lusk2007}. To simulate that process, each time step in the model is assigned a different value for mean acorn production per m\textsuperscript{2} of canopy area, parameter \textit{meanAcorn} (Figure~\ref{fig:1}). The value of \textit{meanAcorn} is based on field data \citep{Kellner2014b} and can be fixed or follow a set pattern (for example, a sequence of average, good, and poor mast crop years). Table~\ref{tab:2} gives a set of example values for \textit{meanAcorn}. Within each year, every oak is assigned a random value for acorns produced per m\textsuperscript{2} of canopy area from an exponential distribution with mean meanAcorn. The tree then drops a number of acorns underneath its canopy equal to this random value multiplied by its canopy area. In some oak species (including white oak), acorn production declines after a peak size is reached \citep{Downs1944}. This decline was not incorporated into the model because we did not have field data on acorn production from very large, very old oaks and we were more interested in production by trees around the age typically observed in a managed forest (~80-120 years) when harvesting takes place.
+
+\input{tables/tab2}
+
+\subsection{Acorn Predation, Dispersal, and Germination}
+
+After acorns are produced, they can be predated by acorn weevils \citep{Gibson1972a} and small mammals \citep{Bellocq2005, Kellner2014b}, and may also be dispersed by small mammals \citep{VanderWall2005, Moore2007a}. In the basic version of SOEL described here, these probabilities of predation and dispersal are fixed, based on empirical data from the Hardwood Ecosystem Experiment \citep{Kellner2014b,Kellner2016}; however they can be varied as functions of other covariates depending on the research goal. Infestation occurs first with probability \textit{pWeevil}; weevil infested acorns are not dispersed but may be consumed by predators \citep{Steele1996}. Uninfested acorns may be either left where they fell, or dispersed with probability \textit{pDispersal}. The dispersal kernel is assumed to be isotropic; distance is a random value from a Weibull distribution with scale parameter \textit{dispDist} and shape parameter fixed at 1.4. Dispersed acorns are cached with probability \textit{pCache}. Acorns that were not dispersed are consumed by granivores with probability \textit{pUndispEaten} and acorns that were dispersed are consumed with probability \textit{pDispEaten}.  Dispersal and caching parameters are based on HEE data \citep{Kellner2016}.
+
+All acorns that escape predation (either dispersed or not) have a probability \textit{pGerm} of germinating into a seedling. Germination probability was obtained from the literature and was higher for acorns that have been cached and lower for acorns that are infested by weevils \citep{Haas2005, Lombardo2009}. Acorns that do not germinate in the year in which they are produced are removed from the simulation (i.e., there is no year-to-year seed bank for acorns).
+
+\subsection{Oak Seedling Growth and Survival}
+
+The expected growth of a given seedling \textit{meanGr} depends on oak species, available light (see section \ref{environmental}), and the presence of browse damage in a given year which occurs with fixed probability \textit{pBrowse} (Figure~\ref{fig:1}; \citep{Kellner2016c}). A predictive growth model was fit using empirical data \citep{Kellner2016b} as a function of oak species \textit{sp} (binary variable with white oak = 1), percentage of shade cover \textit{sh} (see section \ref{environmental} for calculation), presence/absence of browse damage \textit{br}, a random seedling effect $rs \sim N(0, 0.25)$ and residual error $\epsilon \sim N(0, 1.19)$. We transformed the empirical growth data using the neg-log transformation \citep{Whittaker2005}, thus yearly seedling growth was calculated as:
+\begin{equation}
+\text{Growth} = 
+\begin{cases} 
+1 - \exp{(-1 \times \mu)} & \text{if } \mu \leq 1 \\
+\exp{(\mu - 1)}       & \text{if } \mu > 0
+\end{cases}
+\end{equation}
+where
+\begin{equation}
+\mu = 1.24 - 0.48 \times sh + 0.12 \times sp - 0.94 \times br + rs + \epsilon
+\end{equation}
+
+The probability of oak seedling survival \textit{meanSurv} was also based on empirical data \citep{Kellner2016b}. Survival probability $\psi$ for a given year is a function of oak species \textit{sp} (binary variable with white oak = 1), seedling age, and shade \textit{sh}:
+\begin{equation}
+\psi = \frac{1}{1 + e^{-\mu}}
+\end{equation}
+where
+\begin{equation}
+\mu = -0.60 + 0.10 \times sp + 0.37 \times sh + 0.58 \times age
+\end{equation}
+
+\section{Contextual Forest Submodel}
+\label{contextual}
+
+\subsection{Calculate Environmental Conditions}
+\label{environmental}
+
+Growth, survival, and regeneration of mature trees in the JABOWA-derived contextual forest submodel depend on two key environmental conditions: site quality and light availability. During model initialization, a species-specific metric of site quality \textit{qE} is calculated according to \citep{Botkin1993}. Site quality is based on four environmental characteristics, assumed constant across space and time in the simulation: (1) site climate (temperature), measured as the number of degree-days at the site; (2) soil fertility, measured as kg/ha nitrogen; (3) soil moisture (or wilt potential), measured based on a comparison between potential and actual evapotranspiration; and (4) soil water saturation measured as depth to the water table (m). The effect of each environmental variable is obtained from response functions bounded on [0,1] where 1 represents ideal conditions for tree growth and survival (Figure~\ref{fig:2}). Each response function is parameterized with species-specific values (Table~\ref{tab:3}), so ideal conditions may differ between species. The site quality \textit{fQ} for each species is calculated as the product of the values from the four response functions and is therefore also bounded on [0,1] with 1 representing ideal site quality for the species.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{figures/fig2.pdf}
+	\caption{White oak (\textit{Quercus alba}) growth response function curves for five environmental characteristics (1) degree-days at the site; (2) soil fertility, measured as kg/ha nitrogen; (3) wilt potential, measured based on a comparison between potential and actual evapotranspiration; (4) soil water saturation measured as depth to the water table (m); and (5) proportion of full light available. The product of the first four response functions is the overall site quality index \textit{fQ} for white oak.}
+	\label{fig:2}
+\end{figure}
+
+\input{tables/tab3}
+
+Available light (ranges from 0 to 1) is calculated for each individual seedling, sapling, and adult tree. The baseline light availability above the canopy ($\phi$) is set to 1 in every patch at the beginning of each time step. Simulated trees have canopies in which all of the leaf area is compressed into a flat disk of known radius located at the top of the tree (similar to \citep{Botkin1993}). Beginning with the tallest tree in the simulation, available light is calculated as the mean light available in patches that overlap the tree’s canopy; by definition, for the tallest tree, this will be 1. The shade cast by the first tree is then determined. The tree canopy shades individual patches underneath it according to the Beer-Lambert law \citep{Nowak1996}. The amount of light that passes through the canopy (\textit{AL}) is a function of the tree’s leaf area index (\textit{LAI}, itself a function of dbh) and a light extinction coefficient (\textit{k} = 1/4000; \citep{Botkin1993}):
+\begin{equation}\label{eq:light}
+AL = \phi \times e^{-k \times LAI}
+\end{equation}
+Shade is then calculated as 1 - \textit{AL}.
+
+If the sun’s position were fixed and directly overhead, the tree canopy would shade a circular region of patches directly underneath it at all times; this was the approach of JABOWA-3 (although the shaded area in JABOWA was the entire square cell instead of a circular region based on tree size) \citep{Botkin1993}. In reality, as the time of day, date, and latitude change, the angle of the canopy relative to the sun changes and therefore the exact area shaded relative to the tree shifts. This distinction is particularly important when simulating timber harvests (or other disturbance events), since a perfectly vertical shade profile underestimates the shade cast by a tree onto adjacent canopy openings. Therefore, we modified the shade profile in this simulation. Given the yearly time step, daily and seasonal variation in shading by a given tree were simplified to a single “snapshot” that approximates the pooled yearly shading influence of that tree on the surrounding area. We used a series of concentric ovals of shade on the northern side of a tree’s spatial location, the size of which depended on the tree’s canopy radius, as an approximation (Figure~\ref{fig:3}). The pattern of shade using this approach was similar to the pattern generated by simulations run in the software package ShadeMotion \citep{Quesada2010}, which calculates the shape and spatial position of shading across an entire growing season based on inputs including tree height, canopy radius, and latitude (Figure~\ref{fig:3}).
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{figures/fig3.pdf}
+	\caption{Comparison of simulated shade pattern across an entire growing season in the individual-based model (a) with shade pattern generated by a tree with similar height and canopy radius in the software package ShadeMotion (b). Tree location is marked in both (a) and (b) with a black square and the darker the gray, the stronger the shading effects (i.e., the area was shaded by the tree for a higher proportion of time in the growing season). The concentric elliptical approach in (a) was chosen to maximize similarity to the ShadeMotion results while minimizing complexity to facilitate faster simulations.}
+	\label{fig:3}
+\end{figure}
+
+After the shaded region is calculated for the tallest tree, the process repeats for the next-tallest tree, which may be partially shaded by the first tree (if it is nearby) and thus have mean available light \textless 1. Available light and thus shade in patches under the second tree is then calculated according to equation \ref{eq:light}. If the tree shades an already-shaded patch (or patches), i.e., multiple tree canopies overlap above the patch, then total shade in the patch is calculated as
+\begin{equation}
+S = S_0 + (1 - S_0) \times S_N
+\end{equation}
+where $S_0$ is the existing shade in the patch and $S_N$ is the shade cast by the focal tree. This process continues for all remaining sapling and mature trees in descending order of height. Oak seedlings (\textless 1.4 m in height) do not shade each other in the model and do not have a canopy, so light available to seedlings is simply $1 - S$ where $S$ is the total shade in the patch where the seedling is located.
+
+As with the site quality, light availability is translated to an effect on growth using a response function \textit{fAL} (Figure \ref{fig:2}; note it is not bounded on [0,1]). In SOEL, there are three response functions, one for each shade tolerance category \citep{Bonan1992}. In general, more shade tolerant species do well at low light levels, but cannot translate higher light availabilities to growth as effectively as shade-intolerant species.
+
+\subsection{Growth}
+
+In the contextual forest submodel, growth is defined as an increase in dbh and growth is calculated similar to JABOWA. Briefly, a maximum or ideal growth rate for each tree is calculated and then adjusted downward based on various factors. Maximum potential growth, $\delta D_a$, in a time step is a function of the maximum height and dbh attainable for the tree species, adjusted by a factor \textit{G} determining how early in its life the tree achieves most of its growth; increasing values of \textit{G} mean that the tree will reach one-half its maximum dbh more quickly \citep{Botkin1993}. Actual growth $\delta D_a$ is calculated as the maximum growth adjusted downward by site quality \textit{fQ}, available light \textit{fAL} (see section \ref{environmental}), and stem count \textit{ST} in a 3.5 m radius:
+\begin{equation}
+\delta D_a = \delta D_i \times fQ \times fAL \div ST
+\end{equation}
+The stem count parameter ST is not in the original JABOWA model. It was added to this IBM to simulate the negative effects of competition by saplings for finite resources on growth, thereby preventing unrealistic stem densities and basal areas (particularly following harvesting). In this way it is analogous to the basal area limit parameter included in the original JABOWA model \citep{Botkin1993}. Several different values for the radius of the stem count (the stem density parameter d) were tested and a value of 3.5 m was chosen because it resulted in the most realistic trajectory of basal area change following forest harvest (Figure \ref{fig:4}; \citep{Oliver1996}). Low values (\textit{d} = 1,2) resulted in unrealistically high basal areas during the stem exclusion / understory reinitiation phases of forest succession while at higher values (d = 4,5), total stand basal area recovered to pre-harvest levels too slowly (Figure \ref{fig:4}; \citep{Oliver1996}). Though varying \textit{d} had a large effect on final stand basal area it did not have a strong effect on final stand breakdown by tree species (with the exception of \textit{d} = 1) meaning that the choice of d is unlikely to have any impact on inference about final stand composition (Figure \ref{fig:4}).
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{figures/fig4.pdf}
+	\caption{Comparison of (a) changes in basal area over time and (b) final basal areas for each tree species, for different values of the stem density control parameter \textit{d}. The value of \textit{d} used in the final model (\textit{d} = 3.5) is highlighted in bold. The dashed lines represent pre-harvest basal area in the simulated forest stand.}
+	\label{fig:4}
+\end{figure}
+
+Once $\delta D_a$ is calculated for a given sapling or mature tree and added to the existing dbh of the tree, the other size and shape attributes of the tree (height, basal area and leaf area index LAI) are calculated from the new dbh using allometric equations as in JABOWA \citep{Botkin1993}. The one difference in this IBM relative to JABOWA is calculation of canopy radius. In JABOWA, the canopy size of each tree was fixed as the area of the simulated cell (typically 10 $\times$ 10 m). In SOEL, the canopy is circular and changes in size as the tree grows. Canopy radius is calculated as
+\begin{equation}
+\text{Canopy Radius} = 0.385 \times \text{tree height} \div 2
+\end{equation}
+Kenefic and Nyland \citep{Kenefic1999} report a range of 0.376 - 0.393 for the first value in the allometric equation. We selected 0.385 because it resulted in simulated oaks with canopy radii that most closely matched empirical our data \citep{Kellner2014b}.
+
+\subsection{Survival}
+
+Survival is directly dependent on growth, therefore reducing the number of parameters necessary to fit the model. Survival of sapling and mature trees has two components: (1) intrinsic or ``background'' mortality, and (2) mortality related to growth \citep{Botkin1993}. The model assumes that 2\% of trees that reach a height of 1.4 m will eventually reach the maximum age for the species, given acceptable growing conditions. Therefore, there is a species-specific intrinsic background mortality of 4 / maximum age. The second component of mortality is dependent on growth. The model assumes that a tree has only a 1\% chance of surviving 10 consecutive years in which no diameter growth occurs \citep{Botkin1993}. Thus, the additional probability of mortality in a given year in which diameter growth is very small or zero (\textless 0.01 cm) can be calculated as:
+\begin{equation}
+1 - \sqrt[10]{0.01} = 0.369
+\end{equation}
+In this way, survival is tied to all the same factors (light, environmental conditions, stem density) as growth.
+
+\subsection{Reproduction}
+\label{repro}
+
+Non-oak trees (i.e., sugar maple and tulip poplar) regenerate directly as saplings. In each time step, saplings enter the simulation in a given cell with a certain probability based on site conditions and light availability \citep{Botkin1993}. The process is identical to regeneration in JABOWA except that SOEL has a smaller cell size (1 $\times$ 1 m instead of 10 $\times$ 10 m) and the sapling generation probability is adjusted accordingly. For shade-tolerant species (i.e., sugar maple), the probability $\zeta$ that a 1 $\times$ 1 m cell spawns a sugar maple sapling in a time step is:
+\begin{equation}\label{repro}
+\zeta = fQ \times fAL \times S_i \times 0.01
+\end{equation}
+In equation \ref{repro}, \textit{fQ} and \textit{fAL} are values from the species-specific response functions for site quality and light in the patch, respectively, $S_i$ is a species-specific maximum number of saplings that can be added in a 10 $\times$ 10 m area in one time step (Table \ref{tab:3}), and 0.01 scales the probability from a 10 $\times$ 10 m area to a 1 $\times$ 1m area. For shade-intolerant species (tulip poplar), the probability that a sapling spawns is identical to equation \ref{repro}, except that when \textit{AL} \textless 0.99, $\zeta$ is fixed at 0 (so tulip poplar saplings can only spawn in high-light patches). Saplings enter the simulation at a random height between 1.4 and 1.67 m \citep{Botkin1993}.
+
+In JABOWA, mortality events are final and sprouting is not modeled. However, sprouting plays a key role in the successional process in eastern deciduous forests and is a key source of oak advance regeneration in particular \citep{Johnson2009}. Stump sprouting was therefore modeled explicitly in SOEL. Trees between 5 and 80 cm dbh that suffer mortality have a chance to generate a stump sprout. Probability of stump sprouting is a species-specific function of dbh and age based on logistic regression equations obtained from the literature (Figure \ref{fig:5}; \citep{True1953, Wendel1975, Beck1981, MacDonald1983, Weigel2002}). Stump sprouts enter the simulation at a random height between 1.4 and 1.67 m. 
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{figures/fig5.pdf}
+	\caption{Probability of stump sprouting following harvest or mortality based on diameter at breast height (dbh) for the four tree species in the model. Probabilities were based on fitted regression models from the literature \citep{True1953, Wendel1975, Beck1981, MacDonald1983, Weigel2002}.  }
+	\label{fig:5}
+\end{figure}
+
+\subsection{Timber Harvest}
+
+The individual-based structure of SOEL facilitates a straightforward incorporation of timber harvesting, including more complicated multiple-stage harvests. Harvests occur in simulation years defined by a rotation time. A set of rules specific to each harvesting scenario governs which trees will be harvested; the selected trees then die (and may resprout). The three types of timber harvest included in the model are (1) clearcutting, (2) shelterwood harvesting, and (3) single-tree selection. Harvesting rules are defined based on the harvest approach used as part of the Hardwood Ecosystem Experiment \citep{Kalb2013}. Only the core simulation area (i.e., not the buffer) is harvested.
+
+Clearcutting is the simplest of the three scenarios. At the beginning of each rotation period (the default is a rotation of 100 years), all trees with a dbh greater than 1 cm are harvested and removed from the simulation (Figure \ref{fig:6}). Under the shelterwood alternative, trees are harvested in three phases with a 100-year rotation. In the first phase, non-oaks in the midstory (dbh $\leq$ 25.4 cm) are removed and not allowed to resprout. In the second phase (7 years later), overstory trees are removed down to a minimum residual basal area of 16.1 m\textsuperscript{2}/ha with a preference for removing smaller, non-oak species. In the final phase (8 years after phase 2), the remaining overstory trees are harvested (Figure \ref{fig:6}). The final harvesting approach is single-tree selection; every 20 years, trees of any species (dbh \textgreater 10 cm) are removed to maintain a basal area of 25 m\textsuperscript{2}/ha in the stand with a preference for larger, more merchantable trees (Figure \ref{fig:6}).
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{figures/fig6.pdf}
+	\caption{Changes in total stand basal area over time under three timber harvesting scenarios: clearcutting, 3-phase shelterwood harvest, and single-tree selection.}
+	\label{fig:6}
+\end{figure}
+
+\section{Model Validation}
+
+Given the scope and complexity of the model described above, we wanted to ensure that (given default values) it produced ecologically realistic output. The model has two primary components: the early oak life history component that is driven by HEE data (from acorns to saplings), and the JABOWA-driven component (saplings to adult trees). We focused on the former, given that the focus of the model (and of this dissertation) is on early oak life history. Several model outputs, including acorn production and oak regeneration (i.e., seedling) density, were compared to empirical estimates from the HEE sites as well as the literature. 
+
+\subsection{Acorn Production}
+
+Yearly acorn production has been reported in the literature several ways, including total acorn mass year\textsuperscript{-1} hectare\textsuperscript{-1}, total number of acorns produced year\textsuperscript{-1} hectare\textsuperscript{-1}, and mean acorns year\textsuperscript{-1} tree\textsuperscript{-1}.  We compared model-derived estimates (from a ten-year 1 ha forest simulation using standard initial values; see section \ref{initialization}) of the latter two metrics with acorn production datasets and reported values from the literature. Mean acorns year\textsuperscript{-1} tree\textsuperscript{-1} for mature trees (dbh \textgreater 15.2 cm) from the model was 922 with a standard error of 209, which fell in the middle of the range reported in the literature (382-2147; Table \ref{tab:4}). At the stand scale, a mean of 90,757 acorns year\textsuperscript{-1} hectare\textsuperscript{-1} were produced by the simulation model. This value was similar to values reported by other studies in oak-dominated forests (Table \ref{tab:4}), with the important qualification that acorn production is dependent on the basal area and size distribution of oak within the stand. The main purpose of this component of the validation exercise was simply to show that the number of acorns produced in the simulation was comparable in magnitude to empirical estimates.
+
+\input{tables/tab4}
+
+\subsection{Oak Seedling and Sapling Density}
+
+The total number and size distribution of young oak stems is a predictor of the ability of oak to successfully regenerate following a disturbance event or timber harvest \citep{Johnson2009}. Stump sprouts are a key source of oak regeneration (\citep{Johnson2009}, section \ref{repro}) but seed-origin regeneration also plays a role. Given the importance of stem density for predicting oak regeneration success, we determined if the model accurately predicted the density of seedling (\textless 1.4 m) and sapling oaks ($\geq$ 1.4 m height and \textless 1.5 cm dbh; \citep{Saunders2013}) following several types of timber harvest. We conducted 30 replicate simulations in SOEL using a standard JABOWA model \citep{Botkin1993} and estimated the mean seedling and sapling oak density five years after three harvesting treatments (clearcut, shelterwood, and no harvest). We compared these model-derived estimates with corresponding empirical data and oak seedling and sapling densities collected from Hardwood Ecosystem Experiment sites five years following harvest (Kellner, \textit{unpublished data}). 
+
+Generally, SOEL accurately predicted densities of oak seedlings and saplings (Figure \ref{fig:7}). JABOWA predicted much higher oak sapling densities (particularly for the no harvest and shelterwood treatments) than were observed (Figure \ref{fig:7}). The contrast in sapling density between SOEL (similar to the empirical data) and JABOWA suggests that the simplistic regeneration process used in the latter ignores the challenges facing oak early in its life history (weevil infestation, predation, herbivory) thus overestimating the number of oaks that reach the sapling stage.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{figures/fig7.pdf}
+	\caption{Predicted densities of oak seedlings (\textless 1.4 m height) from SOEL and saplings ($\geq$ 1.4 m and \textless 1.5 cm DBH) from SOEL and JABOWA under three harvesting scenarios, compared to actual mean densities from the Hardwood Ecosystem Experiment (HEE). Model results are means and 95\% confidence intervals from 30 replicated simulations (measured 5 years post-harvest to match HEE data). The dashed line represents the mean from the HEE field data and the shaded area is the 95\% confidence interval around the mean.}
+	\label{fig:7}
+\end{figure}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\renewcommand{\refname}{\spacedlowsmallcaps{References}} % For modifying the bibliography heading
+
+\bibliography{../../bibtex-database/references}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}

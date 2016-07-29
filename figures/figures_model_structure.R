@@ -1,12 +1,16 @@
 
-##Site quality Example Figure
-png(filename='site.png',type='cairo',units='in',
-    width=6,height=6.3,pointsize=12,res=96)
-
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-pdf(file="../dissertation/figures/fig5-2.pdf",width=5,height=5,family="CM Roman",pointsize=10)
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.19/bin/gswin64c.exe")
+
+##Site quality Example Figure
+
+#png(filename='site.png',type='cairo',units='in',
+#    width=6,height=6.3,pointsize=12,res=96)
+
+#pdf(file="../dissertation/figures/fig5-2.pdf",width=5,height=5,family="CM Roman",pointsize=10)
+pdf(file="appendices/figures/fig2.pdf",width=5,height=5,family="Helvetica",pointsize=10)
 
 par(mfrow=c(3,2),
     mar=c(4.1,4.1,2.6,0),
@@ -42,8 +46,8 @@ yint.fit <- 1.371*(1 - exp(-2.227*(light-0.05)))
 plot(light,yint.fit,type='l',ylab=expression('Growth Response'),
      xlab="Light",lwd=2,ylim=c(0,1.45),main='Light')
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig5-2.pdf")
+#embed_fonts("../dissertation/figures/fig5-2.pdf")
+embed_fonts("appendices/figures/fig2.pdf")
 
 ###############################################################################
 

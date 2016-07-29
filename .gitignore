@@ -1,7 +1,17 @@
 .Rproj.user
 .Rhistory
 .RData
+*.Rda
 *.db
 oak-lifecycle.Rproj
 output
 *.mov
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.bst
+*.pdf
