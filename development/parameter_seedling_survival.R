@@ -2,10 +2,10 @@
 ##Seedling Survival Analysis##################
 ##############################################
 
-source('format_data.R')
+source('../seedling-survival/format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('data/seedlingmaster.csv')
+seedling <- format.seedling('data/ibm_seedlingmaster.csv')
 
 #Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1)
@@ -91,7 +91,7 @@ jags.data <- c('surv','nseedlings','nsamples'
 
 #Model file
 
-modFile <- 'development/model_survival.R'
+modFile <- 'development/model_seedling_survival.R'
 
 ################################
 
@@ -115,7 +115,7 @@ library(jagsUI)
 surv.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                     n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=FALSE)
 
-save(surv.ibm.output,file='output/surv_ibm_output.Rda')
+save(surv.ibm.output,file='output/development/surv_ibm_output.Rda')
 
 #equation -0.600 + 0.101 * species + 0. 366 * canopy + 0.576 * age
 
@@ -130,7 +130,7 @@ for (i in 1:length(nsamples)){
 surv12.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                         n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=FALSE)
 
-save(surv12.ibm.output,file='output/surv12_ibm_output.Rda')
+save(surv12.ibm.output,file='output/development/surv12_ibm_output.Rda')
 
 #equation -0.531 + 0.197 * species + 0.528 * canopy + 0.440*age
 
@@ -154,6 +154,6 @@ for (i in 1:dim(surv)[1]){
 surv34.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                           n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=FALSE)
 
-save(surv34.ibm.output,file='output/surv34_ibm_output.Rda')
+save(surv34.ibm.output,file='output/development/surv34_ibm_output.Rda')
 
 #equation 2.596 - 0.049 * species - 0.733 * canopy + -0.01 * age

@@ -5,7 +5,7 @@
 source('../seedling-survival/format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('../seedling-survival/data/seedlingmaster.csv')
+seedling <- format.seedling('data/ibm_seedlingmaster.csv')
 
 #Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$age==1)
@@ -122,7 +122,7 @@ jags.data <- c('growth','nseedlings','nsamples'
 
 #Model file
 
-modFile <- 'development/model_growth.R'
+modFile <- 'development/model_seedling_growth.R'
 
 ################################
 
@@ -148,7 +148,7 @@ ibm.growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=mo
 
 ibm.growth.output <- update(growth.output,n.iter=15000,n.thin=10)
 
-save(ibm.growth.output,file="output/ibm_growth_output.Rda")
+save(ibm.growth.output,file="output/development/ibm_growth_output.Rda")
 
 #equation 1.24 + rnorm(1,0,0.248) - 0.94 * browse - 0.488 * canopy + 0.116 * species + rnorm(1,0,1.188)
 

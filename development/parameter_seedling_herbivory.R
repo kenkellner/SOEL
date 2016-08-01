@@ -1,7 +1,7 @@
 source('format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('data/seedlingmaster.csv')
+seedling <- format.seedling('data/ibm_seedlingmaster.csv')
 exclude <- 1 - seedling$plot.data$herbivory
 
 #Plots to keep (deer not excluded, not in shelterwoods)

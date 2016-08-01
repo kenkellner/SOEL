@@ -81,7 +81,7 @@ jags.data <- list(ndispacorns=dim(ydisp)[1],shelter=ydisp$shelter,species=ydisp$
                   dist=ydisp$dist,mast=mast.ydisp)
 params <- c('disp.mean','disp.shelter'#,'disp.species'
             ,'disp.mast','sh')
-modFile <- 'development/model_dist.R'
+modFile <- 'development/model_acorn_dispersaldist.R'
 inits <- function(){list(sh=1)}
 library(jagsUI)
 dist.model <- jags(data=jags.data,inits=inits,parameters.to.save=params,model.file=modFile,

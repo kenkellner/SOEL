@@ -110,7 +110,7 @@ pdf(file="appendices/figures/fig4.pdf",width=5,height=5.8,family="Helvetica",poi
 par(mar = c(4,4.5,0.5,1) + 0.1)
 par(fig=c(0,1,0.43,1),new=FALSE,mgp=c(2.5,1,0))
 
-yearly <- read.csv('data/densityfigure_yearly_ba.csv',header=F)
+yearly <- read.csv('output/development/densityfigure_yearly_ba.csv',header=F)
 #in row 2, 1 = total basal area, 2 = ba-oak, 3 = ba-maple, 4 = ba-pop
 yearly <- yearly[,yearly[2,]==1]
 
@@ -153,7 +153,7 @@ arrows(x0=10,y0=50,x1=10,y1=31)
 text(13,53,'Harvest')
 text(10,80,'(a)',font=1,cex=1.5)
 
-final <- read.csv('data/densityfigure_final_ba.csv',header=T)
+final <- read.csv('output/development/densityfigure_final_ba.csv',header=T)
 
 bardata <- as.matrix(final[c(2,3,1),2:7])
 

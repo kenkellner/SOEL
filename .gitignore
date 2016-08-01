@@ -5,7 +5,6 @@
 *.db
 oak-lifecycle.Rproj
 output
-*.mov
 *.aux
 *.bbl
 *.blg
