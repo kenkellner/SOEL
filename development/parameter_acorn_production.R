@@ -1,6 +1,6 @@
-##########################################
-## Estimate Acorn Production Parameters ##
-##########################################
+###################################################
+## Estimate Acorn Production Parameter meanAcorn ##
+###################################################
 
 #Based on data from:
 #Kellner, K. F., J. K. Riegel, and R. K. Swihart (2014). Effects of silvicultural disturbance 
@@ -29,6 +29,7 @@ womast = (1 / (colMeans(wo,na.rm=T)/0.34))[2:10]
 #Mast years only (mast-scenario = "fixedgood")
 hist(unlist(wo[,c(3,6,10)])/0.34)
 
+#meanAcorn = 1/lambda.mast
 lambda.mast = 1/mean(unlist(wo[,c(3,6,10)]/0.34),na.rm=TRUE)
 
 #lambda = 0.04475813

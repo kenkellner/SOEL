@@ -1,11 +1,14 @@
-source('format_data.R')
+#####################################################
+## Estimate Seedling Herbivory Probability pBrowse ##
+#####################################################
 
 #Initial formatting on raw data
+source('../seedling-survival/format_data.R')
 seedling <- format.seedling('data/ibm_seedlingmaster.csv')
-exclude <- 1 - seedling$plot.data$herbivory
 
 #Plots to keep (deer not excluded, not in shelterwoods)
 plots <- c(1:54)
+exclude <- 1 - seedling$plot.data$herbivory
 keep.plots <- which(plots<49&exclude==0)
 keep.plots <- keep.plots[-2]
 
@@ -20,39 +23,8 @@ for (i in 1:dim(surv)[1]){
   if(0%in%surv[i,]){nsamples[i] <- nsamples[i]-1}
 }
 
-#Seedling-level covariates
-nseedlings <- dim(surv)[1]
-seedling.covs <- seedling$seedling.data[keep,]
-seed.sitecode <- seedling.covs$siteid
-
-seed.plotcode.raw <- seedling.covs$plotid
-seed.plotcode <- rep(1,length(which(seed.plotcode.raw==unique(seed.plotcode.raw)[1])))
-for (i in 2:24){
-  add <- rep(i,length(which(seed.plotcode.raw==unique(seed.plotcode.raw)[i])))
-  seed.plotcode <- c(seed.plotcode,add)
-}
-
-
-
-
+#Format covariate data
 species <- seedling.covs$species
-age <- seedling.covs$species
-
-#Format root collar diameter data
-rcd.raw <- as.matrix(cbind(seedling$rcd[,1],seedling$rcd[,1],seedling$rcd[,2],seedling$rcd[,2],seedling$rcd[,3],
-                           seedling$rcd[,3],seedling$rcd[,4],seedling$rcd[,4]))
-rcd.raw <- rcd.raw[keep,]
-rcd.raw[is.na(rcd.raw[,1])&age==1,1] <- mean(rcd.raw[age==1,1],na.rm=TRUE)
-rcd.raw[is.na(rcd.raw[,1])&age==0,1] <- mean(rcd.raw[age==0,1],na.rm=TRUE)
-
-for (i in 1:dim(surv)[1]){
-  for (j in 2:8){
-    if(!is.na(surv[i,j])){
-      if(is.na(rcd.raw[i,(j-1)])){
-        rcd.raw[i,(j-1)] <- rcd.raw[i,(j-2)]  
-      }}}}
-rcd.raw[,8] <- rcd.raw[,7]
-rcd <- (rcd.raw - mean(rcd.raw,na.rm=TRUE)) / sd(rcd.raw,na.rm=TRUE)
 
 #Format height data
 ht.raw <- as.matrix(cbind(seedling$height[,1],seedling$height[,1],seedling$height[,2],seedling$height[,2],seedling$height[,3],
@@ -67,8 +39,7 @@ for (i in 1:dim(surv)[1]){
       if(is.na(ht.raw[i,(j-1)])){
         ht.raw[i,(j-1)] <- ht.raw[i,(j-2)]  
       }}}}
-ht.raw[,8] <- rcd.raw[,7]
-
+ht.raw[,8] <- ht.raw[,7]
 
 #Browse - simplify to presence/absence for now
 browse <- seedling$browsedeer[keep,]
@@ -77,6 +48,7 @@ browse <- as.matrix(cbind(browse[,1]+browse[,2],browse[,3]+browse[,4],
                           browse[,5]+browse[,6],browse[,7]+browse[,8]))
 browse[which(browse>1,arr.ind=TRUE)] = 1
 
+#Bundle data into new dataframe for analysis
 br <- c(as.vector(browse[,1]),as.vector(browse[,2]),as.vector(browse[,3]),as.vector(browse[,4]))
 sp <- c(species,species,species,species)
 ht <- as.matrix(cbind(ht.raw[,2],ht.raw[,4],
@@ -89,8 +61,8 @@ ind <- c(c(1:580),c(1:580),c(1:580),c(1:580))
 ind <- as.factor(ind)
 browsedata <- data.frame(br,sp,ht,ht2,yr,ind)
 
-
+#Fit browse model (logistic regression)
+#Full model: height, height centered squared, oak species, and random effect of year
 library(MASS)
-
 browse.mod <- glmmPQL(br~ht+ht2+sp,data=browsedata,family='binomial',random=~1|yr)
 
