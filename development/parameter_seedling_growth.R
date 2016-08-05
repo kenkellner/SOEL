@@ -1,10 +1,9 @@
-#########################################
-######Seedling growth analysis###########
-#########################################
-
-source('../seedling-survival/format_data.R')
+###################################################
+## Estimate Seedling Survival Probability meanGr ##
+###################################################
 
 #Initial formatting on raw data
+source('../seedling-survival/script_format_data.R')
 seedling <- format.seedling('data/ibm_seedlingmaster.csv')
 
 #Only keep seedlings that "established"
@@ -41,9 +40,6 @@ growth <- growth[keep2,]
 nsamples <- end[keep2]
 age <- seedling$seedling.data$age[keep][keep2]
 
-st.height <- seedling$height[keep,]
-st.height <- st.height[keep2,][,1:4]
-
 #Seedling-level covariates
 nseedlings <- dim(growth)[1]
 seedling.covs <- seedling$seedling.data[keep,]
@@ -53,15 +49,22 @@ seed.plotcode <- seedling.covs$plotid
 species <- seedling.covs$species
 canopy <- seedling$plot.data$canopy2
 
-
-
+#Only keep non-sprout seedlings
 is.sprout <- sprout.raw[keep2,]
-
 keep3 <- which(rowSums(is.sprout)<1&age==1)
-
 growth <- growth[keep3,]
 
 nseedlings <- dim(growth)[1]
+
+#Seedling-level covariates
+
+seedling.covs <- seedling$seedling.data[keep,]
+seedling.covs <- seedling.covs[keep2,][keep3,]
+seed.sitecode <- seedling.covs$siteid
+seed.plotcode <- seedling.covs$plotid
+species <- seedling.covs$species
+canopy <- seedling$plot.data$canopy2
+
 #Browse - simplify to presence/absence for now
 browse <- seedling$browse[keep,]
 browse <- browse[keep2,]
@@ -77,22 +80,12 @@ for (i in 1:nseedlings){
       browse[i,j] <- 0
     }}}
 
-#Seedling-level covariates
-
-seedling.covs <- seedling$seedling.data[keep,]
-seedling.covs <- seedling.covs[keep2,][keep3,]
-seed.sitecode <- seedling.covs$siteid
-seed.plotcode <- seedling.covs$plotid
-species <- seedling.covs$species
-canopy <- seedling$plot.data$canopy2
-
 #Format plot-level variables
 nplots <- 54
 
 ##########################
 
-#Experimenting with neglog transformation
-
+#Neglog transformation on growth data for better model fit
 neglog <- function(x){
   
   return (sign(x)*log(abs(x)+1))
@@ -115,7 +108,7 @@ growth <- apply(growth,c(1,2),neglog)
 
 jags.data <- c('growth','nseedlings','nsamples'
                ,'seed.plotcode'
-               ,'canopy','browse','species','is.sprout','st.height'
+               ,'canopy','browse','species'
 )
 
 ################################
@@ -130,16 +123,15 @@ modFile <- 'development/model_seedling_growth.R'
 
 params <- c('seed.sd','obs.sd','grand.mean'
             ,'b.browse'
-            ,'b.light'
+            ,'b.canopy'
             ,'b.species'
             ,'b.browse'
-            ,'b.sprout'
-            ,'b.height'
 )
 
 ################################
 
-#Run analysis
+#Run analysis on all years
+#Model: browsed? + canopy cover + species + random seedling effect + random observation effect
 
 library(jagsUI)
 
@@ -152,6 +144,7 @@ save(ibm.growth.output,file="output/development/ibm_growth_output.Rda")
 
 #equation 1.24 + rnorm(1,0,0.248) - 0.94 * browse - 0.488 * canopy + 0.116 * species + rnorm(1,0,1.188)
 
+#Simulate growth values to compare to actual data
 simgrowth <- matrix(NA,nrow=nrow(growth),ncol=4)
 for (i in 1:dim(growth)[1]){
   ymean <- rnorm(1,0,0.248)
@@ -178,9 +171,9 @@ hist(act.growth[,1:4][act.growth[,1:4]>-10],freq=F,xlim=c(-10,50),ylim=c(0,0.12)
 
 
 
-#################################
+##############################################################################################
 
-#First 2 years only
+#First 2 years only (drought years)
 
 for (i in 1:length(nsamples)){
   if(nsamples[i]>2){nsamples[i] = 2}
@@ -221,7 +214,7 @@ hist(act.sim[,1:2][act.sim>-10&act.sim<30],freq=F,xlim=c(-10,50),ylim=c(0,0.2),
 
 ########################################################################################
 
-#Second 2 years only
+#Second 2 years only (non-drought)
 
 keep5 <- which(!is.na(growth[,3]))
 growth <- growth[keep5,3:4]
@@ -260,13 +253,6 @@ hist(growth[,1:2][growth>-10],freq=F,xlim=c(-4,8),ylim=c(0,0.30),
      xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
 hist(simgrowth[,1:2][simgrowth>-10],freq=F,xlim=c(-4,8),ylim=c(0,0.30),
      xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
-
-inv.neglog <- function(x){
-  if(is.na(x)){return(NA)}
-  if(x <= 0){
-    return(1 - exp(-x))
-  } else {return(exp(x)-1)}
-}
 
 act.growth <- apply(growth,c(1,2),inv.neglog)
 act.sim <- apply(simgrowth,c(1,2),inv.neglog)

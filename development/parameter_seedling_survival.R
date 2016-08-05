@@ -1,10 +1,9 @@
-##############################################
-##Seedling Survival Analysis##################
-##############################################
-
-source('../seedling-survival/format_data.R')
+##################################################
+## Estimate Seedling Survival Probability pSurv ##
+##################################################
 
 #Initial formatting on raw data
+source('../seedling-survival/format_data.R')
 seedling <- format.seedling('data/ibm_seedlingmaster.csv')
 
 #Only keep seedlings that "established"
@@ -18,10 +17,7 @@ for (i in 1:dim(surv)[1]){
       if(surv[i,j-1]==1){
       surv[i,j-1] = 0
       break
-      }
-    }
-  }
-}
+}}}}
 
 #Calculate number of samples for each seedling
 nsamples <- numeric(dim(surv)[1])
@@ -39,33 +35,10 @@ t <- matrix(c(1,2,3,4),ncol=4,nrow=length(age),byrow=T)
 age <- t + age
 species <- seedling.covs$species
 
-st.height <- seedling$height[keep,1:4]
-for (i in 1:dim(surv)[1]){
-  if(is.na(st.height[i,1])){st.height[i,1] = mean(st.height[,1],na.rm=T)}
-}
-for (i in 1:dim(surv)[1]){
-  for (j in 2:5){
-    if(!is.na(surv[i,j])){
-      if(is.na(st.height[i,(j-1)])){
-        st.height[i,(j-1)] <- st.height[i,(j-2)]  
-      }}}}
-
+#Shade covariate
 canopy <- seedling$plot.data$canopy2
 
-#Format browse data (presence/absence only)
-#and status of seedling as a sprout
-browse <- seedling$browse[keep,]#[keep2,]
-browse <- as.matrix(cbind(browse[,1]+browse[,2],browse[,3]+browse[,4],
-                          browse[,5]+browse[,6],browse[,7]+browse[,8]))
-browse[which(browse>1,arr.ind=TRUE)] = 1
-
-#Browse quality control
-for (i in 1:nseedlings){
-  for (j in 1:4){
-    if(is.na(browse[i,j])){
-      browse[i,j] <- 0
-    }}}
-
+#Status of seedling as a sprout
 sprout.raw <- seedling$sprout[keep,]#[keep2,]
 
 for (i in 1:dim(sprout.raw)[1]){
@@ -83,8 +56,8 @@ is.sprout <- sprout.raw
 
 jags.data <- c('surv','nseedlings','nsamples'
                ,'seed.plotcode'
-               ,'browse','species','is.sprout'
-               ,'st.height','canopy','age'
+               ,'species','is.sprout'
+               ,'canopy','age'
                )
 
 ################################
@@ -97,18 +70,16 @@ modFile <- 'development/model_seedling_survival.R'
 
 #Parameters to save
 
-params <- c(#'seed.sd'
-            'grand.mean'
+params <- c('grand.mean'
             ,'b.species','b.sprout'
-            #,'b.browse'
             ,'b.shade'
-            #,'b.height'
             ,'b.age'
   )
 
 ################################
 
-#Run analysis
+#Run analysis (all years drought and non-drought)
+#Model: species + canopy cover + age
 
 library(jagsUI)
 
@@ -121,7 +92,7 @@ save(surv.ibm.output,file='output/development/surv_ibm_output.Rda')
 
 ############
 
-#First 2 years only
+#First 2 years only (drought)
 
 for (i in 1:length(nsamples)){
   if(nsamples[i]>3){nsamples[i] = 3}
@@ -136,7 +107,7 @@ save(surv12.ibm.output,file='output/development/surv12_ibm_output.Rda')
 
 #####################
 
-#Years 3-4
+#Years 3-4 only (non-drought)
 
 keep2 <- which(surv[,3]==1)
 

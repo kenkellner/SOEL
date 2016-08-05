@@ -75,10 +75,9 @@ year.ydisp <- yearcode[keep]
 mast.ydisp <- mast[keep]
 
 #Bundle dispersal distance data and model file for JAGS
-jags.data <- list(ndispacorns=dim(ydisp)[1],shelter=ydisp$shelter,species=ydisp$wo,
+jags.data <- list(ndispacorns=dim(ydisp)[1],shelter=ydisp$shelter,
                   dist=ydisp$dist,mast=mast.ydisp)
-params <- c('disp.mean','disp.shelter'#,'disp.species'
-            ,'disp.mast','sh')
+params <- c('disp.mean','disp.shelter','disp.mast','sh')
 modFile <- 'development/model_acorn_dispersaldist.R'
 inits <- function(){list(sh=1)}
 

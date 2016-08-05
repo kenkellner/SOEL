@@ -57,9 +57,7 @@ ht <- c(as.vector(ht[,1]),as.vector(ht[,2]),as.vector(ht[,3]),as.vector(ht[,4]))
 ht2 <- ht*ht
 yr <- c(rep(1,580),rep(2,580),rep(3,580),rep(4,580))
 yr <- as.factor(yr)
-ind <- c(c(1:580),c(1:580),c(1:580),c(1:580))
-ind <- as.factor(ind)
-browsedata <- data.frame(br,sp,ht,ht2,yr,ind)
+browsedata <- data.frame(br,sp,ht,ht2,yr)
 
 #Fit browse model (logistic regression)
 #Full model: height, height centered squared, oak species, and random effect of year

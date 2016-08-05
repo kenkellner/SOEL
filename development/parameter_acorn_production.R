@@ -115,20 +115,10 @@ mastdata <- cbind(species=com[,1],com[,2:10]/0.34)
 prod <- as.matrix(mastdata[,2:10])
 prod[which(prod>100,arr.ind=T)]=NA
 
-species <- as.vector(mastdata[,1])
-
-shelter <- matrix(NA,nrow=113,ncol=9)
-shelter[,1:3] <- 0
-shelter[,4:9] <- treedata$shelter
-
-jags.data <- list(prod=prod,species=species,shelter=shelter,ntrees=dim(prod)[1],
-                  nyears=9)
+jags.data <- list(prod=prod,ntrees=dim(prod)[1],nyears=9)
 
 #In final model, production varies only with year
-params <- c('grand.mean',#'tree.sd',
-            'year.sd'
-            #'b.species','b.shelter'
-            )
+params <- c('grand.mean','year.sd')
 
 modFile <- 'development/model_acorn_production.R'
 
