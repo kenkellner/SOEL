@@ -1,33 +1,51 @@
-#library(extrafont)
-#font_install('fontcm')
-#loadfonts()
-#pdf(file="../dissertation/figures/fig6-4.pdf",width=6,height=4,family="CM Roman",pointsize=9)
+############################
+##    Drought Figure      ##
+## Figure 4 in Manuscript ##
+############################
 
-par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE)
+#Read in SOEL output files
+setwd('output/drought')
+files <- list.files()
+lapply(files,load,.GlobalEnv)
+setwd('../..')
 
+#Get required functions
+source('utility_functions.R')
+
+#Generate dataset from output
 datalist = list(dn=drought.average,d00=drought.prob0,d02=drought.prob2,d04=drought.prob4,
                 d06=drought.prob6,d08=drought.prob8,d10=drought.prob10)
 datalist <- add.newseedlings(datalist,30,37)
 datalist <- add.seedorigin(datalist)
 
+#library(extrafont)
+#font_install('fontcm')
+#loadfonts()
+#pdf(file="../dissertation/figures/fig6-4.pdf",width=6,height=4,family="CM Roman",pointsize=9)
+
+#Open tiff container
+tiff(filename="figures/Fig4.tif",width=6,height=4,units="in",res=300, pointsize=9,
+     compression = "lzw",type='cairo')
+
+#cols <- c(rgb(red=141,green=213,blue=18, maxColorValue=255),
+#          rgb(red=241,green=194,blue=50, maxColorValue=255),
+#          rgb(red=244,green=125,blue=66, maxColorValue=255))
+
+#op <- par()
+
+#Generate seedling dataset
 s <- gen.dataset(datalist,'seedlingsum')
 s$harvest <- as.factor(s$harvest)
-
 s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10','dn'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-cols <- c(rgb(red=141,green=213,blue=18, maxColorValue=255),
-          rgb(red=241,green=194,blue=50, maxColorValue=255),
-          rgb(red=244,green=125,blue=66, maxColorValue=255))
-
-
-
-op <- par(mar = c(5,4.5,1,2) + 0.1)
+#Generate seedling boxplot
+par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE, mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(seedlingsum~harvest*scenario,data=s,
              xlab="Drought Probability",
              at=c(1:18,20,21,22),
-             #col=gray.colors(3),
-             col=cols,
+             col=gray.colors(3),
+             #col=cols,
              ylab=expression("New Seedlings "~ ha^{-1}~"(7 Year Sum)"),
              xaxt='n')
 axis(1,at=c(2,5,8,11,14,17,21),tick=T,
@@ -37,17 +55,18 @@ abline(v=19)
 #text(1.5,1500,'(a)',cex=1.5)
 
 #############
-par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE)
+#Generate sapling dataset
 s <- gen.dataset(datalist,'seedorigin',37)
 s$harvest <- as.factor(s$harvest)
-
 s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10','dn'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-op <- par(mar = c(5,4.5,1,2) + 0.1)
+#Generate sapling boxplot
+par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE, mar = c(5,4.5,1,2) + 0.1)
+#op <- par()
 bx = boxplot(seedorigin~harvest*scenario,data=s,
-             #col=gray.colors(3),
-             col=cols,
+             col=gray.colors(3),
+             #col=cols,
              xlab="Drought Probability",
              at=c(1:18,20,21,22),
              ylab=expression("Seed-origin Saplings "~ ha^{-1} ~"(Year 7)"),
@@ -56,16 +75,19 @@ axis(1,at=c(2,5,8,11,14,17,21),tick=T,
      labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
 abline(v=19)
 legend("topright",legend=c('No Harvest','Midstory Removal','Clearcut'),
-       #fill=gray.colors(3),
-       fill=cols,
+       fill=gray.colors(3),
+       #fill=cols,
        bg='white')
 #text(1.5,100,'(b)',cex=1.5)
 
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig6-4.pdf")
+#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+#embed_fonts("../dissertation/figures/fig6-4.pdf")
 
-##For presentation
+#####################################################################################
+##For dissertation talk
+
+#Seedlings
 op <- par(mar = c(5,4.5,1.5,2) + 0.1)
 bx = boxplot(seedlingsum~harvest*scenario,data=s,
              xlab="Drought Probability",
@@ -80,7 +102,7 @@ axis(1,at=c(2,5,8,11,14,17,21),tick=T,
 abline(v=19)
 legend('topright',legend=c('No Harvest','Shelterwood','Clearcut'),fill=cols)
 
-
+#Saplings
 bx = boxplot(seedorigin~harvest*scenario,data=s,
              #col=gray.colors(3),
              col=cols,

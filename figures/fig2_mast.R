@@ -1,21 +1,40 @@
+######################################
+##  Mast and Harvest Timing Figure  ##
+##     Figure 2 in Manuscript       ##
+######################################
+
+#Read in SOEL output files
+setwd('output/mast')
+files <- list.files()
+lapply(files,load,.GlobalEnv)
+setwd('../..')
+
+#Get required functions
+source('utility_functions.R')
+
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
 #pdf(file="../dissertation/figures/fig6-2.pdf",width=5.5,height=4,family="CM Roman",pointsize=9)
 
-par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE)
+#Open tiff container
+tiff(filename="figures/Fig2.tif",width=5.5,height=4,units="in",res=300, pointsize=9,
+     compression = "lzw",type='cairo')
+
+#Bind output files together
 datalist = list(pg11=mast.priorgood1.1SD,pg21=mast.priorgood2.1SD,pg12=mast.priorgood1.2SD,
                 pg22=mast.priorgood2.2SD,pga=mast.average)
 datalist <- add.newseedlings(datalist,30,37)
 datalist <- add.seedorigin(datalist)
 
+#Generate seedling dataset from output files
 s <- gen.dataset(datalist,'seedclass123',30)
 s$harvest <- as.factor(s$harvest)
-
 s$scenario = factor(s$scenario,c('pga','pg11','pg21','pg12','pg22'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-op <- par(mar = c(5,4.5,1,2) + 0.1)
+#Generate boxplot for seedlings and label
+par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE,mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(seedclass123~harvest*scenario,data=s,col=gray.colors(3),
              xlab="",
              at=c(1,2,3,4.5,5.5,6.5,8,9,10,11.5,12.5,13.5,15,16,17),
@@ -29,18 +48,20 @@ text(c(2,5.5,9,12.5,16),
      bx$stats[5,c(2,5,8,11,14)]+3000,
      c('A','B','C','D','E'))
 
+#Add legend
 legend("topleft",legend=c('No Harvest','Midstory Removal','Clearcut'),fill=gray.colors(3))
 text(16.5,9000,'(a)',cex=1.5)
 
 #############
-par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE)
+
+#Generate sapling dataset
 s <- gen.dataset(datalist,'seedclass4',37)
 s$harvest <- as.factor(s$harvest)
-
 s$scenario = factor(s$scenario,c('pga','pg11','pg21','pg12','pg22'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-op <- par(mar = c(5,4.5,1,2) + 0.1)
+#Generate boxplot for saplings and label
+par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE)
 bx = boxplot(seedclass4~harvest*scenario,data=s,col=gray.colors(3),
              xlab="",
              at=c(1,2,3,4.5,5.5,6.5,8,9,10,11.5,12.5,13.5,15,16,17),
@@ -57,5 +78,5 @@ text(c(1,2,3,4.5,5.5,6.5,8,9,10,11.5,12.5,13.5,15,16,17),
 text(16.5,90,'(b)',cex=1.5)
 
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig6-2.pdf")
+#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.19/bin/gswin64c.exe")
+#embed_fonts("../dissertation/figures/fig6-2.pdf")

@@ -1,5 +1,5 @@
 
-source('sim_function.R')
+source('run_SOEL.R')
 
 library(RPushbullet)
 
@@ -113,7 +113,7 @@ qarg.narrow <- list(pDispersal=list(min=lw[1],max=up[1]),
 
 start.time <- Sys.time()
 
-sens.test.int <- forest.sim(nreps=504,burnin=30,nyears=40,
+sens.test.int <- run.SOEL(nreps=504,burnin=30,nyears=40,
                               harvests = c('none'),
                               force.processors=12, ram.max=5000, 
                               sensitivity=TRUE,
@@ -125,7 +125,7 @@ sens.test.int <- forest.sim(nreps=504,burnin=30,nyears=40,
 save(sens.test.int,file='output/sens_test_int.Rdata')
 pbPost('file',url='output/sens_test_int.Rdata')
 
-sens.test.int.nocorr <- forest.sim(nreps=504,burnin=30,nyears=40,
+sens.test.int.nocorr <- run.SOEL(nreps=504,burnin=30,nyears=40,
                             harvests = c('none'),
                             force.processors=12, ram.max=5000, 
                             sensitivity=TRUE,

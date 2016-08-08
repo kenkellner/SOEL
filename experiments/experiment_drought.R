@@ -1,6 +1,6 @@
 ##Comparison of different drought scenarios given average conditions otherwise
 
-source('sim_function.R')
+source('run_SOEL.R')
 
 library(RPushbullet)
 
@@ -8,7 +8,7 @@ start.time <- Sys.time()
 
 #Run experiment and save results
 
-drought.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                         burnin=30,nyears=40,
                         harvests = c('none','clearcut','shelterwood'),
                         mast.scenario = "hee",
@@ -19,7 +19,7 @@ drought.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                         ram.max = 5000)
 save(drought.average,file='output/drought/drought_average.Rdata')
 
-drought.prob0 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                               burnin=30,nyears=40,
                               harvests = c('none','clearcut','shelterwood'),
                               mast.scenario = "hee",
@@ -32,7 +32,7 @@ drought.prob0 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
 save(drought.prob0,file='output/drought/drought_prob0.Rdata')
 
 
-drought.prob2 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -44,7 +44,7 @@ drought.prob2 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                             ram.max = 5000)
 save(drought.prob2,file='output/drought/drought_prob2.Rdata')
 
-drought.prob4 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -56,7 +56,7 @@ drought.prob4 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                             ram.max = 5000)
 save(drought.prob4,file='output/drought/drought_prob4.Rdata')
 
-drought.prob6 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -68,7 +68,7 @@ drought.prob6 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                             ram.max = 5000)
 save(drought.prob6,file='output/drought/drought_prob6.Rdata')
 
-drought.prob8 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -80,7 +80,7 @@ drought.prob8 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                             ram.max = 5000)
 save(drought.prob8,file='output/drought/drought_prob8.Rdata')
 
-drought.prob10 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -92,7 +92,7 @@ drought.prob10 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                             ram.max = 5000)
 save(drought.prob10,file='output/drought/drought_prob10.Rdata')
 
-drought.varying.prob0 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.varying.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                     burnin=30,nyears=40,
                                     harvests = c('none','clearcut','shelterwood'),
                                     mast.scenario = "hee",
@@ -104,7 +104,7 @@ drought.varying.prob0 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                     ram.max = 5000)
 save(drought.varying.prob0,file='output/drought/drought_varying_prob0.Rdata')
 
-drought.varying.prob2 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.varying.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -116,7 +116,7 @@ drought.varying.prob2 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                             ram.max = 5000)
 save(drought.varying.prob2,file='output/drought/drought_varying_prob2.Rdata')
 
-drought.varying.prob4 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.varying.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                     burnin=30,nyears=40,
                                     harvests = c('none','clearcut','shelterwood'),
                                     mast.scenario = "hee",
@@ -128,7 +128,7 @@ drought.varying.prob4 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                     ram.max = 5000)
 save(drought.varying.prob4,file='output/drought/drought_varying_prob4.Rdata')
 
-drought.varying.prob6 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.varying.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                     burnin=30,nyears=40,
                                     harvests = c('none','clearcut','shelterwood'),
                                     mast.scenario = "hee",
@@ -140,7 +140,7 @@ drought.varying.prob6 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                     ram.max = 5000)
 save(drought.varying.prob6,file='output/drought/drought_varying_prob6.Rdata')
 
-drought.varying.prob8 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.varying.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                     burnin=30,nyears=40,
                                     harvests = c('none','clearcut','shelterwood'),
                                     mast.scenario = "hee",
@@ -152,7 +152,7 @@ drought.varying.prob8 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                     ram.max = 5000)
 save(drought.varying.prob8,file='output/drought/drought_varying_prob8.Rdata')
 
-drought.varying.prob10 <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.varying.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                     burnin=30,nyears=40,
                                     harvests = c('none','clearcut','shelterwood'),
                                     mast.scenario = "hee",

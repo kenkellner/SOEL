@@ -2,31 +2,31 @@
 ## Seedling Validation Experiment Code ##
 #########################################
 
-source('sim_function.R')
+source('run_SOEL.R')
 
 #Run model(s) for no harvest treatment
 
-seedlingsval.out <- forest.sim(model='ibm', nreps=30, nyears=40, 
+seedlingsval.out <- run.SOEL(model='ibm', nreps=30, nyears=40, 
                                harvests=c('none'),seedlings='hee',
                                acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                             disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                mastscenario="hee")
-seedlingsval.none.simple <- forest.sim(model='ibm', nreps=30, nyears=40, 
+seedlingsval.none.simple <- run.SOEL(model='ibm', nreps=30, nyears=40, 
                                harvests=c('none'),seedlings='simple',
                                acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                             disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                mastscenario="hee")
-seedlingsval.none.simple6 <- forest.sim(model='ibm', nreps=30, nyears=40, 
+seedlingsval.none.simple6 <- run.SOEL(model='ibm', nreps=30, nyears=40, 
                                        harvests=c('none'),seedlings='simple',maxgrowth=0.6,
                                        acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                     disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                        mastscenario="hee")
-seedlingsval.none.none <- forest.sim(model='ibm', nreps=30, nyears=40, 
+seedlingsval.none.none <- run.SOEL(model='ibm', nreps=30, nyears=40, 
                                         harvests=c('none'),seedlings='none',
                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                         mastscenario="hee")
-seedlingsval.none.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=40, 
+seedlingsval.none.jabowa <- run.SOEL(model='jabowa', nreps=30, nyears=40, 
                                      harvests=c('none'),seedlings='none',
                                      acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                   disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
@@ -35,27 +35,27 @@ seedlingsval.none.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=40,
 ############################################################
 #Run model(s) for clearcut treatment and format output
 
-seedlingsval.clear <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.clear <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                harvests=c('clearcut'),seedlings='hee',
                                 acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                 disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                 mastscenario="hee")
-seedlingsval.clear.simple <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.clear.simple <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                  harvests=c('clearcut'),seedlings='simple',
                                  acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                               disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                  mastscenario="hee")
-seedlingsval.clear.simple6 <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.clear.simple6 <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                         harvests=c('clearcut'),seedlings='simple',maxgrowth=0.6,
                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                         mastscenario="hee")
-seedlingsval.clear.none <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.clear.none <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                          harvests=c('clearcut'),seedlings='none',
                                          acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                       disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                          mastscenario="hee")
-seedlingsval.clear.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=30, burnin=20,
+seedlingsval.clear.jabowa <- run.SOEL(model='jabowa', nreps=30, nyears=30, burnin=20,
                                       harvests=c('clearcut'),seedlings='none',
                                       acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                    disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
@@ -63,27 +63,27 @@ seedlingsval.clear.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=30, bur
 
 ############################################################
 #Run model(s) for shelterwood treatment and format output
-seedlingsval.shelt <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.shelt <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                  harvests=c('shelterwood'),seedlings='hee',
                                  acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                               disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                  mastscenario="hee")
-seedlingsval.shelt.simple <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.shelt.simple <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                  harvests=c('shelterwood'),seedlings='simple',
                                  acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                               disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                  mastscenario="hee")
-seedlingsval.shelt.simple6 <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.shelt.simple6 <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                         harvests=c('shelterwood'),seedlings='simple',maxgrowth=0.6,
                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                         mastscenario="hee")
-seedlingsval.shelt.none <- forest.sim(model='ibm', nreps=30, nyears=30, burnin=20,
+seedlingsval.shelt.none <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
                                          harvests=c('shelterwood'),seedlings='none',
                                          acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                       disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
                                          mastscenario="hee")
-seedlingsval.shelt.jabowa <- forest.sim(model='jabowa', nreps=30, nyears=30, burnin=20,
+seedlingsval.shelt.jabowa <- run.SOEL(model='jabowa', nreps=30, nyears=30, burnin=20,
                                          harvests=c('shelterwood'),seedlings='simple',
                                          acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
                                                       disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
@@ -99,5 +99,5 @@ save('seedlingsval.out','seedlingsval.none.simple','seedlingsval.none.simple6',
      'seedlingsval.clear.simple','seedlingsval.clear.simple6','seedlingsval.clear.none',
      'seedlingsval.clear.jabowa','seedlingsval.shelt','seedlingsval.shelt.simple',
      'seedlingsval.shelt.simple6','seedlingsval.shelt.none','seedlingsval.shelt.jabowa',
-     file='output/seedlings_val_figure.Rdata')
+     file='output/development/seedlings_val_figure.Rdata')
 

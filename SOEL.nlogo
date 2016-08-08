@@ -216,11 +216,10 @@ end
 
 ;Calculate effect of light available to a given tree on growth depending on shade tolerance; see S1 Section 5.1, Botkin 1993
 to-report light-growth-index [light-input tol-input] ;Takes available light and species tolerance class as input
-  ;Based on Botkin 1993 and Bonan 1990
   if tol-input = "low" [
     report (2.24 * (1 - exp(-1.136 * (light-input - 0.08))))
   ]
-  if tol-input = "intermediate" [
+  if tol-input = "intermediate" [ ;Based on Bonan 1990
     report (1.371 * (1 - exp(-2.227 * (light-input - 0.05))))
   ]
   if tol-input = "high" [
@@ -1124,6 +1123,8 @@ to calc-site-quality
 
 end
 
+
+;Function to populate the simulation with an initial set of trees  based on user inputs
 to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-maple n-sap-poplar]
   ;Simulate overstory of new forest stand
   ;Create adult trees

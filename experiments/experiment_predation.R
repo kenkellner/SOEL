@@ -1,13 +1,13 @@
 ##Comparison of different seed predation scenarios
 
-source('sim_function.R')
+source('run_SOEL.R')
 
 library(RPushbullet)
 
 start.time <- Sys.time()
 
 #Run experiment and save results
-weevil.dispersal.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.dispersal.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                 burnin=30,nyears=40,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
@@ -17,7 +17,7 @@ weevil.dispersal.average <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                 ram.max = 5000)
 save(weevil.dispersal.average,file='output/predation/weevil_dispersal_average.Rdata')
 
-weevil.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                 burnin=30,nyears=40,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
@@ -27,7 +27,7 @@ weevil.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                 ram.max = 5000)
 save(weevil.yearlyeff,file='output/predation/weevil_yearlyeff.Rdata')
 
-dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+dispersal.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                 burnin=30,nyears=40,
                                 harvests = c('none','shelterwood'),
                                 mast.scenario = "hee",
@@ -38,7 +38,7 @@ dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
 save(dispersal.yearlyeff,file='output/predation/dispersal_yearlyeff.Rdata')
 
 
-weevil.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                               burnin=30,nyears=40,
                               harvests = c('none','shelterwood'),
                               mast.scenario = "hee",
@@ -48,7 +48,7 @@ weevil.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                               ram.max = 5000)
 save(weevil.treateff,file='output/predation/weevil_treateff.Rdata')
 
-dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+dispersal.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                    burnin=30,nyears=40,
                                    harvests = c('none','shelterwood'),
                                    mast.scenario = "hee",
@@ -58,7 +58,7 @@ dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                    ram.max = 5000)
 save(dispersal.treateff,file='output/predation/dispersal_treateff.Rdata')
 
-weevil.dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.dispersal.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',
@@ -68,7 +68,7 @@ weevil.dispersal.yearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=3
                                         ram.max = 5000)
 save(weevil.dispersal.yearlyeff,file='output/predation/weevil_dispersal_yearlyeff.Rdata')
 
-weevil.dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.dispersal.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',
@@ -78,7 +78,7 @@ weevil.dispersal.treateff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36
                                         ram.max = 5000)
 save(weevil.dispersal.treateff,file='output/predation/weevil_dispersal_treateff.Rdata')
 
-weevil.treatyearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',
@@ -88,7 +88,7 @@ weevil.treatyearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                         ram.max = 5000)
 save(weevil.treatyearlyeff,file='output/predation/weevil_treatyearlyeff.Rdata')
 
-dispersal.treatyearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+dispersal.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                     burnin=30,nyears=40,
                                     harvests = c('none','shelterwood'),
                                     mast.scenario = 'hee',
@@ -98,7 +98,7 @@ dispersal.treatyearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
                                     ram.max = 5000)
 save(dispersal.treatyearlyeff,file='output/predation/dispersal_treatyearlyeff.Rdata')
 
-weevil.dispersal.treatyearlyeff <- forest.sim(xcorewidth=140, ycorewidth=140, nreps=36,
+weevil.dispersal.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
                                         mast.scenario = 'hee',

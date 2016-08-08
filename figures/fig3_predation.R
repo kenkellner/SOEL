@@ -1,22 +1,37 @@
+#########################################
+##  Seed Predation and Harvest Figure  ##
+##      Figure 3 in Manuscript         ##
+#########################################
 
-datalist <- list(avg=weevil.dispersal.average,trt=dispersal.treateff,yrly=dispersal.yearlyeff,
-                 treat.yrly=dispersal.treatyearlyeff)
+#Read in SOEL output files
+setwd('output/predation')
+files <- list.files()
+lapply(files,load,.GlobalEnv)
+setwd('../..')
 
+#Get required functions
+source('utility_functions.R')
+
+#Generate dataset from SOEL output files
 datalist <- list(avg=weevil.dispersal.average,trt=weevil.dispersal.treateff,yrly=weevil.dispersal.yearlyeff,
                  treat.yrly=weevil.dispersal.treatyearlyeff)
-
-
 datalist <- add.newseedlings(datalist,30,37)
 datalist <- add.seedorigin(datalist)
 datalist <- add.acornsum(datalist,30,37)
 
+#datalist <- list(avg=weevil.dispersal.average,trt=dispersal.treateff,yrly=dispersal.yearlyeff,
+#                 treat.yrly=dispersal.treatyearlyeff)
 
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-pdf(file="../dissertation/figures/fig6-3.pdf",width=5,height=5,family="CM Roman",pointsize=8)
+#pdf(file="../dissertation/figures/fig6-3.pdf",width=5,height=5,family="CM Roman",pointsize=8)
 
+#Open tiff container
+tiff(filename="figures/Fig3.tif",width=5,height=5,units="in",res=300, pointsize=8,
+     compression = "lzw",type='cairo')
 
+#Plot acorns produced x scenario
 par(fig=c(0,0.53,0.43,1),mgp=c(2.5,1,0),new=FALSE)
 h = gen.dataset(datalist,'acornsum')
 
@@ -26,7 +41,6 @@ op <- par(mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(acornsum/1000~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',
              at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(500,875),
              ylab=expression("Acorns "~ ha^{-1}~"(7 Year Sum) x 1000"))
-#axis(1,at=c(1.5,4,6.5,9),tick=F)
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
@@ -35,6 +49,7 @@ text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+15),"A")
 text(9.5,510,'(a)',cex=1.5)
 
 ###########
+#Plot percent emergence x scenario
 par(fig=c(0.47,1,0.43,1),mgp=c(2.5,1,0),new=TRUE)
 
 h = gen.dataset(datalist,'pctgerm',30)
@@ -47,7 +62,6 @@ h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
 op <- par(mar = c(5,4.5,1,2) + 0.1)
 bx = boxplot(pctgerm~harvest*scenario,data=h,col=gray.colors(2),xaxt='n',
              at=c(1,2,3.5,4.5,6,7,8.5,9.5),ylim=c(0.0,0.07),ylab=expression("Yearly Percent Emergence"))
-#axis(1,at=c(1.5,4,6.5,9),tick=F)
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
@@ -59,6 +73,7 @@ text(c(1,2,3.5,4.5,6,7,8.5,9.5),
 text(9.5,0.002,'(b)',cex=1.5)
 
 #############
+#Plot number of seedlings x scenario
 par(fig=c(0,0.53,0,0.57),mgp=c(2.5,1,0),new=TRUE)
 h = gen.dataset(datalist,'seedlingsum')
 
@@ -71,13 +86,13 @@ axis(1,at=c(1.5,4,6.5,9),tick=F,
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
-#legend("topleft",legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
 text(c(1,2,3.5,4.5,6,7,8.5,9.5),
      bx$stats[5,]+c(1200,1200,1900,1200,1200,1200,1200,1200),
      c('A','A','A','B','C','C','C','C'))
 text(9.5,10500,'(c)',cex=1.5)
 
 ##########
+#Plot number of saplings x scenario
 par(fig=c(0.47,1,0,0.57),mgp=c(2.5,1,0),new=TRUE)
 h = gen.dataset(datalist,'seedorigin',37)
 
@@ -91,25 +106,20 @@ axis(1,at=c(1.5,4,6.5,9),tick=F,
 abline(v=mean(c(2,3.5)))
 abline(v=mean(c(4.5,6)))
 abline(v=mean(c(7,8.5)))
-#legend(0.5,250,legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
 text(c(1,2,3.5,4.5,6,7,8.5,9.5),(bx$stats[5,]+c(10,10,20,20,20,10,15,10)),
      c('A','B','A','B','C','D','C','D'))
 text(9.5,85,'(d)',cex=1.5)
 
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig6-3.pdf")
-
+#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+#embed_fonts("../dissertation/figures/fig6-3.pdf")
 
 ##################################
-
-#Without year effects
+#Plot only C and TE scenarios for dissertation talk
+#Seedlings
 op <- par(mar = c(5,4.5,1.5,2) + 0.1)
 cols <- c(rgb(red=141,green=213,blue=18, maxColorValue=255),
           rgb(red=244,green=125,blue=66, maxColorValue=255))
-
-
-#par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE)
 
 h = gen.dataset(datalist,'seedlingsum')
 h <- h[h$scenario%in%c('avg','trt'),]
@@ -123,16 +133,13 @@ axis(1,at=c(1.5,4),tick=F,
      labels=c("None",'Shelterwood'))
 abline(v=mean(c(2,3.5)))
 
-#legend("topleft",legend=c("No Harvest","Shelterwood"),fill=gray.colors(2))
 text(c(1,2,3.5,4.5),
      bx$stats[5,]+c(500,500,500,500),
      c('A','A','A','B'))
-legend('topleft',legend=c("Model C","Model H"),fill=cols,
-      )
-#text(9.5,10500,'(c)',cex=1.5)
+legend('topleft',legend=c("Model C","Model H"),fill=cols)
 
 ##########
-#par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE)
+#Saplings
 h = gen.dataset(datalist,'seedorigin',37)
 h <- h[h$scenario%in%c('avg','trt'),]
 

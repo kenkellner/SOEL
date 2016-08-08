@@ -1,10 +1,11 @@
-###########################################################
+#####################################################
 ## Function to control SOEL simulations in NetLogo ##
-###########################################################
+#####################################################
 
 #Dependencies
-#Java (needed for NetLogo anyway)
+#Java (needed for NetLogo anyway, if on Linux)
 #install.packages('RNetLogo')
+#install.packages('pse')
 
 #May need to manually set system paths to java install, e.g. below:
 #system('export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre')
@@ -14,13 +15,17 @@
 
 #Netlogo model files should be in current working directory
 
+#NOTE: running this script, particularly in parallel, demands a lot of RAM.
+#Expect 2-4 GB of RAM used per concurrently running simulation.
+#This appears to mainly be a result of a lot of rJava/RNetLogo overhead.
+
 #Path to NetLogo installation based on OS
 if(Sys.info()[['sysname']] == "Windows"){
   nl.path <- "C:/Program Files (x86)/Netlogo 5.2.0"}
 if(Sys.info()[['sysname']] == "Linux"){
   nl.path <- paste('/home/',Sys.info()[['user']],'/programs/netlogo-5.2.0',sep="")}
 
-forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
+run.SOEL <- function(model = 'ibm', #Model type (ibm or jabowa)
                        #Size of simulation in m (ibm) or cells (jabowa, e.g. 10,10,2)
                        xcorewidth = 100, ycorewidth = 100, buffer = 20, 
                        #Harvest types to include in run; default is all
@@ -85,10 +90,10 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
   start.time <- Sys.time()
   
   #Get path to appropriate model
-  if(model == 'ibm'){model.path <- paste(getwd(),"/oak_ibm.nlogo",sep="")
-  } else {model.path <- paste(getwd(),"/oak_ibm_jabowa.nlogo",sep="")}
+  if(model == 'ibm'){model.path <- paste(getwd(),"/SOEL.nlogo",sep="")
+  } else {model.path <- paste(getwd(),"/JABOWA.nlogo",sep="")}
   
-  #Set list of resporters to save
+  #Set list of reporters to save
   if(model == 'ibm' & seedlings != 'none'){
     reporters <- c("ticks","basal-area","basal-area-ovs",
                    "ba-oak","ba-oak-ovs","ba-map","ba-map-ovs","ba-pop","ba-pop-ovs",
@@ -244,7 +249,9 @@ forest.sim <- function(model = 'ibm', #Model type (ibm or jabowa)
     #Setup NetLogo model
     NLCommand("setup")
     
+    #Variables that need to be set for specific scenarios
     if(sensitivity){NLCommand('set sens-params',sens.params)}
+    
     if(mast.scenario == "priordifference"){
       NLCommand(paste('set prioryears',prior.years))
       NLCommand(paste('set mastsd',mast.sd))

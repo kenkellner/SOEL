@@ -1,27 +1,38 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;        JABOWA Implementation in NetLogo       ;;
+;;              Based on Botkin 1993             ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;NetLogo extensions imported
 extensions [profiler]
+
+;Name variables that are constant across the simulation (and are not set via slider/chooser)
 globals [
-  basal-area basal-area-ft basal-area-ovs   
-  qdbh qdbh-in qdbh-ovs  
+  basal-area basal-area-ft basal-area-ovs
+  qdbh qdbh-in qdbh-ovs
   dens dens-ac dens-ovs
-  
+
   ba-oak ba-oak-ovs
   qdbh-oak qdbh-oak-ovs
   dens-oak dens-oak-ovs
-  
+
   ba-map ba-map-ovs
   qdbh-map qdbh-map-ovs
   dens-map dens-map-ovs
-  
+
   ba-pop ba-pop-ovs
   qdbh-pop qdbh-pop-ovs
   dens-pop dens-pop-ovs
- 
+
   prop-oak prop-tol prop-intol
   sitequal-boak sitequal-woak sitequal-maple sitequal-poplar
   harvest-year shelter-phase
   xmin xmax ymin ymax
   seedlings-class4
   ]
+
+
+;Set up descriptive variables for agents and patches in the simulation
 
 turtles-own [in-core light age dbh height actual-growth ba lai fAL
   Dmax Hmax Amax b2 b3 C G light-tol intrinsic-mortality min-increment growth-mortality]
@@ -38,59 +49,65 @@ patches-own [plight]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;Setup function: initializes the simulation
 to setup
+
+  ;Clean up old data if it is present
   clear-all
   reset-ticks
-  
+
+  ;Resize the simulation as requested by the user (variable 'adjust' is used later to calculate area-specific variables)
+  ;World is made up of 10x10 m patches
   set xmin buffer
-  set xmax buffer + x-core - 1  
+  set xmax buffer + x-core - 1
   set ymin buffer
   set ymax buffer + y-core - 1
-  
-  let adjust (x-core + buffer * 2) * (y-core + buffer * 2) / 100
-  
+
   resize-world 0 (x-core + 2 * buffer - 1) 0 (y-core + 2 * buffer - 1)
-  ;resize-world (-1 * (xcutoff + buffer - 1)) (xcutoff + buffer) (-1 * (ycutoff + buffer - 1)) (ycutoff + buffer)
-  
+  let adjust (x-core + buffer * 2) * (y-core + buffer * 2) / 100
+
+  ;Take specified site condition variables and calculate site quality for each species
   calc-site-quality
- 
+
+ ;HEE-based initial forest variables
   if HEE-mean = TRUE [
-    init-stand adjust TRUE 89 11 9 95 499 163 
-    calc-global-vars 
-    setup-plots  
-  ] 
-  
-  ask patches [color-patches]
-  set harvest-year burnin
-  set shelter-phase 1
-  
+    init-stand adjust TRUE 89 11 9 95 499 163
+    calc-global-vars
+    setup-plots
+  ]
+
+  ask patches [color-patches] ;Color patches based on canopy cover
+  set harvest-year burnin ;Set-up when harvest will occur (after burn-in)
+  set shelter-phase 1 ;Set shelter-phase to 1 to initialize the shelterwood harvest (if necessary)
+
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;Function that is called at each time step ('tick') of the simulation
 to go
-  
+
   ask patches [
-    regenerate
-    color-patches   
+    regenerate ;Check if a new maple or poplar appears in the patch based on the environment
+    color-patches ;Re-color patches based on new forest structure
   ]
 
   ask turtles [
-    calc-light
+    calc-light ;Calculate light available to each tree
   ]
-  
+
   ask turtles [
-    grow
-    check-survival
+    grow ;Grow based on environment
+    check-survival ;Determine survival based on growth
   ]
-    
-  conduct-harvest
-  
-  calc-global-vars
-  
+
+  conduct-harvest ;Check if a harvest should occur and if so conduct it
+
+  calc-global-vars ;Calculate global variables at the end of the time step and report them as necessary
+
   tick
+
 end
 
 
@@ -102,52 +119,56 @@ end
 ;;;;;;;;                    Basic JABOWA Procedures                      ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;Function that generates tree characteristics from dbh
 to allometerize [dbh-input]
   ;Based on JABOWA, Botkin 1993
   ;b2 = 2*(Hmax - 137) / Dmax and b3 = (Hmax - 137) / Dmax ^2
-  set height (137 + b2 * (dbh-input * 100) - b3 * ((dbh-input * 100) ^ 2)) / 100  
+  set height (137 + b2 * (dbh-input * 100) - b3 * ((dbh-input * 100) ^ 2)) / 100
   ;leaf weight based on dbh with C species-specific
   ;Exponent can be anywhere from 1.5 to 3 (Botkin 1993)
-  set lai (C * (dbh-input * 100) ^ (2))  
-  set ba (pi * (dbh / 2) ^ 2) ;Basal area 
+  set lai (C * (dbh-input * 100) ^ (2))
+  set ba (pi * (dbh / 2) ^ 2) ;Basal area
 end
 
 
-to-report max-growth-increment [dbh-input height-input] ;Based on JABOWA, Botkin 1993
+;Function that generates maximum possible diameter growth in a year
+to-report max-growth-increment [dbh-input height-input]
   let num (G * dbh-input * ((1 - (dbh-input * (137 + (b2 * dbh-input) - (b3 * dbh-input ^ 2))) / (Dmax * Hmax))))
   let denom (274 + (3 * b2 * dbh-input) - (4 * b3 * dbh-input ^ 2))
-  report (num / denom)  
+  report (num / denom)
 end
 
 
-to-report light-growth-index [light-input tol-input]  
-  ;Based on Botkin 1993 and Bonan 1990
-  if tol-input = "low" [    
-    report (2.24 * (1 - exp(-1.136 * (light-input - 0.08))))       
-  ] 
-  if tol-input = "intermediate" [
+;Calculate effect of light available to a given tree on growth depending on shade tolerance
+to-report light-growth-index [light-input tol-input]
+  if tol-input = "low" [
+    report (2.24 * (1 - exp(-1.136 * (light-input - 0.08))))
+  ]
+  if tol-input = "intermediate" [ ;Based on Bonan 1990
     report (1.371 * (1 - exp(-2.227 * (light-input - 0.05))))
-  ]  
+  ]
   if tol-input = "high" [
-    report (1 - exp(-4.64 * (light-input - 0.05)))   
-  ]  
+    report (1 - exp(-4.64 * (light-input - 0.05)))
+  ]
 end
 
 
-to-report degree-days-index [degdays-input degd-min-input degd-max-input]  
-  let tdegd (4 * (degdays-input - degd-min-input) * (degd-max-input - degdays-input) / ((degd-max-input - degd-min-input) ^ 2)) 
-  report max list 0 tdegd    
+;Calculate effect of site climate (degree-days) on site quality for a given species
+to-report degree-days-index [degdays-input degd-min-input degd-max-input]
+  let tdegd (4 * (degdays-input - degd-min-input) * (degd-max-input - degdays-input) / ((degd-max-input - degd-min-input) ^ 2))
+  report max list 0 tdegd
 end
 
 
-to-report saturation-index [wt-input wt-dist-min-input]  
-  let wefi (1 - (wt-dist-min-input / wt-input))  
-  report max list 0 wefi  
+;Calculate effect of distance to water table on site quality for a given species
+to-report saturation-index [wt-input wt-dist-min-input]
+  let wefi (1 - (wt-dist-min-input / wt-input))
+  report max list 0 wefi
 end
 
 
-to-report nitrogen-index [N-input N-tol-input]  
+;Calculate effect of available nitrogen at site on site quality
+to-report nitrogen-index [N-input N-tol-input]
   if N-tol-input = "intolerant" [
     let a1 2.99 let a2 0.00175 let a3 207.43 let a4 -5 let a5 2.9 let a6 3.671
     let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (N-input + a3))))
@@ -162,10 +183,11 @@ to-report nitrogen-index [N-input N-tol-input]
     let a1 2.79 let a2 0.00179 let a3 219.77 let a4 -0.6 let a5 1.0 let a6 2.190
     let lambdaN (a1 * (1 - 10 ^ (-1 * a2 * (N-input + a3))))
     report (a4 + a5 * lambdaN) / a6
-    ]  
+    ]
 end
 
 
+;Calculate effect of wilt index on site quality for a given species
 to-report wilt-index [wilt-input wilt-max]
   ;wilt is difference between potential and actual evapotranspiration divided by potential evapotranspiration
   let wifi (1 - (wilt-input / wilt-max) ^ 2)
@@ -173,67 +195,73 @@ to-report wilt-index [wilt-input wilt-max]
 end
 
 
+;Calculate diameter growth; maximum growth adjusted by site quality and light available
 to grow
 
   let max-growth (max-growth-increment (dbh * 100) (height * 100))
-  
-  set fAL light-growth-index light light-tol  
+
+  set fAL light-growth-index light light-tol
   let sitequal 1
-  ifelse breed = oaks [ifelse species = "WO" [set sitequal sitequal-woak] [set sitequal sitequal-boak]] 
-  [ifelse breed = maples [set sitequal sitequal-maple] 
+  ifelse breed = oaks [ifelse species = "WO" [set sitequal sitequal-woak] [set sitequal sitequal-boak]]
+  [ifelse breed = maples [set sitequal sitequal-maple]
     [set sitequal sitequal-poplar]]
-  
+
   set actual-growth (max-growth * fAL * sitequal)
-  set dbh (dbh * 100 + actual-growth) / 100 
+  set dbh (dbh * 100 + actual-growth) / 100
   allometerize dbh
-  
+
   if dbh >= 0.1 and shape = "square" [
     if breed = oaks [set size 1 set shape "tree"]
     if breed = maples [set size 1 set shape "tree"]
     if breed = poplars [set size 1 set shape "tree"]
   ]
-  
+
 end
 
 
+;Check survival based on intrinsic mortality and a penalty if the tree did not grow
 to check-survival
-  
-  if random-float 1 < intrinsic-mortality [die] 
+
+  if random-float 1 < intrinsic-mortality [die]
   if actual-growth < min-increment and random-float 1 < growth-mortality [die]
   set age age + 1
-  
+
 end
 
+
+;Calculate light available at ground level in a patch based on canopy density of trees in patch
 to-report patch-light
-  
+
   let k light-extinct
   let canopy turtles-here
   report Exp (-1 * sum [lai * k] of canopy);]
-  
+
 end
 
+
+;Function to allow reproduction by spawning new saplings in 10x10m patches
 to regenerate
-  
+
   set plight patch-light
-  
+
   let AL light-growth-index plight "high"
   let Al-pop light-growth-index plight "low"
   let Al-oak light-growth-index plight "intermediate"
   let max-maple-saplings 3 let max-poplar-saplings 10 let max-oak-saplings 10
-  
+
   ;Shade intermediate-tolerant species
-  if plight >= 0.5 and plight < 0.99 [    
+  if plight >= 0.5 and plight < 0.99 [
     let rw random-float 1
     let rb random-float 1
-    
-    if rw < (Al-oak * sitequal-woak)[    
+
+    if rw < (Al-oak * sitequal-woak)[
       let woak-spawn (max-oak-saplings * rw)
       sprout-oaks (round woak-spawn)[
         set dbh random-float 0.0041
         set species "WO"
         init-params
       ]]
-    
+
     if rb < (Al-oak * sitequal-boak)[
       let boak-spawn (max-oak-saplings * rb)
       sprout-oaks (round boak-spawn)[
@@ -242,7 +270,7 @@ to regenerate
         init-params
       ]]
   ]
-  
+
   ;Shade tolerant species
   let rm random-float 1
   if rm < (Al * sitequal-maple)[
@@ -250,18 +278,19 @@ to regenerate
       set dbh random-float 0.00468
       init-params
     ]]
-  
+
   ;Shade intolerant species
-  if plight >= 0.99 and sitequal-poplar > 0 [    
-    let pop-spawn (random-float 1 * max-poplar-saplings * Al-pop * sitequal-poplar)    
+  if plight >= 0.99 and sitequal-poplar > 0 [
+    let pop-spawn (random-float 1 * max-poplar-saplings * Al-pop * sitequal-poplar)
     sprout-poplars (round pop-spawn) [
-      set dbh random-float 0.0039   
-      init-params     
+      set dbh random-float 0.0039
+      init-params
   ]]
-          
+
 end
 
 
+;Function that calculates light available to a given tree
 to calc-light
   let currh height
   ifelse currh >= max [height] of turtles-here [set hidden? FALSE][set hidden? TRUE]
@@ -281,37 +310,37 @@ end
 ;;;;;;;;                       Utility Procedures                        ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;Function to calculate site quality for a given species based on environmental characteristics
 to calc-site-quality
     ifelse manual-site-qual = TRUE [
-    
+
     set sitequal-woak sqwoak
     set sitequal-boak sqboak
     set sitequal-maple sqmap
     set sitequal-poplar sqpop
-    
-  ][  
+
+  ][
   ;based bon Botkin 1993 and Holm 2012 with some guesses
   ;white oak
-  let fT degree-days-index DegDays 1977 5894 
+  let fT degree-days-index DegDays 1977 5894
   let fWT saturation-index wt-dist 0.933
   let fN nitrogen-index available-N "intermediate"
   let fWL wilt-index wilt 0.45
   set sitequal-woak fT * fWT * fN * fWL
   ;black oak
-  set fT degree-days-index DegDays 2068 5421 
+  set fT degree-days-index DegDays 2068 5421
   set fWT saturation-index wt-dist 0.933
   set fN nitrogen-index available-N "tolerant"
   set fWL wilt-index wilt 0.45
   set sitequal-boak fT * fWT * fN * fWL
   ;maple
-  set fT degree-days-index DegDays 2000 6300 
+  set fT degree-days-index DegDays 2000 6300
   set fWT saturation-index wt-dist 0.567
   set fN nitrogen-index available-N "intermediate"
   set fWL wilt-index wilt 0.35
   set sitequal-maple fT * fWT * fN * fWL
   ;poplar
-  set fT degree-days-index DegDays 2171 6363 
+  set fT degree-days-index DegDays 2171 6363
   set fWT saturation-index wt-dist 0.544 ;;based on white spruce/red maple (similar moisture tolerance) ??
   set fN nitrogen-index available-N "intolerant"
   set fWL wilt-index wilt 0.245 ;;based on white spruce/red maple (similar moisture tolerance) ??
@@ -320,30 +349,31 @@ to calc-site-quality
 end
 
 
+;Function to populate the simulation with an initial set of trees  based on user inputs
 to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-maple n-sap-poplar]
-  
+
   ;;Create adult trees
   create-oaks dens-adjust * n-oak [ ;dens-adjust adds more trees when there is a buffer
     ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
     set dbh (random-normal 45.75 5) / 100
-    init-params  
-    set age round (Amax * (dbh * 100) / Dmax)   
+    init-params
+    set age round (Amax * (dbh * 100) / Dmax)
     ifelse space-adjust = TRUE [
       loop [
         setxy random-pxcor random-pycor
         if count turtles-here < 2 [stop]]]
     [setxy random-pxcor random-pycor]
-  ]  
+  ]
   create-maples dens-adjust * n-maple [
     set dbh (random-normal 40.8 5) / 100
     init-params
-    set age round (Amax * (dbh * 100) / Dmax)      
+    set age round (Amax * (dbh * 100) / Dmax)
     ifelse space-adjust = TRUE [
       loop [
         setxy random-pxcor random-pycor
         if count turtles-here < 2 [stop]]]
     [setxy random-pxcor random-pycor]
-  ] 
+  ]
   create-poplars dens-adjust * n-poplar [
     set dbh (random-normal 45.07 5) / 100
     init-params
@@ -354,10 +384,10 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
         if count turtles-here < 3 [stop]]]
     [setxy random-pxcor random-pycor]
   ]
-  
+
   ask turtles [calc-light]
   ask patches [set plight patch-light]
-  
+
   ;;Create saplings
   create-oaks dens-adjust * n-sap-oak [
     ifelse random-float 1 > 0.5 [set species "WO"][set species "BO"]
@@ -367,13 +397,13 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
     loop [
       setxy random-pxcor random-pycor
       if [plight] of patch-here > 0.6 [stop]]
-  ]  
+  ]
   create-maples dens-adjust * n-sap-maple [
     set dbh max list 0.015 ((random-normal 10.3 5) / 100)
     init-params
     set age round (Amax * (dbh * 100) / Dmax)
     setxy random-pxcor random-pycor
-  ] 
+  ]
   create-poplars dens-adjust * n-sap-poplar [
     set dbh max list 0.015 ((random-normal 14.9 5) / 100)
     init-params
@@ -382,14 +412,14 @@ to init-stand [dens-adjust space-adjust n-oak n-maple n-poplar n-sap-oak n-sap-m
       setxy random-pxcor random-pycor
       if [plight] of patch-here > 0.6 [stop]]
   ]
-  
+
   ask turtles [calc-light check-in-core]
   ask patches [set plight patch-light]
-   
+
 end
 
 
-
+;Function that initializes newly created trees (sapling and mature) with various required parameter values
 to init-params
   ifelse dbh < 0.1 [set shape "square"] [set shape "tree"]
   set hidden? FALSE
@@ -397,7 +427,7 @@ to init-params
   set min-increment 0.01
   set growth-mortality 0.369
   set age 1
-  if breed = oaks [ 
+  if breed = oaks [
     ifelse species = "WO" [;White oak based on Botkin 1993 and Holm 2012
       set color white
       set Dmax 100 set Hmax 3800 ;based on HEE data
@@ -405,7 +435,7 @@ to init-params
       set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)
       set C 1.75
       set G 104
-      set light-tol "intermediate"      
+      set light-tol "intermediate"
     ][set color black ;Black oak based on Botkin 1993 and Holm 2012
       set Dmax 100 set Hmax 3800 ;based on HEE data
       set Amax 300 set intrinsic-mortality 4.0 / Amax ;Based on 2% reaching max age; common to all species
@@ -424,27 +454,31 @@ to init-params
     set light-tol "high"
   ]
   if breed = poplars [ ;Tulip poplar based on Holm 2012 with some guesses
-    set color red  
-    set Dmax 100 set Hmax 4000 
+    set color red
+    set Dmax 100 set Hmax 4000
     set Amax 300 set intrinsic-mortality 4.0 / Amax
-    set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)  
+    set b2 2 * (Hmax - 137) / (Dmax) set b3 (Hmax - 137) / (Dmax ^ 2)
     set C 1.75 ;assumed to be similar to oak
     set G 140
     set light-tol "low"
   ]
   allometerize dbh
   check-in-core
-    
+
 end
 
+
+;Function to check if agent is in core or buffer area
 to check-in-core
-  ifelse xcor <= xmax and xcor >= xmin and ycor <= ymax and ycor >= ymin [set in-core TRUE][set in-core FALSE]  
+  ifelse xcor <= xmax and xcor >= xmin and ycor <= ymax and ycor >= ymin [set in-core TRUE][set in-core FALSE]
 end
 
-to calc-global-vars ;;Calculate global reporter values
-    
+
+;Catch-all function that calculates a variety of global simulation metrics at the end of each time step
+to calc-global-vars
+
   let adjust (x-core * y-core) / 100
-  
+
   set basal-area (sum [ba] of turtles with [dbh >= 0.015 and in-core = TRUE]) / adjust
   set basal-area-ovs (sum [ba] of turtles with [dbh >= 0.3 and in-core = TRUE]) / adjust
   set basal-area-ft basal-area * 4.356
@@ -462,15 +496,15 @@ to calc-global-vars ;;Calculate global reporter values
   set dens-map (count maples with [dbh >= 0.015 and in-core = TRUE]) / adjust
   set dens-map-ovs (count maples with [dbh >= 0.3 and in-core = TRUE]) / adjust
   set dens-pop (count poplars with [dbh >= 0.015 and in-core = TRUE]) / adjust
-  set dens-pop-ovs (count poplars with [dbh >= 0.3 and in-core = TRUE]) / adjust  
+  set dens-pop-ovs (count poplars with [dbh >= 0.3 and in-core = TRUE]) / adjust
   ifelse basal-area > 0 [
     set qdbh sqrt(basal-area * adjust / (0.0000785 * count turtles with [dbh >= 0.015 and in-core = TRUE]))
-    set qdbh-in 2 * (sqrt(mean [ba] of turtles with [dbh >= 0.015 and in-core = TRUE] / pi)) * 39.37 
+    set qdbh-in 2 * (sqrt(mean [ba] of turtles with [dbh >= 0.015 and in-core = TRUE] / pi)) * 39.37
     set prop-oak (ba-oak / basal-area)
     set prop-tol (ba-map / basal-area)
     set prop-intol (ba-pop / basal-area)
   ][set qdbh 0 set qdbh-in 0 set prop-oak 0 set prop-tol 0 set prop-intol 0]
-  set qdbh-ovs sqrt(basal-area-ovs * adjust / (0.0000785 * (max list 1 count turtles with [dbh >= 0.3 and in-core = TRUE])))  
+  set qdbh-ovs sqrt(basal-area-ovs * adjust / (0.0000785 * (max list 1 count turtles with [dbh >= 0.3 and in-core = TRUE])))
   set qdbh-oak sqrt(ba-oak * adjust / (0.0000785 * (max list 1 count oaks with [dbh >= 0.015 and in-core = TRUE])))
   set qdbh-oak-ovs sqrt(ba-oak-ovs * adjust / (0.0000785 * (max list 1 count oaks with [dbh >= 0.3 and in-core = TRUE])))
   set qdbh-map sqrt(ba-map * adjust / (0.0000785 * (max list 1 count maples with [dbh >= 0.015 and in-core = TRUE])))
@@ -480,6 +514,8 @@ to calc-global-vars ;;Calculate global reporter values
   set seedlings-class4 (count oaks with [height > 1.4 and dbh < 0.015 and in-core = TRUE]) / adjust
 end
 
+
+;Function to color patches in the UI based on the amount of shade they have
 to color-patches
   if (1 - plight) > 0 [set pcolor lime + 1]
   if (1 - plight) > 0.1 [set pcolor lime]
@@ -502,22 +538,24 @@ end
 ;;;;;;;;                    Harvesting Procedures                        ;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;Function to harvest the simulated forest as required
+;See S1 SOEL Description section 5.5
 to conduct-harvest
-  
+
   if harvest-type = "none" [stop]
-  
+
   if (ticks + 1) != harvest-year [stop]
-  
+
   let adjust (x-core * y-core) / 100
-  
+
   if harvest-type = "clearcut" [
     ask turtles with [dbh > 0.01 and in-core = TRUE] [die]
     ;set harvest-year harvest-year + 100
   ]
-  
+
   if harvest-type = "singletree" [
     set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
-    set harvest-year harvest-year + 20 
+    set harvest-year harvest-year + 20
     if basal-area >= 25 [
       loop [
         let potential one-of turtles with [dbh >= 0.10 and in-core = TRUE]
@@ -527,36 +565,34 @@ to conduct-harvest
         ]
     ]
   ]
-  
+
   if harvest-type = "shelterwood" [
     ifelse shelter-phase = 1 [
       set shelter-phase 2
       ask turtles with [breed != oaks and dbh <= 0.254 and in-core = TRUE] [die] ;treated with herbicide
       set harvest-year (harvest-year + 7)
-    ] 
+    ]
     [
       ifelse shelter-phase = 2 [
         set shelter-phase 3
         set harvest-year (harvest-year + 8)
         if basal-area >= 16.1 [
           loop [
-            ;this code is broken
-            ;let potential min-one-of turtles with [breed != oaks and dbh >= 0.10 and xcor < 50 and xcor > -50 and ycor < 50 and ycor > -50] [dbh]
             let potential min-one-of turtles with [age > 20 and in-core = TRUE] [light]
             ask potential [ifelse breed = oaks [die][die]]
             set basal-area (sum [ba] of turtles with [dbh >= 0.01 and in-core = TRUE]) / adjust
             if basal-area <= 16.1 [stop]
           ]
-        ]      
-      ] 
+        ]
+      ]
       [
         ask turtles with [age > 20 and in-core = TRUE] [die]
         set shelter-phase 1
         ;set harvest-year (harvest-year + 100)
       ]
-       
+
   ]]
-  
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -1047,39 +1083,24 @@ HORIZONTAL
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
-
-## HOW IT WORKS
-
-(what rules the agents use to create the overall behavior of the model)
+An adaption of the JABOWA model (Botkin 1993) implemented in NetLogo. Primarily built so output can be compared to results from SOEL, an individual-based model of early oak life history that has a more complex submodel handling the oak regeneration process.
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+  **1. Setup the Initial Forest**
+First, define the dimensions of your simulated forest (in meters) using the "x-core" and "y-core" sliders. The forest is a torus (that is, the edges wrap around to the opposite side); thus, to minimize edge effects, define a buffer width around the forest area using the buffer slider. The  buffer area will not be simulated but not included in output metric calculations. Second, the "Initial Forest" controls determine the composition of the forest at the beginning of the simulation. The default is based on collected Hardwood Ecosystem Experiment data, but custom values for the density of mature and sapling trees can be specified. Finally, you can define the site quality for the species in the simulation by changing variables under "Site Conditions" like available nitrogen, distance to the water table, etc.
 
-## THINGS TO NOTICE
+  **2. Setup the Harvest Regime**
+First, define a "burnin" period for the simulated forest to stabilize; the first harvest will occur immeadiatly after this period is over. Next, define a harvest type: the options are "clearcut" (all trees > 1 cm dbh removed in one harvest), shelterwood (a 3-stage shelterwood harvest over ~20 years) or single-tree selection (large trees removed down to 25 m2/ha basal area every 20 years). Harvests are based on the HEE harvests (see Kalb and Mycroft [2013]).
 
-(suggested things for the user to notice while running the model)
+  **3. Start the Simulation**
+Click the "Setup" button to apply the settings chosen above and populate the initial forest. Then, click "Go" to begin the simulation. Clicking "Go" again will pause. Each model "tick" represents one year of time. Brown represents completely unshaded ground, while progressively darker shades of green correspond to greater canopy cover from surrounding trees. Individual mature trees are shown with "tree" icons with the color corresponding to species (white and black are white and black oak, respectively; red is tulip poplar, blue is maple). Smaller squares represent saplings and smaller trees.
 
-## THINGS TO TRY
+  **4. Monitor Output**
+Various numeric and graphical monitors are provided to show key information about the state of the simulation over time, including forest structural characteristics like basal area and stem density.
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
-
-## EXTENDING THE MODEL
-
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
-
-## NETLOGO FEATURES
-
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
-
-## RELATED MODELS
-
-(models in the NetLogo Models Library and elsewhere which are of related interest)
-
-## CREDITS AND REFERENCES
-
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+  **6. Run from R**
+When running many replicate scenarios and/or simulations, the regular NetLogo interface is inefficient. the BehaviorSpace built-in tool can be helpful for this, but still isn't ideal, especially when you are outputting large amounts of data that will be analyzed elsewhere. Instead, we provide an R script ("sim_function.R") which uses package RNetLogo to setup and run simulations in parallel, and format the output. Simulation variables can be changed with arguments to the function in R.
 @#$#@#$#@
 default
 true
@@ -1387,7 +1408,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2.0
+NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
