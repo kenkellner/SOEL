@@ -24,7 +24,7 @@ datalist <- add.seedorigin(datalist)
 #pdf(file="../dissertation/figures/fig6-4.pdf",width=6,height=4,family="CM Roman",pointsize=9)
 
 #Open tiff container
-tiff(filename="figures/Fig4.tif",width=6,height=4,units="in",res=300, pointsize=9,
+tiff(filename="figures/Fig4.tif",width=5,height=5,units="in",res=300, pointsize=9,
      compression = "lzw",type='cairo')
 
 #cols <- c(rgb(red=141,green=213,blue=18, maxColorValue=255),
@@ -33,89 +33,90 @@ tiff(filename="figures/Fig4.tif",width=6,height=4,units="in",res=300, pointsize=
 
 #op <- par()
 
+structure <- c(1,2,3,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20)
+######################################################################
+
 #Generate seedling dataset
 s <- gen.dataset(datalist,'seedlingsum')
 s$harvest <- as.factor(s$harvest)
-s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10','dn'))
+s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-#Generate seedling boxplot
-par(fig=c(0,0.53,0,1),mgp=c(2.5,1,0),new=FALSE, mar = c(5,4.5,1,2) + 0.1)
-bx = boxplot(seedlingsum~harvest*scenario,data=s,
-             xlab="Drought Probability",
-             at=c(1:18,20,21,22),
-             col=gray.colors(3),
-             #col=cols,
-             ylab=expression("New Seedlings "~ ha^{-1}~"(7 Year Sum)"),
-             xaxt='n')
-axis(1,at=c(2,5,8,11,14,17,21),tick=T,
-     labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
-abline(v=19)
-#legend(12,32000,legend=c('No Harvest','Shelterwood','Clearcut'),fill=gray.colors(3))
-#text(1.5,1500,'(a)',cex=1.5)
+mns <- aggregate(x=s$seedlingsum/1000,by=list(s$scenario,s$harvest),FUN=mean)[,3]
+sds <- aggregate(x=s$seedlingsum/1000,by=list(s$scenario,s$harvest),FUN=sd)[,3]
+uplim <- mns+sds
+lowlim <- mns-sds
 
-#############
-#Generate sapling dataset
+par(fig=c(0,1,0.43,1),mgp=c(2.5,1,0),new=FALSE,mar = c(5,4.5,1,2) + 0.1)
+plot(1,type='n',xlim=c(0.5,20.5),ylim=c(.9*min(lowlim),1.2*max(uplim)),xaxt='n',xlab="",
+     ylab='TNSEED (thousands)'
+)
+abline(v=7)
+abline(v=14)
+
+wd=0.4
+for(i in 1:18){  
+  segments(structure[i],lowlim[i],structure[i],uplim[i])
+  segments(structure[i]+wd/2,lowlim[i],structure[i]-wd/2,lowlim[i])
+  segments(structure[i]+wd/2,uplim[i],structure[i]-wd/2,uplim[i])
+}
+
+points(structure,mns,cex=1,bg='black',pch=21)
+lines(1:6,mns[1:6])
+lines(8:13,mns[7:12])
+lines(15:20,mns[13:18])
+
+text(3.5,25,'NH')
+text(10.5,25,'MR')
+text(17.5,25,'CC')
+
+text(20,max(uplim)*1.15,'(a)',cex=1.5)
+
+##################################################################################
+
+#Generate seedling dataset
 s <- gen.dataset(datalist,'seedorigin',37)
 s$harvest <- as.factor(s$harvest)
-s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10','dn'))
+s$scenario = factor(s$scenario,c('d00','d02','d04','d06','d08','d10'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-#Generate sapling boxplot
-par(fig=c(0.47,1,0,1),mgp=c(2.5,1,0),new=TRUE, mar = c(5,4.5,1,2) + 0.1)
-#op <- par()
-bx = boxplot(seedorigin~harvest*scenario,data=s,
-             col=gray.colors(3),
-             #col=cols,
-             xlab="Drought Probability",
-             at=c(1:18,20,21,22),
-             ylab=expression("Seed-origin Saplings "~ ha^{-1} ~"(Year 7)"),
-             xaxt='n')
-axis(1,at=c(2,5,8,11,14,17,21),tick=T,
-     labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
-abline(v=19)
-legend("topright",legend=c('No Harvest','Midstory Removal','Clearcut'),
-       fill=gray.colors(3),
-       #fill=cols,
-       bg='white')
-#text(1.5,100,'(b)',cex=1.5)
+mns <- aggregate(x=s$seedorigin,by=list(s$scenario,s$harvest),FUN=mean)[,3]
+sds <- aggregate(x=s$seedorigin,by=list(s$scenario,s$harvest),FUN=sd)[,3]
+uplim <- mns+sds
+lowlim <- mns-sds
+
+par(fig=c(0,1,0,0.57),mgp=c(2.5,1,0),new=TRUE,mar = c(5,4.5,1,2) + 0.1)
+plot(1,type='n',xlim=c(0.5,20.5),ylim=c(.9*min(lowlim),1.2*max(uplim)),xaxt='n',xlab="",
+     ylab='SAPDENS'
+)
+abline(v=7)
+abline(v=14)
+
+axis(1,at=structure,tick=T,srt=90,
+     labels=FALSE)
+text(structure,par("usr")[1],labels=rep(c('0.0','0.2','0.4','0.6','0.8','1.0'),3),
+     srt=90,adj=2,xpd=T)
+
+wd=0.4
+for(i in 1:18){  
+  segments(structure[i],lowlim[i],structure[i],uplim[i])
+  segments(structure[i]+wd/2,lowlim[i],structure[i]-wd/2,lowlim[i])
+  segments(structure[i]+wd/2,uplim[i],structure[i]-wd/2,uplim[i])
+}
+
+points(structure,mns,cex=1,bg='black',pch=21)
+lines(1:6,mns[1:6])
+lines(8:13,mns[7:12])
+lines(15:20,mns[13:18])
+
+text(3.5,3500,'NH')
+text(10.5,3500,'MR')
+text(17.5,3500,'CC')
+
+text(20,max(uplim)*1.15,'(b)',cex=1.5)
+
+mtext(text='Drought Probability',side=1,outer=T,line=-2.5)
 
 dev.off()
 #Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
 #embed_fonts("../dissertation/figures/fig6-4.pdf")
-
-#####################################################################################
-##For dissertation talk
-
-#Seedlings
-op <- par(mar = c(5,4.5,1.5,2) + 0.1)
-bx = boxplot(seedlingsum~harvest*scenario,data=s,
-             xlab="Drought Probability",
-             at=c(1:18,20,21,22),
-             #col=gray.colors(3),
-             col=cols,
-             ylab=expression("Stems "~ ha^{-1}~"(7 Year Sum)"),
-             xaxt='n',
-             main="Seedlings")
-axis(1,at=c(2,5,8,11,14,17,21),tick=T,
-     labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
-abline(v=19)
-legend('topright',legend=c('No Harvest','Shelterwood','Clearcut'),fill=cols)
-
-#Saplings
-bx = boxplot(seedorigin~harvest*scenario,data=s,
-             #col=gray.colors(3),
-             col=cols,
-             xlab="Drought Probability",
-             at=c(1:18,20,21,22),
-             ylab=expression("Stems "~ ha^{-1} ~"(Year 7)"),
-             xaxt='n',
-             main="Saplings")
-axis(1,at=c(2,5,8,11,14,17,21),tick=T,
-     labels=c("0","0.2",'0.4','0.6','0.8','1.0','Avg'))
-abline(v=19)
-legend("topright",legend=c('No Harvest','Shelterwood','Clearcut'),
-       #fill=gray.colors(3),
-       fill=cols,
-       bg='white')
-#text(1.5,100,'(b)',cex=1.5)
