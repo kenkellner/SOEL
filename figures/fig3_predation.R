@@ -91,7 +91,7 @@ for(i in 1:8){
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
 text(structure,(uplim+0.002),c('A','A','B','B','A','C','B','B'))
 text(9,min(lowlim),'(b)',cex=1.5)
-legend("topleft",legend=c('C','TE','YE','TE x YE'),
+legend("topleft",legend=c('C','TE','YE','TE + YE'),
        pt.bg=rev(gray.colors(4)),pch=21,bg='white',ncol=2,title='Scenario')
 
 ###########################################################################################
