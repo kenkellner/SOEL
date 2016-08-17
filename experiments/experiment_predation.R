@@ -127,33 +127,32 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
-lapply(c('output/predation/dispersal_treateff.Rdata','output/predation/dispersal_treatyearlyeff.Rdata',
-         'output/predation/dispersal_yearlyeff.Rdata',
-         'output/predation/weevil_dispersal_average.Rdata','output/predation/weevil_dispersal_treateff.Rdata',
-         'output/predation/weevil_dispersal_treatyearlyeff.Rdata','output/predation/weevil_dispersal_yearlyeff.Rdata',
-         'output/predation/weevil_treateff.Rdata','output/predation/weevil_treatyearlyeff.Rdata',
-         'output/predation/weevil_yearlyeff.Rdata'),
+lapply(c('output/predation/weevil_dispersal_average.Rdata',
+         'output/predation/weevil_dispersal_treateff.Rdata',
+         'output/predation/weevil_dispersal_treatyearlyeff.Rdata',
+         'output/predation/weevil_dispersal_yearlyeff.Rdata'
+         ),
        load,.GlobalEnv)
 
 ##################################################################
 
 #Test for differences among scenarios
-
-datalist <- list(avg=weevil.dispersal.average,trt=weevil.treateff,yrly=weevil.yearlyeff,
-                 treat.yrly=weevil.treatyearlyeff)
-datalist <- add.newseedlings(datalist,30,37)
+datalist <- list(avg=weevil.dispersal.average,trt=weevil.dispersal.treateff,yrly=weevil.dispersal.yearlyeff,
+                 treat.yrly=weevil.dispersal.treatyearlyeff)
+datalist <- add.newseedlings(datalist,30,38)
 datalist <- add.seedorigin(datalist)
 datalist <- add.acornsum(datalist,30,37)
+datalist <- add.pctgermmean(datalist,30,37)
 
 #Total New Seedlings over 10 Years
 test = analyze.ibm(datalist,metric='seedlingsum')
 
 ##Saplings
-test = analyze.ibm(datalist,metric='seedorigin',40)
+test = analyze.ibm(datalist,metric='seedorigin',37)
 
 #######
 #Pct Germ
-test = analyze.ibm(datalist,metric='pctgerm',36)
+test = analyze.ibm(datalist,metric='pctgermmean')
 
 ##Total acorns
 test = analyze.ibm(datalist,metric='acornsum')

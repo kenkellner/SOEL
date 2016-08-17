@@ -130,6 +130,17 @@ add.acornsum <- function(datalist,startyear,stopyear){
   
 }
 
+add.pctgermmean <- function(datalist,startyear,stopyear){
+  
+  for (i in 1:length(datalist)){
+    for (j in 1:(length(datalist[[1]])-1)){
+      datalist[[i]][[j]]$pctgermmean <- 
+        colMeans(datalist[[i]][[j]]$pctgerm[startyear:stopyear,])
+    }
+  }
+  return(datalist)
+}
+
 add.seedorigin <- function(datalist){
   
   for (i in 1:length(datalist)){
@@ -141,20 +152,10 @@ add.seedorigin <- function(datalist){
   return(datalist)
 }
 
-add.pctgermmean <- function(datalist,startyear,stopyear){
-  
-  for (i in 1:length(datalist)){
-    for (j in 1:(length(datalist[[1]])-1)){
-      datalist[[i]][[j]]$pctgermmean <- 
-        mean(datalist[[i]][[j]]$pctgerm[startyear:stopyear])
-    }
-  }
-  return(datalist)
-}
 
 analyze.ibm <- function(datalist,metric,year,cont=FALSE,vals=NULL){
   
-  require(pgirmess)
+  require(agricolae)
   
   dat <- gen.dataset(datalist,metric,year,cont,vals)
   
@@ -162,8 +163,13 @@ analyze.ibm <- function(datalist,metric,year,cont=FALSE,vals=NULL){
  
   if(!cont){
     scenario <- as.factor(dat$scenario)
+    
+    tx <- interaction(harvest,scenario)
+    
     a <- aov(dat[,1] ~ harvest*scenario)
-    a.mc <- TukeyHSD(a)
+  
+    a2 <- aov(dat[,1] ~ tx)
+    a.mc <- HSD.test(a2,"tx",group=TRUE)
     
     out <- list(anova=a,anova.mc=a.mc)
   }

@@ -15,9 +15,10 @@ source('utility_functions.R')
 #Generate dataset from SOEL output files
 datalist <- list(avg=weevil.dispersal.average,trt=weevil.dispersal.treateff,yrly=weevil.dispersal.yearlyeff,
                  treat.yrly=weevil.dispersal.treatyearlyeff)
-datalist <- add.newseedlings(datalist,30,37)
+datalist <- add.newseedlings(datalist,30,38)
 datalist <- add.seedorigin(datalist)
 datalist <- add.acornsum(datalist,30,37)
+datalist <- add.pctgermmean(datalist,30,37)
 
 structure <- c(1,2,3,4,6,7,8,9)
 par(mar = c(5,4.5,1,2) + 0.1)
@@ -55,7 +56,7 @@ for(i in 1:8){
 
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
 
-text(structure,(uplim+15),"A")
+text(structure,(uplim+15),c('A','AB','B','AB','AB','B','AB','AB'))
 text(9,min(lowlim),'(a)',cex=1.5)
 
 ###############################################################
@@ -63,9 +64,9 @@ text(9,min(lowlim),'(a)',cex=1.5)
 #Plot percent emergence x scenario
 par(fig=c(0.47,1,0.43,1),mgp=c(2.5,1,0),new=TRUE)
 
-h = gen.dataset(datalist,'pctgerm',30)
+h = gen.dataset(datalist,'pctgermmean',30)
 for (i in 31:37){
-  h = rbind(h,gen.dataset(datalist,'pctgerm',i))
+  h = rbind(h,gen.dataset(datalist,'pctgermmean',i))
 }
 
 h$scenario = factor(h$scenario,c('avg','trt','yrly','treat.yrly'))
@@ -89,7 +90,7 @@ for(i in 1:8){
 }
 
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
-text(structure,(uplim+0.002),c('A','A','B','B','A','C','B','B'))
+text(structure,(uplim+0.002),c('A','A','BC','B','A','D','BC','C'))
 text(9,min(lowlim),'(b)',cex=1.5)
 legend("topleft",legend=c('C','TE','YE','TE + YE'),
        pt.bg=rev(gray.colors(4)),pch=21,bg='white',ncol=2,title='Scenario')
@@ -153,7 +154,7 @@ for(i in 1:8){
 }
 
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
-text(structure,(uplim+8),c('A','A','B','B','C','C','D','D'))
+text(structure,(uplim+8),c('A','A','BC','B','C','C','D','D'))
 text(9,min(lowlim),'(d)',cex=1.5)
 
 axis(1,at=c(2.5,7.5),tick=F,
