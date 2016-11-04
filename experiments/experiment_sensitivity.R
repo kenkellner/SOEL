@@ -45,70 +45,6 @@ qarg.int <- list(meanAcorn=list(mean=mn[1],sd=sds[1]),
                 meanSurv=list(mean=mn[10],sd=sds[10])
 )
 
-
-
-#Narrower ranges (1 sd around mean)
-mn <- colMeans(psummary,na.rm=T)
-adj <- apply(psummary,2,sd,na.rm=T)
-up <- mn+adj
-lw <- mn-adj
-qarg.sd <- list(pDispersal=list(min=lw[1],max=up[1]),
-                    weibSc=list(min=lw[2],max=up[2]),
-                    pDispEaten=list(min=lw[3],max=up[3]),
-                    pCache=list(min=lw[4],max=1),
-                    pUndispEaten=list(min=lw[5],max=1),
-                    pWeevil=list(min=lw[6],max=up[6]),
-                    lamAcorn=list(min=0,max=up[7]),
-                    pBrowse=list(min=lw[8],max=up[8]),
-                    meanGr=list(min=(1.24-0.125),max=(1.24+0.125)),
-                    meanSurv=list(min=(-.6-0.114),max=(-.6+0.114))
-                    )
-
-
-
-#Based on actual ranges
-qarg.actual <- list(pDispersal=list(min=min(psummary[,1],na.rm=T),max=max(psummary[,1],na.rm=T)),
-                    weibSc=list(min=min(psummary[,2],na.rm=T),max=max(psummary[,2],na.rm=T)),
-                    weibSh=list(min=min(psummary[,3],na.rm=T),max=max(psummary[,3],na.rm=T)),
-                    pDispEaten=list(min=min(psummary[,4],na.rm=T),max=max(psummary[,4],na.rm=T)),
-                    pCache=list(min=min(psummary[,5],na.rm=T),max=max(psummary[,5],na.rm=T)),
-                    pUndispEaten=list(min=min(psummary[,6],na.rm=T),max=max(psummary[,6],na.rm=T)),
-                    pWeevil=list(min=min(psummary[,7],na.rm=T),max=max(psummary[,7],na.rm=T)),
-                    lamAcorn=list(min=min(psummary[,8],na.rm=T),max=max(psummary[,8],na.rm=T)),
-                    pBrowse=list(min=min(psummary[,9],na.rm=T),max=max(psummary[,9],na.rm=T)),
-                    meanGr=list(mean=1.24,sd=0.125),meanSurv=list(mean=-0.600,sd=0.114))
-
-#Wider ranges
-qarg.wide <- list(pDispersal=list(min=0,max=1),
-                  weibSc=list(min=4.216,max=11.962),
-                  weibSh=list(min=0.957,max=1.88),
-                  pDispEaten=list(min=0,max=1),
-                  pCache=list(min=0,max=1),
-                  pUndispEaten=list(min=0,max=1),
-                  pWeevil=list(min=0,max=1),
-                  lamAcorn=list(min=min(psummary[,8],na.rm=T),max=max(psummary[,8],na.rm=T)),
-                  pBrowse=list(min=0,max=1),
-                  pDrought=list(min=0,max=1))
-
-#Narrower ranges (10% around mean)
-mn <- colMeans(psummary,na.rm=T)
-
-apply(psummary,2,sd,na.rm=T)
-
-adj <- .1*colMeans(psummary,na.rm=T)
-up <- mn+adj
-lw <- mn-adj
-qarg.narrow <- list(pDispersal=list(min=lw[1],max=up[1]),
-                    weibSc=list(min=lw[2],max=up[2]),
-                    weibSh=list(min=lw[3],max=up[3]),
-                    pDispEaten=list(min=lw[4],max=up[4]),
-                    pCache=list(min=lw[5],max=up[5]),
-                    pUndispEaten=list(min=lw[6],max=up[6]),
-                    pWeevil=list(min=lw[7],max=up[7]),
-                    lamAcorn=list(min=lw[8],max=up[8]),
-                    pBrowse=list(min=lw[9],max=up[9]),
-                    pDrought=list(min=0.5-0.1*0.5,max=0.5+0.1*0.5))
-
 ######################################################################
 
 start.time <- Sys.time()
@@ -125,17 +61,6 @@ sens.test.int <- run.SOEL(nreps=504,burnin=30,nyears=40,
 save(sens.test.int,file='output/sens_test_int.Rdata')
 pbPost('file',url='output/sens_test_int.Rdata')
 
-sens.test.int.nocorr <- run.SOEL(nreps=504,burnin=30,nyears=40,
-                            harvests = c('none'),
-                            force.processors=12, ram.max=5000, 
-                            sensitivity=TRUE,
-                            covs=covs,q="qnorm",
-                            qarg=qarg.int)
-
-
-save(sens.test.int.nocorr,file='output/sens_test_int_nocorr.Rdata')
-pbPost('file',url='output/sens_test_int_nocorr.Rdata')
-
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
 runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
@@ -144,18 +69,15 @@ pbPost('note','Analysis Complete',
        paste('Sensitivity experiment on rbrutus16 complete after',runtime,'minutes. Shutting down instance.'),
        devices='Nexus 6')
 
-
-
 #Shut down instance 
 system('sudo shutdown -h now')
 
-source('utility_functions.R')
 
 ##########################################################
 
 #Sensitivity partitioning (Xu and Gertner 2008)
 
-##Correlated
+source('utility_functions.R')
 
 #Pctgerm (year 38)
 inp.covs <- as.data.frame(scale(sens.test.int$lhc))
@@ -168,17 +90,4 @@ varPart(out.vals,inp.covs,4)
 
 #Saplings (total at year 36)
 out.vals <- sens.test.int$out$none$seedclass4[36,]
-varPart(out.vals,inp.covs,4)
-
-#Uncorrelated
-inp.covs <- as.data.frame(scale(sens.test.int.nocorr$lhc))
-out.vals <- sens.test.int.nocorr$out$none$pctgerm[37,]
-varPart(out.vals,inp.covs,4)
-
-#Seedlings (total new seedlings accumulated 30-40)
-out.vals <- colSums(sens.test.int.nocorr$out$none$newseedlings[30:37,])
-varPart(out.vals,inp.covs,4)
-
-#Saplings (total at year 36)
-out.vals <- sens.test.int.nocorr$out$none$seedclass4[36,]
 varPart(out.vals,inp.covs,4)

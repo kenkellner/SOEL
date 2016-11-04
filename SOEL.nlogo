@@ -2417,7 +2417,7 @@ Click the "Setup" button to apply the settings chosen above and populate the ini
 Various numeric and graphical monitors are provided to show key information about the state of the simulation over time, including forest structural characteristics like basal area, the number of acorns produced (and % that germinated), and the density of oak seedlings.
 
   **6. Run from R**
-When running many replicate scenarios and/or simulations, the regular NetLogo interface is inefficient. the BehaviorSpace built-in tool can be helpful for this, but still isn't ideal, especially when you are outputting large amounts of data that will be analyzed elsewhere. Instead, we provide an R script ("sim_function.R") which uses package RNetLogo to setup and run simulations in parallel, and format the output. Simulation variables can be changed with arguments to the function in R.
+When running many replicate scenarios and/or simulations, the regular NetLogo interface is inefficient. the BehaviorSpace built-in tool can be helpful for this, but still isn't ideal, especially when you are outputting large amounts of data that will be analyzed elsewhere. Instead, we provide an R script ("run_SOEL.R") which uses package RNetLogo to setup and run simulations in parallel, and format the output. Simulation variables can be changed with arguments to the function in R.
 @#$#@#$#@
 default
 true

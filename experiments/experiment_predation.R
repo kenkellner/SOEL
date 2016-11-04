@@ -17,47 +17,6 @@ weevil.dispersal.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                 ram.max = 5000)
 save(weevil.dispersal.average,file='output/predation/weevil_dispersal_average.Rdata')
 
-weevil.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                burnin=30,nyears=40,
-                                harvests = c('none','shelterwood'),
-                                mast.scenario = "hee",
-                                weevil.scenario = "yearly-diff",
-                                dispersal.scenario = "fixedaverage",
-                                force.processors = 12,
-                                ram.max = 5000)
-save(weevil.yearlyeff,file='output/predation/weevil_yearlyeff.Rdata')
-
-dispersal.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                burnin=30,nyears=40,
-                                harvests = c('none','shelterwood'),
-                                mast.scenario = "hee",
-                                weevil.scenario = "fixedaverage",
-                                dispersal.scenario = "yearly-diff",
-                                force.processors = 12,
-                                ram.max = 5000)
-save(dispersal.yearlyeff,file='output/predation/dispersal_yearlyeff.Rdata')
-
-
-weevil.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                              burnin=30,nyears=40,
-                              harvests = c('none','shelterwood'),
-                              mast.scenario = "hee",
-                              weevil.scenario = "treat-diff",
-                              dispersal.scenario = "fixedaverage",
-                              force.processors = 12,
-                              ram.max = 5000)
-save(weevil.treateff,file='output/predation/weevil_treateff.Rdata')
-
-dispersal.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                   burnin=30,nyears=40,
-                                   harvests = c('none','shelterwood'),
-                                   mast.scenario = "hee",
-                                   weevil.scenario = "fixedaverage",
-                                   dispersal.scenario = "treat-diff",
-                                   force.processors = 12,
-                                   ram.max = 5000)
-save(dispersal.treateff,file='output/predation/dispersal_treateff.Rdata')
-
 weevil.dispersal.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
                                         harvests = c('none','shelterwood'),
@@ -77,26 +36,6 @@ weevil.dispersal.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         force.processors = 12,
                                         ram.max = 5000)
 save(weevil.dispersal.treateff,file='output/predation/weevil_dispersal_treateff.Rdata')
-
-weevil.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                        burnin=30,nyears=40,
-                                        harvests = c('none','shelterwood'),
-                                        mast.scenario = 'hee',
-                                        weevil.scenario = 'yearly-treat-diff',
-                                        dispersal.scenario = "fixedaverage",
-                                        force.processors = 12,
-                                        ram.max = 5000)
-save(weevil.treatyearlyeff,file='output/predation/weevil_treatyearlyeff.Rdata')
-
-dispersal.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                    burnin=30,nyears=40,
-                                    harvests = c('none','shelterwood'),
-                                    mast.scenario = 'hee',
-                                    weevil.scenario = 'fixedaverage',
-                                    dispersal.scenario = "yearly-treat-diff",
-                                    force.processors = 12,
-                                    ram.max = 5000)
-save(dispersal.treatyearlyeff,file='output/predation/dispersal_treatyearlyeff.Rdata')
 
 weevil.dispersal.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
@@ -125,6 +64,10 @@ pbPost('file',url='output/predation/predation.zip')
 #Shut down instance 
 system('sudo shutdown -h now')
 
+##################################################################
+
+#Test for differences among scenarios
+
 source('utility_functions.R')
 
 lapply(c('output/predation/weevil_dispersal_average.Rdata',
@@ -134,9 +77,6 @@ lapply(c('output/predation/weevil_dispersal_average.Rdata',
          ),
        load,.GlobalEnv)
 
-##################################################################
-
-#Test for differences among scenarios
 datalist <- list(avg=weevil.dispersal.average,trt=weevil.dispersal.treateff,yrly=weevil.dispersal.yearlyeff,
                  treat.yrly=weevil.dispersal.treatyearlyeff)
 datalist <- add.newseedlings(datalist,30,38)
@@ -144,15 +84,61 @@ datalist <- add.seedorigin(datalist)
 datalist <- add.acornsum(datalist,30,37)
 datalist <- add.pctgermmean(datalist,30,37)
 
+##Total acorns produced
+test = analyze.ibm(datalist,metric='acornsum')
+summary(test$anova)
+test$anova.mc
+
 #Total New Seedlings over 10 Years
 test = analyze.ibm(datalist,metric='seedlingsum')
 
+#Overall harvest effect
+newseed <- gen.dataset(datalist,metric='seedlingsum')
+nm <- mean(newseed$seedlingsum[newsap$harvest=='none'])
+mm <- mean(newseed$seedlingsum[newsap$harvest=='shelterwood'])
+(nm-mm)/nm
+
+#Effect of TE in midstory removal
+nm <- mean(newseed$seedlingsum[newseed$harvest=='shelterwood'&newseed$scenario=='avg'])
+mm <- mean(newseed$seedlingsum[newseed$harvest=='shelterwood'&newseed$scenario=='trt'])
+(mm-nm)/nm
+
+#Yearly effects
+nm <- mean(newseed$seedlingsum[newseed$scenario=='avg'])
+mm <- mean(newseed$seedlingsum[newseed$scenario=='treat.yrly'])
+(mm-nm)/nm
+
 ##Saplings
 test = analyze.ibm(datalist,metric='seedorigin',37)
+
+#Overall harvest effects
+newsap <- gen.dataset(datalist,metric='seedorigin',37)
+mean(newsap$seedorigin[newsap$harvest=='none'])
+mean(newsap$seedorigin[newsap$harvest=='shelterwood'])
+
+#Treatment effects in midstory removal
+nm <- mean(newsap$seedorigin[newsap$scenario=='avg'])
+mm <- mean(newsap$seedorigin[newsap$scenario=='treat.yrly'])
+(mm-nm)/nm
+
 
 #######
 #Pct Germ
 test = analyze.ibm(datalist,metric='pctgermmean')
 
-##Total acorns
-test = analyze.ibm(datalist,metric='acornsum')
+#Overall harvest effects
+newgerm <- gen.dataset(datalist,metric='pctgermmean')
+nm <- mean(newgerm$pctgermmean[newsap$harvest=='none'])
+mm <- mean(newgerm$pctgermmean[newsap$harvest=='shelterwood'])
+(nm-mm)/nm
+
+#Treatment effects in midstory removal
+nm <- mean(newgerm$pctgermmean[newgerm$harvest=='shelterwood'&newgerm$scenario=='avg'])
+mm <- mean(newgerm$pctgermmean[newgerm$harvest=='shelterwood'&newgerm$scenario=='trt.yearly'])
+(mm-nm)/nm
+
+#Yearly effects
+nm <- mean(newgerm$pctgermmean[newgerm$scenario=='avg'])
+mm <- mean(newgerm$pctgermmean[newgerm$scenario=='treat.yrly'])
+(mm-nm)/nm
+
