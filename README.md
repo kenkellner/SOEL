@@ -1,7 +1,7 @@
 SOEL
 ====
 
-SOEL (**S**imulation of **O**ak **E*arly **L**ife history) is an individual-based model of the oak lifecycle. SOEL simulates individual acorns, seedlings, saplings, and mature trees and their interactions with animals (including weevil infestation, acorn predation and dispersal by small mammals, and herbivory).
+SOEL (**S**imulation of **O**ak **E**arly **L**ife history) is an individual-based model of the oak lifecycle. SOEL simulates individual acorns, seedlings, saplings, and mature trees and their interactions with animals (including weevil infestation, acorn predation and dispersal by small mammals, and herbivory).
 
 The model (*SOEL.nlogo*) is implemented in the [http://ccl.northwestern.edu/netlogo/](NetLogo) language and can be called from R using the *run_SOEL.R* script. Data to parameterize the model were primarily collected as part of the [http://www.heeforeststudy.org](Hardwood Ecosystem Experiment), a long-term study of forest ecosystem responses to management.
 

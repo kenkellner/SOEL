@@ -3,7 +3,7 @@
 .RData
 *.Rda
 *.db
-oak-lifecycle.Rproj
+*.Rproj
 output
 *.aux
 *.bbl
