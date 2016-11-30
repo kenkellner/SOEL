@@ -1,3 +1,5 @@
+#BUGS model of acorn production
+
 model {
   
   for (i in 1:nyears){

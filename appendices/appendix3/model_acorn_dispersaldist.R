@@ -1,3 +1,5 @@
+#BUGS model of for acorn dispersal distance
+
 model {
 
   for (i in 1:ndispacorns){

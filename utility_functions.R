@@ -1,5 +1,8 @@
+########################################################
+## Functions for formatting and analyzing SOEL output ##
+########################################################
 
-#function to combine scenario datasets and re-sort by treatment
+#function to combine SOEL scenario output datasets and re-sort by treatment
 treat.reorg <- function(datalist){
   
   out <- list()
@@ -104,6 +107,7 @@ gen.barplot <- function(datalist,metric,year,ylim,names=NULL,xlab=NULL,
   if(!is.null(legend)){legend(legx,legy,fill=gray.colors(nrow(bardata)),legend=legend)}
 }
 
+#Calculate and add "newseedlings" oak regen metric to a dataset
 add.newseedlings <- function(datalist,startyear,stopyear){
   
   for (i in 1:length(datalist)){
@@ -117,6 +121,7 @@ add.newseedlings <- function(datalist,startyear,stopyear){
   
 }
 
+#Calculate and add "acornsum" oak regen metric to a dataset
 add.acornsum <- function(datalist,startyear,stopyear){
   
   for (i in 1:length(datalist)){
@@ -130,6 +135,7 @@ add.acornsum <- function(datalist,startyear,stopyear){
   
 }
 
+#Calculate and add "pctgermmean" oak regen metric to a dataset
 add.pctgermmean <- function(datalist,startyear,stopyear){
   
   for (i in 1:length(datalist)){
@@ -141,6 +147,7 @@ add.pctgermmean <- function(datalist,startyear,stopyear){
   return(datalist)
 }
 
+#Calculate and add "seedorigin" oak regen metric to a dataset
 add.seedorigin <- function(datalist){
   
   for (i in 1:length(datalist)){
@@ -152,7 +159,7 @@ add.seedorigin <- function(datalist){
   return(datalist)
 }
 
-
+#ANOVA and post-hoc multiple comparisons on SOEL output
 analyze.ibm <- function(datalist,metric,year,cont=FALSE,vals=NULL){
   
   require(agricolae)

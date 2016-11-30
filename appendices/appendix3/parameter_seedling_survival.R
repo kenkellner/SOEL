@@ -2,6 +2,11 @@
 ## Estimate Seedling Survival Probability pSurv ##
 ##################################################
 
+#Based on data from:
+#Kellner, K. F. and R. K. Swihart (2016). Timber harvest and drought interact to 
+#impact oak seedling growth and survival in the Central Hardwood Forest. 
+#Ecosphere 7: e01473. doi: 10.1002/ecs2.1473
+
 #Initial formatting on raw data
 source('../seedling-survival/format_data.R')
 seedling <- format.seedling('data/ibm_seedlingmaster.csv')

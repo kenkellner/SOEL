@@ -2,6 +2,11 @@
 ## Estimate Seedling Herbivory Probability pBrowse ##
 #####################################################
 
+#Based on data from:
+#Kellner, K. F. and R. K. Swihart (2016). Herbivory on planted oak 
+#seedlings across a habitat edge created by timber harvest. 
+#Plant Ecology. doi: 10.1007/s11258-016-0678-6
+
 #Initial formatting on raw data
 source('../seedling-survival/format_data.R')
 seedling <- format.seedling('data/ibm_seedlingmaster.csv')

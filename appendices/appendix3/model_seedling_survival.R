@@ -1,3 +1,4 @@
+#BUGS model of seedling survival
 
 model {
   
