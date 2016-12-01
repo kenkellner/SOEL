@@ -4,10 +4,7 @@
 #########################################
 
 #Read in SOEL output files
-setwd('output/predation')
-files <- list.files()
-lapply(files,load,.GlobalEnv)
-setwd('../..')
+load('output/casestudy_predation.Rdata')
 
 #Get required functions
 source('utility_functions.R')

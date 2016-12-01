@@ -1,4 +1,6 @@
-##Comparison of different masting scenarios given average conditions otherwise
+###############################################################
+## Case study: interaction of good mast year(s) with harvest ##
+###############################################################
 
 source('run_SOEL.R')
 
@@ -15,7 +17,6 @@ mast.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                        dispersal.scenario = "fixedaverage",
                                        force.processors = 12,
                                        ram.max = 5000)
-save(mast.average,file='output/mast/mast_average.Rdata')
 
 mast.priorgood1.1SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                            burnin=30,nyears=40,
@@ -26,7 +27,6 @@ mast.priorgood1.1SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                            dispersal.scenario = "fixedaverage",
                            force.processors = 12,
                            ram.max = 5000)
-save(mast.priorgood1.1SD,file='output/mast/mast_priorgood1.1SD.Rdata')
 
 mast.priorgood1.2SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                   burnin=30,nyears=40,
@@ -37,7 +37,6 @@ mast.priorgood1.2SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                   dispersal.scenario = "fixedaverage",
                                   force.processors = 12,
                                   ram.max = 5000)
-save(mast.priorgood1.2SD,file='output/mast/mast_priorgood1.2SD.Rdata')
 
 mast.priorgood2.1SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                   burnin=30,nyears=40,
@@ -48,7 +47,6 @@ mast.priorgood2.1SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                   dispersal.scenario = "fixedaverage",
                                   force.processors = 12,
                                   ram.max = 5000)
-save(mast.priorgood2.1SD,file='output/mast/mast_priorgood2.1SD.Rdata')
 
 mast.priorgood2.2SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                   burnin=30,nyears=40,
@@ -59,7 +57,9 @@ mast.priorgood2.2SD <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                   dispersal.scenario = "fixedaverage",
                                   force.processors = 12,
                                   ram.max = 5000)
-save(mast.priorgood2.2SD,file='output/mast/mast_priorgood2.2SD.Rdata')
+
+save(mast.average,mast.priorgood1.1SD,mast.priorgood1.2SD,mast.priorgood2.1SD,mast.priorgood2.2SD,
+     file='output/casestudy_masting.Rdata')
 
 ##################################################################################
 
@@ -78,13 +78,7 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
-lapply(c('output/mast/mast_average.Rdata',
-         'output/mast/mast_priorgood1.1SD.Rdata',
-         'output/mast/mast_priorgood1.2SD.Rdata',
-         'output/mast/mast_priorgood2.1SD.Rdata',
-         'output/mast/mast_priorgood2.2SD.Rdata'
-),
-load,.GlobalEnv)
+load('output/casestudy_masting.Rdata')
 
 datalist = list(pg11=mast.priorgood1.1SD,pg21=mast.priorgood2.1SD,pg12=mast.priorgood1.2SD,
                 pg22=mast.priorgood2.2SD,pga=mast.average)

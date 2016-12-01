@@ -1,3 +1,6 @@
+#############################
+## Case study: sensitivity ##
+#############################
 
 source('run_SOEL.R')
 
@@ -58,8 +61,7 @@ sens.test.int <- run.SOEL(nreps=504,burnin=30,nyears=40,
                               corm=corm)
 
 
-save(sens.test.int,file='output/sens_test_int.Rdata')
-pbPost('file',url='output/sens_test_int.Rdata')
+save(sens.test.int,file='output/casestudy_sensitivity.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
@@ -78,6 +80,8 @@ system('sudo shutdown -h now')
 #Sensitivity partitioning (Xu and Gertner 2008)
 
 source('utility_functions.R')
+
+load('output/casestudy_sensitivity.Rdata')
 
 #Pctgerm (year 38)
 inp.covs <- as.data.frame(scale(sens.test.int$lhc))

@@ -4,10 +4,7 @@
 ######################################
 
 #Read in SOEL output files
-setwd('output/mast')
-files <- list.files()
-lapply(files,load,.GlobalEnv)
-setwd('../..')
+load('output/casestudy_masting.Rdata')
 
 #Get required functions
 source('utility_functions.R')

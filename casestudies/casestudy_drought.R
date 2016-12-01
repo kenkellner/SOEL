@@ -1,4 +1,6 @@
-##Comparison of different drought scenarios given average conditions otherwise
+#############################################
+## Case study: varying drought probability ##
+#############################################
 
 source('run_SOEL.R')
 
@@ -17,7 +19,6 @@ drought.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                         seedling.scenario = "fixedaverage",
                         force.processors = 12,
                         ram.max = 5000)
-save(drought.average,file='output/drought/drought_average.Rdata')
 
 drought.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                               burnin=30,nyears=40,
@@ -29,8 +30,6 @@ drought.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                               prob.drought = 0,
                               force.processors = 12,
                               ram.max = 5000)
-save(drought.prob0,file='output/drought/drought_prob0.Rdata')
-
 
 drought.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
@@ -42,7 +41,6 @@ drought.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             prob.drought = 0.2,
                             force.processors = 12,
                             ram.max = 5000)
-save(drought.prob2,file='output/drought/drought_prob2.Rdata')
 
 drought.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
@@ -54,7 +52,6 @@ drought.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             prob.drought = 0.4,
                             force.processors = 12,
                             ram.max = 5000)
-save(drought.prob4,file='output/drought/drought_prob4.Rdata')
 
 drought.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
@@ -66,7 +63,6 @@ drought.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             prob.drought = 0.6,
                             force.processors = 12,
                             ram.max = 5000)
-save(drought.prob6,file='output/drought/drought_prob6.Rdata')
 
 drought.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
@@ -78,7 +74,6 @@ drought.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             prob.drought = 0.8,
                             force.processors = 12,
                             ram.max = 5000)
-save(drought.prob8,file='output/drought/drought_prob8.Rdata')
 
 drought.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             burnin=30,nyears=40,
@@ -90,80 +85,9 @@ drought.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             prob.drought = 1.0,
                             force.processors = 12,
                             ram.max = 5000)
-save(drought.prob10,file='output/drought/drought_prob10.Rdata')
 
-drought.varying.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                    burnin=30,nyears=40,
-                                    harvests = c('none','clearcut','shelterwood'),
-                                    mast.scenario = "hee",
-                                    weevil.scenario = "yearly-treat-diff",
-                                    dispersal.scenario = "yearly-treat-diff",
-                                    seedling.scenario = "randomdrought",
-                                    prob.drought = 0,
-                                    force.processors = 12,
-                                    ram.max = 5000)
-save(drought.varying.prob0,file='output/drought/drought_varying_prob0.Rdata')
-
-drought.varying.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                            burnin=30,nyears=40,
-                            harvests = c('none','clearcut','shelterwood'),
-                            mast.scenario = "hee",
-                            weevil.scenario = "yearly-treat-diff",
-                            dispersal.scenario = "yearly-treat-diff",
-                            seedling.scenario = "randomdrought",
-                            prob.drought = 0.2,
-                            force.processors = 12,
-                            ram.max = 5000)
-save(drought.varying.prob2,file='output/drought/drought_varying_prob2.Rdata')
-
-drought.varying.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                    burnin=30,nyears=40,
-                                    harvests = c('none','clearcut','shelterwood'),
-                                    mast.scenario = "hee",
-                                    weevil.scenario = "yearly-treat-diff",
-                                    dispersal.scenario = "yearly-treat-diff",
-                                    seedling.scenario = "randomdrought",
-                                    prob.drought = 0.4,
-                                    force.processors = 12,
-                                    ram.max = 5000)
-save(drought.varying.prob4,file='output/drought/drought_varying_prob4.Rdata')
-
-drought.varying.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                    burnin=30,nyears=40,
-                                    harvests = c('none','clearcut','shelterwood'),
-                                    mast.scenario = "hee",
-                                    weevil.scenario = "yearly-treat-diff",
-                                    dispersal.scenario = "yearly-treat-diff",
-                                    seedling.scenario = "randomdrought",
-                                    prob.drought = 0.6,
-                                    force.processors = 12,
-                                    ram.max = 5000)
-save(drought.varying.prob6,file='output/drought/drought_varying_prob6.Rdata')
-
-drought.varying.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                    burnin=30,nyears=40,
-                                    harvests = c('none','clearcut','shelterwood'),
-                                    mast.scenario = "hee",
-                                    weevil.scenario = "yearly-treat-diff",
-                                    dispersal.scenario = "yearly-treat-diff",
-                                    seedling.scenario = "randomdrought",
-                                    prob.drought = 0.8,
-                                    force.processors = 12,
-                                    ram.max = 5000)
-save(drought.varying.prob8,file='output/drought/drought_varying_prob8.Rdata')
-
-drought.varying.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
-                                    burnin=30,nyears=40,
-                                    harvests = c('none','clearcut','shelterwood'),
-                                    mast.scenario = "hee",
-                                    weevil.scenario = "yearly-treat-diff",
-                                    dispersal.scenario = "yearly-treat-diff",
-                                    seedling.scenario = "randomdrought",
-                                    prob.drought = 1.0,
-                                    force.processors = 12,
-                                    ram.max = 5000)
-save(drought.varying.prob10,file='output/drought/drought_varying_prob10.Rdata')
-
+save(drought.prob0,drought.prob2,drought.prob4,drought.prob6,drought.prob8,drought.prob10,
+     file='output/casestudy_drought.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
@@ -184,15 +108,11 @@ system('sudo shutdown -h now')
 
 ###############################################################
 
-lapply(c('output/drought/drought_prob0.Rdata','output/drought/drought_prob2.Rdata','output/drought/drought_prob4.Rdata',
-         'output/drought/drought_prob6.Rdata','output/drought/drought_prob8.Rdata','output/drought/drought_prob10.Rdata'),
-         load,.GlobalEnv)
-
-###############################################################
-
 #Analysis
 
 source('utility_functions.R')
+
+load('output/casestudy_drought.Rdata')
 
 datalist = list(d00=drought.prob0,d02=drought.prob2,d04=drought.prob4,
                 d06=drought.prob6,d08=drought.prob8,d10=drought.prob10)

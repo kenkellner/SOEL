@@ -1,4 +1,6 @@
-##Comparison of different seed predation scenarios
+####################################################################
+## Case study: interaction of seed predation and midstory removal ##
+####################################################################
 
 source('run_SOEL.R')
 
@@ -15,7 +17,6 @@ weevil.dispersal.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                 dispersal.scenario = "fixedaverage",
                                 force.processors = 12,
                                 ram.max = 5000)
-save(weevil.dispersal.average,file='output/predation/weevil_dispersal_average.Rdata')
 
 weevil.dispersal.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
@@ -25,7 +26,6 @@ weevil.dispersal.yearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         dispersal.scenario = "yearly-diff",
                                         force.processors = 12,
                                         ram.max = 5000)
-save(weevil.dispersal.yearlyeff,file='output/predation/weevil_dispersal_yearlyeff.Rdata')
 
 weevil.dispersal.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
@@ -35,7 +35,6 @@ weevil.dispersal.treateff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         dispersal.scenario = "treat-diff",
                                         force.processors = 12,
                                         ram.max = 5000)
-save(weevil.dispersal.treateff,file='output/predation/weevil_dispersal_treateff.Rdata')
 
 weevil.dispersal.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                                         burnin=30,nyears=40,
@@ -45,7 +44,9 @@ weevil.dispersal.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nrep
                                         dispersal.scenario = "yearly-treat-diff",
                                         force.processors = 12,
                                         ram.max = 5000)
-save(weevil.dispersal.treatyearlyeff,file='output/predation/weevil_dispersal_treatyearlyeff.Rdata')
+
+save(weevil.dispersal.average,weevil.dispersal.treateff,weevil.dispersal.yearlyeff,
+     weevil.dispersal.treatyearlyeff,file='output/casestudy_predation.Rdata')
 
 #Calculate runtime and push alert message
 end.time <- Sys.time() 
@@ -70,12 +71,7 @@ system('sudo shutdown -h now')
 
 source('utility_functions.R')
 
-lapply(c('output/predation/weevil_dispersal_average.Rdata',
-         'output/predation/weevil_dispersal_treateff.Rdata',
-         'output/predation/weevil_dispersal_treatyearlyeff.Rdata',
-         'output/predation/weevil_dispersal_yearlyeff.Rdata'
-         ),
-       load,.GlobalEnv)
+load('output/casestudy_predation.Rdata')
 
 datalist <- list(avg=weevil.dispersal.average,trt=weevil.dispersal.treateff,yrly=weevil.dispersal.yearlyeff,
                  treat.yrly=weevil.dispersal.treatyearlyeff)

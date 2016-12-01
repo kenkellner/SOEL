@@ -4,10 +4,7 @@
 ############################
 
 #Read in SOEL output files
-setwd('output/drought')
-files <- list.files()
-lapply(files,load,.GlobalEnv)
-setwd('../..')
+load('output/casestudy_drought.Rdata')
 
 #Get required functions
 source('utility_functions.R')
