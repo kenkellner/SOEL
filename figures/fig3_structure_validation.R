@@ -1,14 +1,18 @@
-#################################################
-## Code for Forest Structure Validation Figure ##
-#################################################
+#################################
+## Structure Validation Figure ##
+##  Figure 3 in Manuscript     ##
+#################################
 
-load('output/structure_val_figure.Rdata')
+load('output/development/structure_val_figure.Rdata')
 
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
 #pdf(file="../dissertation/figures/fig5-8.pdf",width=5.3,height=5.5,family="CM Roman",pointsize=9)
-pdf(file="appendices/figures/fig8.pdf",width=5.3,height=5.5,family="Helvetica",pointsize=9)
+#pdf(file="appendices/figures/fig8.pdf",width=5.3,height=5.5,family="Helvetica",pointsize=9)
+
+tiff(filename="figures/Fig3.tif",width=5,height=5,units="in",res=300, pointsize=9,
+     compression = "lzw",type='cairo')
 
 par(mar = c(4,4.5,1,2) + 0.1)
 
@@ -172,7 +176,7 @@ lines(top.j,lty=1,col='gray45')
 lines(bot.j,lty=1,col='gray45')
 
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.19/bin/gswin64c.exe")
+#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.19/bin/gswin64c.exe")
 #embed_fonts("../dissertation/figures/fig5-8.pdf")
-embed_fonts("appendices/figures/fig8.pdf")
+#embed_fonts("appendices/figures/fig8.pdf")
 

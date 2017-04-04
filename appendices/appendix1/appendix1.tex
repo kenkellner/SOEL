@@ -199,7 +199,7 @@ All acorns that escape predation (either dispersed or not) have a probability \t
 
 \subsection{Oak Seedling Growth and Survival}
 
-The expected growth of a given seedling \textit{meanGr} depends on oak species, available light (see section \ref{environmental}), and the presence of browse damage in a given year which occurs with fixed probability \textit{pBrowse} (Figure~\ref{fig:1}; \citep{Kellner2016c}). A predictive growth model was fit using empirical data \citep{Kellner2016b} as a function of oak species \textit{sp} (binary variable with white oak = 1), percentage of shade cover \textit{sh} (see section \ref{environmental} for calculation), presence/absence of browse damage \textit{br}, a random seedling effect $rs \sim N(0, 0.25)$ and residual error $\epsilon \sim N(0, 1.19)$. We transformed the empirical growth data using the neg-log transformation \citep{Whittaker2005}, thus yearly seedling growth was calculated as:
+The expected growth of a given seedling \textit{meanGr} depends on oak species, available light (see section \ref{environmental}), and the presence of browse damage in a given year which occurs with fixed probability \textit{pBrowse} (Figure~\ref{fig:1}; \citep{Kellner2017}). A predictive growth model was fit using empirical data \citep{Kellner2016b} as a function of oak species \textit{sp} (binary variable with white oak = 1), percentage of shade cover \textit{sh} (see section \ref{environmental} for calculation), presence/absence of browse damage \textit{br}, a random seedling effect $rs \sim N(0, 0.25)$ and residual error $\epsilon \sim N(0, 1.19)$. We transformed the empirical growth data using the neg-log transformation \citep{Whittaker2005}, thus yearly seedling growth was calculated as:
 \begin{equation}
 \text{Growth} = 
 \begin{cases} 
@@ -321,45 +321,9 @@ Clearcutting is the simplest of the three scenarios. At the beginning of each ro
 	\label{fig:6}
 \end{figure}
 
-\section{Model Validation}
-
-Given the scope and complexity of the model described above, we wanted to ensure that (given default values) it produced ecologically realistic output. The model has two primary components: the early oak life history component that is driven by HEE data (from acorns to saplings), and the JABOWA-driven component (saplings to adult trees). We focused on the former, given that the focus of the model (and of this dissertation) is on early oak life history. Several model outputs, including acorn production and oak regeneration (i.e., seedling) density, were compared to empirical estimates from the HEE sites as well as the literature. 
-
-\subsection{Acorn Production}
-
-Yearly acorn production has been reported in the literature several ways, including total acorn mass year\textsuperscript{-1} hectare\textsuperscript{-1}, total number of acorns produced year\textsuperscript{-1} hectare\textsuperscript{-1}, and mean acorns year\textsuperscript{-1} tree\textsuperscript{-1}.  We compared model-derived estimates (from a ten-year 1 ha forest simulation using standard initial values; see section \ref{initialization}) of the latter two metrics with acorn production datasets and reported values from the literature. Mean acorns year\textsuperscript{-1} tree\textsuperscript{-1} for mature trees (dbh \textgreater 15.2 cm) from the model was 922 with a standard error of 209, which fell in the middle of the range reported in the literature (382-2147; Table \ref{tab:4}). At the stand scale, a mean of 90,757 acorns year\textsuperscript{-1} hectare\textsuperscript{-1} were produced by the simulation model. This value was similar to values reported by other studies in oak-dominated forests (Table \ref{tab:4}), with the important qualification that acorn production is dependent on the basal area and size distribution of oak within the stand. The main purpose of this component of the validation exercise was simply to show that the number of acorns produced in the simulation was comparable in magnitude to empirical estimates.
-
-\input{tables/tab4}
-
-\subsection{Oak Seedling and Sapling Density}
-
-The total number and size distribution of young oak stems is a predictor of the ability of oak to successfully regenerate following a disturbance event or timber harvest \citep{Johnson2009}. Stump sprouts are a key source of oak regeneration (\citep{Johnson2009}, section \ref{repro}) but seed-origin regeneration also plays a role. Given the importance of stem density for predicting oak regeneration success, we determined if the model accurately predicted the density of seedling (\textless 1.4 m) and sapling oaks ($\geq$ 1.4 m height and \textless 1.5 cm dbh; \citep{Saunders2013}) following several types of timber harvest. We conducted 30 replicate simulations in SOEL using a standard JABOWA model (\citep{Botkin1993}; S2 SOEL Code) and estimated the mean seedling and sapling oak density five years after three harvesting treatments (clearcut, shelterwood, and no harvest). We compared these model-derived estimates with corresponding empirical data and oak seedling and sapling densities collected from Hardwood Ecosystem Experiment sites five years following harvest (Kellner, \textit{unpublished data}). 
-
-Generally, SOEL accurately predicted densities of oak seedlings and saplings (Figure \ref{fig:7}). JABOWA predicted much higher oak sapling densities (particularly for the no harvest and shelterwood treatments) than were observed (Figure \ref{fig:7}). The contrast in sapling density between SOEL (similar to the empirical data) and JABOWA suggests that the simplistic regeneration process used in the latter ignores the challenges facing oak early in its life history (weevil infestation, predation, herbivory) thus overestimating the number of oaks that reach the sapling stage.
-
-\begin{figure}
-	\centering
-	\includegraphics[scale=1]{figures/fig7.pdf}
-	\caption{Predicted densities of oak seedlings (\textless 1.4 m height) from SOEL and saplings ($\geq$ 1.4 m and \textless 1.5 cm DBH) from SOEL and JABOWA under three harvesting scenarios, compared to actual mean densities from the Hardwood Ecosystem Experiment (HEE). Model results are means and 95\% confidence intervals from 30 replicated simulations (measured 5 years post-harvest to match HEE data). The dashed line represents the mean from the HEE field data and the shaded area is the 95\% confidence interval around the mean.}
-	\label{fig:7}
-\end{figure}
-
-\subsection{Mature Forest Structure}
-
-As previously noted, the focus of SOEL is on early oak life history; predicting overall forest structure was a secondary concern. However, we still wanted to test the ability of the model to simulate forests (following a stand initiation / disturbance event) that approximated the structure of the forest stands in the Hardwood Ecosystem Experiment. For both SOEL and JABOWA, we conducted 30 replicate simulations that began with a stand initiation event (a clearcut harvest). The trajectory over time of several key metrics of forest structure (basal area, stem density, and quadratic mean diameter) are plotted in Figure \ref{fig:8} and compared with the range of forest structure data collected at the HEE.
-
-\begin{figure}
-	\centering
-	\includegraphics[scale=1]{figures/fig8.pdf}
-	\caption{Comparison of three metrics of forest structure (basal area, stem density, and quadratic mean diameter) between forest stands simulated JABOWA and SOEL (means of 30 replicates) and empirical data gathered at the HEE sites. Comparisons are for all trees (dbh \textgreater 1.5 cm) and overstory trees only (dbh \textgreater 30 cm). HEE data represents the range of values reported in 9 forest stands approximately 80-100 years old. Gray lines represent one standard deviation above and below the simulation mean.}
-	\label{fig:8}
-\end{figure}
-
-SOEL simulated forests 80-100 years post-disturbance generally had similar structure to the HEE stands, particularly when all stems \textgreater 1.5 cm dbh were considered. When only overstory trees (dbh \textgreater 30 cm) were measured, the model slightly overestimated density with a corresponding underestimate of quadratic mean diameter (Figure \ref{fig:8}). Still, SOEL more accurately approximated forest structure than did JABOWA, particularly for stand basal area. A complicating factor is that the HEE forest stands used for this comparison have been subjected to some single-tree selection harvesting since stand initiation \citep{Carman2013}, likely reducing overall stand basal area, while the simulated stands were not harvested following the initial disturbance event.
-
 \section{Conclusion}
 
-The pathway to establishment for an oak seedling is complex, involving highly variable acorn crops \citep{Lusk2007, Kellner2014b}, predation by insects and mammals \citep{Bellocq2005, Lombardo2008, Kellner2014b}, dispersal by small mammals \citep{Moore2007,Kellner2016}, herbivory \citep{Kellner2016c}, and competition and other environmental effects \citep{Kellner2016b}. Oak regeneration success depends on the interaction of these and other factors (e.g., stump sprouting probability, site quality; \citealp{Johnson2009}). No modeling structure we are aware of has brought together all of these components into a single detailed, comprehensive model of early oak life history. To tackle this complex modeling challenge, we harnessed the power of individual-based models \citep{Grimm2005}, which allowed us to track oaks (from acorns to mature trees) through time, space, and varying environmental conditions. As with all models, we had to make numerous simplifying assumptions. However, based on preliminary validation tests, SOEL was able to realistically simulate key metrics including acorn production, seedling and sapling densities, and forest structure with a close correspondence to empirical data collected at the Hardwood Ecosystem Experiment sites (Table \ref{tab:4}, Figures \ref{fig:7}-\ref{fig:8}). The simulations performed in this document were simplistic, holding many key parameters constant at mean values (e.g. dispersal kernels, weevil infestation probability) with the goal of testing general model behavior. Allowing these parameters to vary with covariates (e.g. with harvest or time) is a logical extension of the model that is explored in-depth in the attached paper. 
+The pathway to establishment for an oak seedling is complex, involving highly variable acorn crops \citep{Lusk2007, Kellner2014b}, predation by insects and mammals \citep{Bellocq2005, Lombardo2008, Kellner2014b}, dispersal by small mammals \citep{Moore2007,Kellner2016}, herbivory \citep{Kellner2017}, and competition and other environmental effects \citep{Kellner2016b}. Oak regeneration success depends on the interaction of these and other factors (e.g., stump sprouting probability, site quality; \citealp{Johnson2009}). No modeling structure we are aware of has brought together all of these components into a single detailed, comprehensive model of early oak life history. To tackle this complex modeling challenge, we harnessed the power of individual-based models \citep{Grimm2005}, which allowed us to track oaks (from acorns to mature trees) through time, space, and varying environmental conditions. 
 
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
@@ -369,7 +333,7 @@ The pathway to establishment for an oak seedling is complex, involving highly va
 
 %\renewcommand{\refname}{\spacedlowsmallcaps{References}} % For modifying the bibliography heading
 \renewcommand{\bibsection}{}
-\bibliography{../../../../documents/research/literature/bibtex/references}
+\include{bibsources}
 
 %----------------------------------------------------------------------------------------
 

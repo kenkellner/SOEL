@@ -1,6 +1,7 @@
-#########################################
-## Code for Seedling Validation Figure ##
-#########################################
+################################
+## Seedling Validation Figure ##
+##  Figure 2 in Manuscript    ##
+################################
 
 #Read in/format raw HEE seedling density data
 seedling <- read.csv('data/hee_seedlings.csv',header=T)[,1:9]
@@ -60,7 +61,7 @@ for (i in 1:nrow(collapsed)){
 }
 
 #Read in simulation output if necessary
-load('output/seedlings_val_figure.Rdata')
+load('output/casestudy_validation.Rdata')
 
 ###########################################################################
 
@@ -167,7 +168,10 @@ comb2.se <- c(se.n[4:8],se.c[4:8],se.s[4:8])
 #font_install('fontcm')
 #loadfonts()
 #pdf(file="../dissertation/figures/fig5-7.pdf",width=5,height=5,family="CM Roman",pointsize=10)
-pdf(file="appendices/figures/fig7.pdf",width=5,height=5,family="Helvetica",pointsize=10)
+#pdf(file="appendices/figures/fig7.pdf",width=5,height=5,family="Helvetica",pointsize=10)
+
+tiff(filename="figures/Fig2.tif",width=5,height=5,units="in",res=300, pointsize=9,
+     compression = "lzw",type='cairo')
 
 #Exclude model S and N from figure
 comb1.new <- comb1[c(2,5,8)]
@@ -263,7 +267,7 @@ abline(v=4)
 abline(v=7)
 
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.19/bin/gswin64c.exe")
+#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.19/bin/gswin64c.exe")
 #embed_fonts("../dissertation/figures/fig5-7.pdf")
-embed_fonts("appendices/figures/fig7.pdf")
+#embed_fonts("appendices/figures/fig7.pdf")
 

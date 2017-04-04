@@ -1,6 +1,6 @@
 #########################################
 ##  Seed Predation and Harvest Figure  ##
-##      Figure 3 in Manuscript         ##
+##      Figure 5 in Manuscript         ##
 #########################################
 
 #Read in SOEL output files

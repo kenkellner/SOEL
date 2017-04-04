@@ -1,6 +1,6 @@
 ######################################
 ##  Mast and Harvest Timing Figure  ##
-##     Figure 2 in Manuscript       ##
+##     Figure 4 in Manuscript       ##
 ######################################
 
 #Read in SOEL output files

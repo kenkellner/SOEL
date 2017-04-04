@@ -1,6 +1,6 @@
 ############################
 ##    Drought Figure      ##
-## Figure 4 in Manuscript ##
+## Figure 6 in Manuscript ##
 ############################
 
 #Read in SOEL output files
