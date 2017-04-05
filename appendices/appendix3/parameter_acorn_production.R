@@ -7,7 +7,7 @@
 #on acorn infestation and removal. New Forests 45:265–281. doi: 10.1007/s11056-014-9409-9
 
 #Read in raw data on tree characteristics and production
-tree <- read.csv('data/hee_treedata.csv',header=T)
+tree <- read.csv('data/ibm_treedata.csv',header=T)
 prod <- read.csv('data/ibm_production.csv',header=T)
 
 com <- cbind(tree,prod)[,c('species','X2006','X2007','X2008','X2009','X2010','X2011',

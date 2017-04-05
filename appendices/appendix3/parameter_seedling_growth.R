@@ -9,7 +9,7 @@
 
 #Initial formatting on raw data
 source('../seedling-survival/script_format_data.R')
-seedling <- format.seedling('data/ibm_seedlingmaster.csv')
+seedling <- format.seedling('data/ibm_seedling.csv')
 
 #Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$age==1)

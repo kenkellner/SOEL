@@ -8,7 +8,7 @@
 
 #Read in weevil, production, and tree data
 weevil = read.csv('data/ibm_weevils.csv', header=TRUE)
-treedata = read.csv('data/hee_treedata.csv',header=TRUE)
+treedata = read.csv('data/ibm_treedata.csv',header=TRUE)
 prod = read.csv('data/ibm_production.csv',header=TRUE)
 
 #Summarize acorn production

@@ -9,7 +9,7 @@
 
 #Initial formatting on raw data
 source('../seedling-survival/format_data.R')
-seedling <- format.seedling('data/ibm_seedlingmaster.csv')
+seedling <- format.seedling('data/ibm_seedling.csv')
 
 #Plots to keep (deer not excluded, not in shelterwoods)
 plots <- c(1:54)
