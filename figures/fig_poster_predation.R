@@ -1,6 +1,6 @@
 #########################################
 ##  Seed Predation and Harvest Figure  ##
-##      Figure 3 in Manuscript         ##
+##            For Poster               ##
 #########################################
 
 #Read in SOEL output files
@@ -21,7 +21,6 @@ structure <- c(1,2,4,5)
 par(mar = c(5,4.5,1,2) + 0.1)
 
 cols <- rev(c(rgb(red=244,green=125,blue=66, maxColorValue=255),
-              #rgb(red=241,green=194,blue=50, maxColorValue=255),
               rgb(red=141,green=213,blue=18, maxColorValue=255)))
 
 #Open png container
@@ -41,10 +40,7 @@ lowlim <- mns-sds
 
 plot(1,xlim=c(0.5,5.5),ylim=c(.95*min(lowlim),1.05*max(uplim)),xaxt='n',xlab="",
      ylab=expression("New Seedlings "~ ha^{-1}~"(7 Year Sum) x 1000"),
-     main='Seedlings'
-     #ylab=expression('TNSEED'%*%1000)
-     #ylab='TNSEED (thousands)'
-)
+     main='Seedlings')
 abline(v=3)
 
 wd=0.4
@@ -76,7 +72,6 @@ lowlim <- mns-sds
 plot(1,xlim=c(0.5,5.5),ylim=c(.95*min(lowlim),1.05*max(uplim)),xaxt='n',xlab="",
      main='Saplings',
      ylab=expression("Seed-origin Saplings "~ ha^{-1} ~"(Year 7)")
-     #ylab='SAPDENS'
 )
 abline(v=3)
 

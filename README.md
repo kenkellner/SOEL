@@ -20,7 +20,7 @@ Metadata
 
 `casestudies`: R code to set up and run the case studies in the manuscript and the validation experiments found in S1 Appendix.
 
-`figures`: Code to generate figures 2-4 in the manuscript and figures 1-8 in S1 Appendix.
+`figures`: Code to generate figures 2-6 in the manuscript and figures 1-6 in S1 Appendix.
 
 `JABOWA.nlogo`: Source code for JABOWA implementation in NetLogo, used in the validation experiments in S1 Appendix. Can be called in R using `run_SOEL.R` script. Part of S2 Code.
 

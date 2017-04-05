@@ -67,115 +67,86 @@ load('output/casestudy_validation.Rdata')
 
 #Summarize output (means and standard deviations for seedlings/saplings)
 
-#Control
-means.n <- c(
-  
+#Empirical data from HEE
+hee.seedling.means <- c(
   mean(collapsed$class123[collapsed$treat=="matrix"]/16*10000),
-  mean(seedlingsval.out$none$seedclass123[26,1:30]),
-  mean(seedlingsval.none.simple$none$seedclass123[26,1:30]),
-  
-  mean(collapsed$class4[collapsed$treat=="matrix"]/16*10000),
-  mean(seedlingsval.out$none$seedclass4[26,1:30]),
-  mean(seedlingsval.none.simple$none$seedclass4[26,1:30]),
-  mean(seedlingsval.none.none$none$seedclass4[26,1:30]),
-  mean(seedlingsval.none.jabowa$none$seedclass4[26,1:30])
+  mean(collapsed$class123[collapsed$treat=="clear"]/16*10000),
+  mean(collapsed$class123[collapsed$treat=="shelter"]/16*10000)
 )
 
-se.n <- c(
-  #Using SE for HEE data and SD for model data? not ideal
+hee.seedling.se <- c(
   sd(collapsed$class123[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class123[collapsed$treat=='matrix'])),
-  sd(seedlingsval.out$none$seedclass123[26,1:30]),
-  sd(seedlingsval.none.simple$none$seedclass123[26,1:30]),
-  
-  sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
-    length(collapsed$class4[collapsed$treat=='matrix'])),
-  sd(seedlingsval.out$none$seedclass4[26,1:30]),
-  sd(seedlingsval.none.simple$none$seedclass4[26,1:30]),
-  sd(seedlingsval.none.none$none$seedclass4[26,1:30]),
-  sd(seedlingsval.none.jabowa$none$seedclass4[26,1:30])
+  sd(collapsed$class123[collapsed$treat=="clear"]/16*10000)/sqrt(
+    length(collapsed$class123[collapsed$treat=='clear'])),
+  sd(collapsed$class123[collapsed$treat=="shelter"]/16*10000)/sqrt(
+    length(collapsed$class123[collapsed$treat=='shelter']))
 )
 
-#Shelterwood
-means.s <- c(
+hee.sapling.means <- c(
+  mean(collapsed$class4[collapsed$treat=="matrix"]/16*10000),
+  mean(collapsed$class4[collapsed$treat=="clear"]/16*10000),
+  mean(collapsed$class4[collapsed$treat=="shelter"]/16*10000)
+)
+
+hee.sapling.se <- c(
+  sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
+    length(collapsed$class4[collapsed$treat=='matrix'])),
+  sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
+    length(collapsed$class4[collapsed$treat=='clear'])),
+  sd(collapsed$class4[collapsed$treat=="shelter"]/16*10000)/sqrt(
+    length(collapsed$class4[collapsed$treat=='shelter']))
+)
+
+############################
+#SOEL output data
+
+soel.seedling.means <- c(
+  mean(seedlingsval.out$none$seedclass123[26,1:30]),
+  mean(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
+  mean(seedlingsval.shelt$shelterwood$seedclass123[26,1:30])
+)
+
+soel.seedling.sd <- c(
+  sd(seedlingsval.out$none$seedclass123[26,1:30]),
+  sd(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
+  sd(seedlingsval.shelt$shelterwood$seedclass123[26,1:30])
+) 
+
+soel.sapling.means <- c(
+  mean(seedlingsval.out$none$seedclass4[26,1:30]),
+  mean(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
+  mean(seedlingsval.shelt$shelterwood$seedclass4[26,1:30])
+)
+
+soel.sapling.sd <- c(
+  sd(seedlingsval.out$none$seedclass4[26,1:30]),
+  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
+  sd(seedlingsval.shelt$shelterwood$seedclass4[26,1:30])
   
-  mean(collapsed$class123[collapsed$treat=="shelter"]/16*10000),
-  mean(seedlingsval.shelt$shelterwood$seedclass123[26,1:30]),
-  mean(seedlingsval.shelt.simple$shelterwood$seedclass123[26,1:30]),
-  
-  mean(collapsed$class4[collapsed$treat=="shelter"]/16*10000),
-  mean(seedlingsval.shelt$shelterwood$seedclass4[26,1:30]),
-  mean(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30]),
-  mean(seedlingsval.shelt.none$shelterwood$seedclass4[26,1:30]),
+)
+
+##############################
+#JABOWA output data
+
+jabowa.sapling.means <- c(
+  mean(seedlingsval.none.jabowa$none$seedclass4[26,1:30]),
+  mean(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30]),
   mean(seedlingsval.shelt.jabowa$shelterwood$seedclass4[26,1:30])
 )
 
-se.s <- c(
-  
-  sd(collapsed$class123[collapsed$treat=="shelter"]/16*10000)/sqrt(
-    length(collapsed$class123[collapsed$treat=='shelter'])),
-  sd(seedlingsval.shelt$shelterwood$seedclass123[26,1:30]),
-  sd(seedlingsval.shelt.simple$shelterwood$seedclass123[26,1:30]),
-  
-  sd(collapsed$class4[collapsed$treat=="shelter"]/16*10000)/sqrt(
-    length(collapsed$class4[collapsed$treat=='shelter'])),
-  sd(seedlingsval.shelt$shelterwood$seedclass4[26,1:30]),
-  sd(seedlingsval.shelt.simple$shelterwood$seedclass4[26,1:30]),
-  sd(seedlingsval.shelt.none$shelterwood$seedclass4[26,1:30]),
+jabowa.sapling.sd <- c(
+  sd(seedlingsval.none.jabowa$none$seedclass4[26,1:30]),
+  sd(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30]),
   sd(seedlingsval.shelt.jabowa$shelterwood$seedclass4[26,1:30])
-  
 )
 
-#Clearcut
-means.c <- c(
-  
-  mean(collapsed$class123[collapsed$treat=="clear"]/16*10000),
-  mean(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
-  mean(seedlingsval.clear.simple$clearcut$seedclass123[26,1:30]),
-  
-  mean(collapsed$class4[collapsed$treat=="clear"]/16*10000),
-  mean(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
-  mean(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30]),
-  mean(seedlingsval.clear.none$clearcut$seedclass4[26,1:30]),
-  mean(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30])
-)
-
-se.c <- c(
-  
-  sd(collapsed$class123[collapsed$treat=="clear"]/16*10000)/sqrt(
-    length(collapsed$class123[collapsed$treat=='clear'])),
-  sd(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
-  sd(seedlingsval.clear.simple$clearcut$seedclass123[26,1:30]),
-  
-  sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
-    length(collapsed$class4[collapsed$treat=='clear'])),
-  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
-  sd(seedlingsval.clear.simple$clearcut$seedclass4[26,1:30]),
-  sd(seedlingsval.clear.none$clearcut$seedclass4[26,1:30]),
-  sd(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30])
-)
-
-#Combine output summaries
-comb1 <- c(means.n[1:3],means.c[1:3],means.s[1:3])
-comb1.se <- c(se.n[1:3],se.c[1:3],se.s[1:3])
-comb2 <- c(means.n[4:8],means.c[4:8],means.s[4:8])
-comb2.se <- c(se.n[4:8],se.c[4:8],se.s[4:8])
 
 ############################################################################
 #Generate figure
 
-#library(extrafont)
-#font_install('fontcm')
-#loadfonts()
-#pdf(file="../dissertation/figures/fig5-7.pdf",width=5,height=5,family="CM Roman",pointsize=10)
-#pdf(file="appendices/figures/fig7.pdf",width=5,height=5,family="Helvetica",pointsize=10)
-
 tiff(filename="figures/Fig2.tif",width=5,height=5,units="in",res=300, pointsize=9,
      compression = "lzw",type='cairo')
-
-#Exclude model S and N from figure
-comb1.new <- comb1[c(2,5,8)]
-comb1.se.new <- 1.96*comb1.se[c(2,5,8)]
 
 par(mar = c(3.5,4.5,1,2) + 0.1)
 par(fig=c(0,1,0.45,1),new=FALSE,mgp=c(2.5,1,0))
@@ -183,91 +154,86 @@ par(fig=c(0,1,0.45,1),new=FALSE,mgp=c(2.5,1,0))
 structure <- c(2.5,5.5,8.5)
 
 #Plot means for seedling figure
-plot(structure,comb1.new,ylim=c(0,8000),xlim=c(1.5,9.5),xaxt='n',xlab=''
+plot(structure,soel.seedling.means,ylim=c(0,8000),xlim=c(1.5,9.5),xaxt='n',xlab=''
      ,ylab=expression('Seedlings'~ha^{-1}))
 
 #Draw shaded boxes representing actual HEE data
 shadecol <- 'gray85'
-#shadecol <- rgb(red=141,green=213,blue=18, maxColorValue=255)
 
-polygon(x=c(0,0,4,4),y=c(comb1[1]-comb1.se[1]*1.96,comb1[1]+comb1.se[1]*1.96,
-                         comb1[1]+comb1.se[1]*1.96,comb1[1]-comb1.se[1]*1.96),col=shadecol,border=F)
-segments(x0=0,y0=comb1[1],x1=4,y1=comb1[1],lty=2)
-polygon(x=c(4,4,7,7),y=c(comb1[4]-comb1.se[4]*1.96,comb1[4]+comb1.se[4]*1.96,
-                         comb1[4]+comb1.se[4]*1.96,comb1[4]-comb1.se[4]*1.96),col=shadecol,border=F)
-segments(x0=4,y0=comb1[4],x1=7,y1=comb1[4],lty=2)
-polygon(x=c(7,7,10,10),y=c(comb1[7]-comb1.se[7]*1.96,comb1[7]+comb1.se[7]*1.96,
-                           comb1[7]+comb1.se[7]*1.96,comb1[7]-comb1.se[7]*1.96),col=shadecol,border=F)
-segments(x0=7,y0=comb1[7],x1=10,y1=comb1[7],lty=2)
+st <- c(0,4,7,10)
+for (i in 1:3){
+  polygon(x=c(rep(st[i],2),rep(st[i+1],2)),
+          y=c(hee.seedling.means[i]-hee.seedling.se[i]*1.96,hee.seedling.means[i]+hee.seedling.se[i]*1.96,
+              hee.seedling.means[i]+hee.seedling.se[i]*1.96,hee.seedling.means[i]-hee.seedling.se[i]*1.96),
+          col=shadecol,border=F)
+  segments(x0=st[i],y0=hee.seedling.means[i],x1=st[i+1],y1=hee.seedling.means[i],lty=2)
+}
 
 box()
+abline(v=4)
+abline(v=7)
 
 #Plot 95% confidence intervals
 for (i in 1:3){
-  segments(x0=structure[i],y0=comb1.new[i]-comb1.se.new[i],
-           x1=structure[i],y1=comb1.new[i]+comb1.se.new[i])
-  segments(x0=structure[i]-0.06,y0=comb1.new[i]+comb1.se.new[i],
-           x1=structure[i]+0.06,y1=comb1.new[i]+comb1.se.new[i])
-  segments(x0=structure[i]-0.06,y0=comb1.new[i]-comb1.se.new[i],
-           x1=structure[i]+0.06,y1=comb1.new[i]-comb1.se.new[i])
+  segments(x0=structure[i],y0=soel.seedling.means[i]-1.96*soel.seedling.sd[i],
+           x1=structure[i],y1=soel.seedling.means[i]+1.96*soel.seedling.sd[i])
+  segments(x0=structure[i]-0.06,y0=soel.seedling.means[i]+1.96*soel.seedling.sd[i],
+           x1=structure[i]+0.06,y1=soel.seedling.means[i]+1.96*soel.seedling.sd[i])
+  segments(x0=structure[i]-0.06,y0=soel.seedling.means[i]-1.96*soel.seedling.sd[i],
+           x1=structure[i]+0.06,y1=soel.seedling.means[i]-1.96*soel.seedling.sd[i])
 }
 
 #Plot points on top of intervals
-points(structure,comb1.new,pch=21,bg=rep(c('white','white'),3),
+points(structure,soel.seedling.means,pch=21,bg=rep(c('white','white'),3),
        cex=1)
-abline(v=4)
-abline(v=7)
 
 legend('topleft',pch=c(21,21,22),pt.bg=c('white','black',shadecol),
        pt.cex=c(1,1,3),
        legend=c('SOEL','JABOWA', 'HEE Data'),bty='n')
 
-#Bottom figure
-comb2.new <- comb2[c(2,5,7,10,12,15)]
-comb2.se.new <- 1.96*comb2.se[c(2,5,7,10,12,15)]
-
-structure <- c(2,3,5,6,8,9)
+########################################################
+#Bottom (sapling) figure
 
 par(fig=c(0,1,0,0.55),new=TRUE)
 
+structure <- c(2,3,5,6,8,9)
+
+#Combine SOEl/JABOWA vectors
+comb <- c(rbind(soel.sapling.means,jabowa.sapling.means))
+comb.se <- c(rbind(soel.sapling.sd,jabowa.sapling.sd))
+
 #Plot means
-plot(structure,comb2.new,ylim=c(0,1100),xlim=c(1.5,9.5),xaxt='n',xlab=''
-     ,ylab=expression('Saplings'~ha^{-1}),
-     pch=rep(c(21,21),3),
-     cex=1)
-axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Shelterwood'),tick=FALSE)
+plot(structure,comb,ylim=c(0,1100),xlim=c(1.5,9.5),xaxt='n',xlab='',
+     ylab=expression('Saplings'~ha^{-1}),pch=rep(c(21,21),3),cex=1)
+axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Midstory Removal'),tick=FALSE)
 
 #Plot shaded boxes
-polygon(x=c(0,0,4,4),y=c(comb2[1]-comb2.se[1]*1.96,comb2[1]+comb2.se[1]*1.96,
-                         comb2[1]+comb2.se[1]*1.96,comb2[1]-comb2.se[1]*1.96),col=shadecol,border=F)
-segments(x0=0,y0=comb2[1],x1=4,y1=comb2[1],lty=2)
-polygon(x=c(4,4,7,7),y=c(comb2[6]-comb2.se[6]*1.96,comb2[6]+comb2.se[6]*1.96,
-                         comb2[6]+comb2.se[6]*1.96,comb2[6]-comb2.se[6]*1.96),col=shadecol,border=F)
-segments(x0=4,y0=comb2[6],x1=7,y1=comb2[6],lty=2)
-polygon(x=c(7,7,10,10),y=c(comb2[11]-comb2.se[11]*1.96,comb2[11]+comb2.se[11]*1.96,
-                           comb2[11]+comb2.se[11]*1.96,comb2[11]-comb2.se[11]*1.96),col=shadecol,border=F)
-segments(x0=7,y0=comb2[11],x1=10,y1=comb2[11],lty=2)
-
-#Plot confidence intervals
-for (i in 1:6){
-  segments(x0=structure[i],y0=comb2.new[i]-comb2.se.new[i],
-           x1=structure[i],y1=comb2.new[i]+comb2.se.new[i])
-  segments(x0=structure[i]-0.1,y0=comb2.new[i]+comb2.se.new[i],
-           x1=structure[i]+0.1,y1=comb2.new[i]+comb2.se.new[i])
-  segments(x0=structure[i]-0.1,y0=comb2.new[i]-comb2.se.new[i],
-           x1=structure[i]+0.1,y1=comb2.new[i]-comb2.se.new[i])
+st <- c(0,4,7,10)
+for (i in 1:3){
+  polygon(x=c(rep(st[i],2),rep(st[i+1],2)),
+          y=c(hee.sapling.means[i]-hee.sapling.se[i]*1.96,hee.sapling.means[i]+hee.sapling.se[i]*1.96,
+              hee.sapling.means[i]+hee.sapling.se[i]*1.96,hee.sapling.means[i]-hee.sapling.se[i]*1.96),
+          col=shadecol,border=F)
+  segments(x0=st[i],y0=hee.sapling.means[i],x1=st[i+1],y1=hee.sapling.means[i],lty=2)
 }
-
-#Plot points on top of intervals
-points(structure,comb2.new,pch=rep(c(21,21),3),bg=rep(c('white','black','white','black'),3),
-       cex=1)
 
 box()
 abline(v=4)
 abline(v=7)
 
-dev.off()
-#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.19/bin/gswin64c.exe")
-#embed_fonts("../dissertation/figures/fig5-7.pdf")
-#embed_fonts("appendices/figures/fig7.pdf")
+#Plot 95% confidence intervals
+for (i in 1:6){
+  segments(x0=structure[i],y0=comb[i]-1.96*comb.se[i],
+           x1=structure[i],y1=comb[i]+1.96*comb.se[i])
+  segments(x0=structure[i]-0.06,y0=comb[i]+1.96*comb.se[i],
+           x1=structure[i]+0.06,y1=comb[i]+1.96*comb.se[i])
+  segments(x0=structure[i]-0.06,y0=comb[i]-1.96*comb.se[i],
+           x1=structure[i]+0.06,y1=comb[i]-1.96*comb.se[i])
+}
 
+#Plot points on top of intervals
+points(structure,comb,pch=rep(c(21,21),3),bg=rep(c('white','black','white','black'),3),
+       cex=1)
+
+
+dev.off()

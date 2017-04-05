@@ -21,7 +21,7 @@ structure <- c(1,2,3,4,6,7,8,9)
 par(mar = c(5,4.5,1,2) + 0.1)
 
 #Open tiff container
-tiff(filename="figures/Fig3.tif",width=5,height=6,units="in",res=300, pointsize=8,
+tiff(filename="figures/Fig5.tif",width=5,height=6,units="in",res=300, pointsize=8,
      compression = "lzw",type='cairo')
 
 ############################################################
@@ -38,10 +38,7 @@ uplim <- mns+sds
 lowlim <- mns-sds
 
 plot(1,xlim=c(0.5,9.5),ylim=c(.98*min(lowlim),1.05*max(uplim)),xaxt='n',xlab="",
-     #ylab=expression("Acorns "~ ha^{-1}~"(7 Year Sum) x 1000")
-     #ylab=expression('TOTAC'%*%1000)
-     ylab='TOTAC (thousands)'
-)
+     ylab='TOTAC (thousands)')
 abline(v=5)
 
 wd=0.4
@@ -74,9 +71,7 @@ uplim <- mns+sds
 lowlim <- mns-sds
 
 plot(1,xlim=c(0.5,9.5),ylim=c(.95*min(lowlim),1.3*max(uplim)),xaxt='n',xlab="",
-     #ylab="Yearly Percent Emergence"
-     ylab="PCTEMR"
-)
+     ylab="PCTEMR")
 abline(v=5)
 
 wd=0.4
@@ -89,8 +84,8 @@ for(i in 1:8){
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
 text(structure,(uplim+0.002),c('A','A','BC','B','A','D','BC','C'))
 text(9,min(lowlim),'(b)',cex=1.5)
-legend("topleft",legend=c('C','TE','YE','TE + YE'),
-       pt.bg=rev(gray.colors(4)),pch=21,bg='white',ncol=2,title='Scenario')
+legend("topleft",legend=c('Control','Treat Effect','Year Effect','Treat + Year'),
+       pt.bg=rev(gray.colors(4)),pch=21,bg='white',ncol=2,title='Acorn Predation Scenario')
 
 ###########################################################################################
 
@@ -104,10 +99,7 @@ uplim <- mns+sds
 lowlim <- mns-sds
 
 plot(1,xlim=c(0.5,9.5),ylim=c(.95*min(lowlim),1.05*max(uplim)),xaxt='n',xlab="",
-     #ylab=expression("New Seedlings "~ ha^{-1}~"(7 Year Sum) x 1000"))
-     #ylab=expression('TNSEED'%*%1000)
-     ylab='TNSEED (thousands)'
-)
+     ylab='TNSEED (thousands)')
 abline(v=5)
 
 wd=0.4
@@ -123,7 +115,7 @@ text(structure,(uplim+0.7),c('A','A','B','B','A','C','B','B'))
 text(9,min(lowlim),'(c)',cex=1.5)
 
 axis(1,at=c(2.5,7.5),tick=F,
-     labels=c('NH','MR'))
+     labels=c('No Harvest','Midstory Removal'))
 
 #############################################################################################
 
@@ -138,9 +130,7 @@ uplim <- mns+sds
 lowlim <- mns-sds
 
 plot(1,xlim=c(0.5,9.5),ylim=c(.95*min(lowlim),1.05*max(uplim)),xaxt='n',xlab="",
-     #ylab=expression("Seed-origin Saplings "~ ha^{-1} ~"(Year 7)")
-     ylab='SAPDENS'
-)
+     ylab='SAPDENS')
 abline(v=5)
 
 wd=0.4
@@ -155,7 +145,7 @@ text(structure,(uplim+8),c('A','A','BC','B','C','C','D','D'))
 text(9,min(lowlim),'(d)',cex=1.5)
 
 axis(1,at=c(2.5,7.5),tick=F,
-     labels=c('NH','MR'))
+     labels=c('No Harvest','Midstory Removal'))
 
 mtext(text='Harvest Treatment',side=1,outer=T,line=-2.5)
 dev.off()
