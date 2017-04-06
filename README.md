@@ -7,7 +7,7 @@ The model (`SOEL.nlogo`) is implemented in the [NetLogo](http://ccl.northwestern
 
 A description of the model along with several case studies are published in the following paper:
 
-Kellner, Kenneth F.; Swihart, Robert K. Simulation of oak early life history and interactions with timber harvest via an individual-based model, SOEL. [[link]]()
+Kellner, Kenneth F.; Swihart, Robert K. 2017. Simulation of oak early life history and interactions with disturbance via an individual-based model, SOEL. PLOS ONE. [[link]]()
 
 A more detailed description of SOEL and how it was developed can be found in the supplementary information (S1 Appendix).
 
@@ -16,7 +16,7 @@ Metadata
 
 `appendices`: LaTeX code for S1 Appendix and R code for individual parameter regression models (provided in S3 Code).
 
-`data`: raw datasets from the HEE used to parameterize the model (see S3 Code).
+`data`: Raw datasets from the HEE used to parameterize the model (see S3 Code).
 
 `casestudies`: R code to set up and run the case studies in the manuscript and the validation experiments found in S1 Appendix.
 
@@ -26,6 +26,6 @@ Metadata
 
 `run_SOEL.R`: R script that can call SOEL and the JABOWA implementation from within R using the RNetLogo package. The script can run multiple simulations in parallel.
 
-`SOEL.nlogo`: Source code for SOEL in the NetLogo language. Part of S1 Code.
+`SOEL.nlogo`: Source code for SOEL in the NetLogo language. Part of S2 Code.
 
 `utility_functions.R`: Functions for formatting and analyzing SOEL output.

@@ -78,7 +78,32 @@ mast.ydisp <- mast[keep]
 jags.data <- list(ndispacorns=dim(ydisp)[1],shelter=ydisp$shelter,
                   dist=ydisp$dist,mast=mast.ydisp)
 params <- c('disp.mean','disp.shelter','disp.mast','sh')
-modFile <- 'development/model_acorn_dispersaldist.R'
+
+###########
+#JAGS model file
+writeLines("
+model {
+  
+  for (i in 1:ndispacorns){
+    log(dm[i]) <- disp.mean 
+    + disp.shelter*shelter[i] 
+    + disp.mast*mast[i]
+    lam[i] <- pow((1/dm[i]),sh)
+    dist[i] ~ dweib(sh,lam[i])
+  }
+  
+  #priors
+  disp.mean ~ dunif(-10,10)
+  disp.shelter ~ dnorm(0,0.01)
+  disp.mast ~ dnorm(0,0.01)
+  sh ~ dgamma(1.0,1.0E-3)
+}
+", con='model_acorn_dispersaldist.txt')
+
+modFile <- 'model_acorn_dispersaldist.txt'
+
+###########
+
 inits <- function(){list(sh=1)}
 
 #Fit Weibull regression model in JAGS of dispersal distance

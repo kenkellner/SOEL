@@ -14,5 +14,4 @@ output
 *.toc
 *.bst
 *.pdf
-*.csv
 bibsources.tex
