@@ -1,0 +1,11 @@
+param,intercept,se
+meanAcorn,2.085,0.46
+pWeevil,-1.08,0.39
+pDispersal,0.52,0.223
+weibSc,2.064,0.041
+pCache,-2.635,0.947
+pDispEaten,1.729,0.189
+pUndispEaten,-0.179,0.213
+pBrowse,-4.521,0.454
+meanGr,1.24,0.125
+meanSurv,-0.6,0.114
