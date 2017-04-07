@@ -631,7 +631,7 @@ to set-scenario
   if browse-scenario = "fixedaverage" [set prob-browsed 0.1058]
 
   ;If "hee", calculate random year effect. Browse probability is calculated later on a per-seedling basis because height is a covariate
-  if browse-scenario = "hee" [set br-year-ef random-normal 0 0.59]
+  if browse-scenario = "hee" [set br-year-ef random-normal 0 0.32]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -644,7 +644,7 @@ to set-scenario
   ;If "fixedaverage" use parameters from model fit with data from from both drought and non-drought years
   if seedling-scenario = "fixedaverage" [
     set surv-params (list -0.6 0.101 0.366 0.576) ; intercept species canopy age
-    set growth-params (list 1.24 0.248 -0.94 -0.488 0.116 1.188) ; intercept seedSD browse canopy species obsSD
+    set growth-params (list 1.47 0.12 -0.88 -0.88 0.33 1.29) ; intercept seedSD browse canopy species obsSD
   ]
 
   ;If "randomdrought" there are two models, one fit with drought year data and one with non-drought year data
@@ -653,15 +653,15 @@ to set-scenario
     ;drought conditions
     ifelse random-float 1 < drought-prob [
       set surv-params (list -0.531 0.197 0.528 0.44)
-      set growth-params (list 0.911 0.157 -0.871 -0.238 0.085 1.016)]
+      set growth-params (list 1.07 0.13 -0.74 -0.33 0.17 1.04)]
     [;non-drought
       set surv-params (list 2.596 0 -0.733 0)
-      set growth-params (list 2.091 0.199 -0.976 -1.733 0.468 1.468)]
+      set growth-params (list 2.10 0.20 -0.98 -1.74 0.46 1.47)]
   ]
 
   ;Special case when testing for sensitivity of model to dispersal parameters; intercept is varied
   if seedling-scenario = "sensitivity" [
-    set growth-params (list (item 8 sens-params) 0.248 -0.94 -0.488 0.116 1.188)
+    set growth-params (list (item 8 sens-params) 0.12 -0.88 -0.88 0.33 1.29)
     set surv-params (list (item 9 sens-params) 0.101 0.366 0.576)
   ]
 
@@ -887,7 +887,7 @@ to grow-seedling
   ;Scenario in which browse probability varies with seedling height and year
   ;See file 'parameter_seedling_herbivory.R' in S3 Regression Models for more details
   if browse-scenario = "hee"[
-    let br-mean -4.521 + 0.158 * (height * 100) - 0.00148 * (height * 100 * height * 100) + 0.372 * sp-ef + br-year-ef
+    let br-mean -5.49 + 0.18 * (height * 100) - 0.0017 * (height * 100 * height * 100) + 0.30 * sp-ef + br-year-ef
     set pbrowse (1 + exp(-1 * br-mean)) ^ (-1)
   ]
 
