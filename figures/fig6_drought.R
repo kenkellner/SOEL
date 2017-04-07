@@ -52,9 +52,9 @@ lines(1:6,mns[1:6])
 lines(8:13,mns[7:12])
 lines(15:20,mns[13:18])
 
-text(3.5,25,'No Harvest')
-text(10.5,25,'Midstory Removal')
-text(17.5,25,'Clearcut')
+text(3.5,32,'No Harvest')
+text(10.5,32,'Midstory Removal')
+text(17.5,32,'Clearcut')
 
 text(20,max(uplim)*1.15,'(a)',cex=1.5)
 
@@ -95,9 +95,9 @@ lines(1:6,mns[1:6])
 lines(8:13,mns[7:12])
 lines(15:20,mns[13:18])
 
-text(3.5,3500,'No Harvest')
-text(10.5,3500,'Midstory Removal')
-text(17.5,3500,'Clearcut')
+text(3.5,3800,'No Harvest')
+text(10.5,3800,'Midstory Removal')
+text(17.5,3800,'Clearcut')
 
 text(20,max(uplim)*1.15,'(b)',cex=1.5)
 

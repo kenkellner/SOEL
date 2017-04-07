@@ -74,8 +74,6 @@ library(jagsUI)
 surv.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                     n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=TRUE)
 
-save(surv.ibm.output,file='output/development/surv_ibm_output.Rda')
-
 ############
 
 #First 2 years only (drought)
@@ -86,11 +84,20 @@ for (i in 1:length(nsamples)){
 surv12.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                         n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=TRUE)
 
-save(surv12.ibm.output,file='output/development/surv12_ibm_output.Rda')
-
 #####################
 
 #Years 3-4 only (non-drought)
+#Read in raw data again
+ibm.survival <- read.csv('data/ibm_survival.csv',header=T)
+canopy <- read.csv('data/ibm_canopy.csv',header=T)[,1]
+
+nseedlings <- dim(ibm.survival)[1]
+species <- ibm.survival$species
+seed.plotcode <- ibm.survival$seed.plotcode
+surv <- ibm.survival[,c(4:8)]
+age <- ibm.survival[,c(9:12)]
+is.sprout <- ibm.survival[,c(13:16)]
+
 keep <- which(surv[,3]==1)
 surv <- surv[keep,3:5]
 species <- species[keep]
@@ -105,5 +112,3 @@ for (i in 1:dim(surv)[1]){
 
 surv34.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                           n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=TRUE)
-
-save(surv34.ibm.output,file='output/development/surv34_ibm_output.Rda')

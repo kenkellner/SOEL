@@ -8,6 +8,7 @@
 #Ecosphere 7: e01473. doi: 10.1002/ecs2.1473
 
 #Read in raw data
+#Includes only 1-0, non-sprout seedlings
 ibm.growth <- read.csv('data/ibm_growth.csv',header=T)
 canopy <- read.csv('data/ibm_canopy.csv',header=T)[,1]
 
@@ -79,8 +80,6 @@ library(jagsUI)
 ibm.growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                       n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
 
-save(ibm.growth.output,file="output/development/ibm_growth_output.Rda")
-
 ########################################################################################
 
 #First 2 years only (drought years)
@@ -92,11 +91,21 @@ for (i in 1:length(nsamples)){
 ibm.growth12.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                             n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
 
-save(ibm.growth12.output,file="output/ibm_growth12_output.Rda")
-
 ########################################################################################
 
 #Second 2 years only (non-drought)
+
+#Read in and format data again
+#Read in raw data
+ibm.growth <- read.csv('data/ibm_growth.csv',header=T)
+canopy <- read.csv('data/ibm_canopy.csv',header=T)[,1]
+
+#Format for JAGS
+nseedlings <- dim(ibm.growth)[1]
+species <- ibm.growth$species
+growth <- ibm.growth[,4:7]
+seed.plotcode <- ibm.growth$seed.plotcode
+browse <- ibm.growth[,8:11]
 
 keep <- which(!is.na(growth[,3]))
 growth <- growth[keep,3:4]
@@ -112,7 +121,7 @@ for(i in 1:length(species)){
   } else {nsamples[i] <- 2}
 }
 
+growth <- apply(growth,c(1,2),neglog)
+
 ibm.growth34.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                             n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
-
-save(ibm.growth34.output,file="output/ibm_growth34_output.Rda")

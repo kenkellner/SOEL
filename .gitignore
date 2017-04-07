@@ -15,3 +15,4 @@ output
 *.bst
 *.pdf
 bibsources.tex
+notify.R

@@ -3,24 +3,21 @@
 #############################################
 
 source('run_SOEL.R')
-
-library(RPushbullet)
-
-start.time <- Sys.time()
+source('notify.R')
 
 #Run experiment and save results
 
-drought.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
                         burnin=30,nyears=40,
                         harvests = c('none','clearcut','shelterwood'),
                         mast.scenario = "hee",
                         weevil.scenario = "fixedaverage",
                         dispersal.scenario = "fixedaverage",
                         seedling.scenario = "fixedaverage",
-                        force.processors = 12,
-                        ram.max = 5000)
+                        force.processors = 15,
+                        ram.max = 4000)
 
-drought.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
                               burnin=30,nyears=40,
                               harvests = c('none','clearcut','shelterwood'),
                               mast.scenario = "hee",
@@ -28,10 +25,10 @@ drought.prob0 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                               dispersal.scenario = "fixedaverage",
                               seedling.scenario = "randomdrought",
                               prob.drought = 0,
-                              force.processors = 12,
-                              ram.max = 5000)
+                              force.processors = 15,
+                              ram.max = 4000)
 
-drought.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -39,10 +36,10 @@ drought.prob2 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             dispersal.scenario = "fixedaverage",
                             seedling.scenario = "randomdrought",
                             prob.drought = 0.2,
-                            force.processors = 12,
-                            ram.max = 5000)
+                            force.processors = 15,
+                            ram.max = 4000)
 
-drought.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -50,10 +47,10 @@ drought.prob4 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             dispersal.scenario = "fixedaverage",
                             seedling.scenario = "randomdrought",
                             prob.drought = 0.4,
-                            force.processors = 12,
-                            ram.max = 5000)
+                            force.processors = 15,
+                            ram.max = 4000)
 
-drought.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -61,10 +58,10 @@ drought.prob6 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             dispersal.scenario = "fixedaverage",
                             seedling.scenario = "randomdrought",
                             prob.drought = 0.6,
-                            force.processors = 12,
-                            ram.max = 5000)
+                            force.processors = 15,
+                            ram.max = 4000)
 
-drought.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -72,10 +69,10 @@ drought.prob8 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             dispersal.scenario = "fixedaverage",
                             seedling.scenario = "randomdrought",
                             prob.drought = 0.8,
-                            force.processors = 12,
-                            ram.max = 5000)
+                            force.processors = 15,
+                            ram.max = 4000)
 
-drought.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
+drought.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
                             burnin=30,nyears=40,
                             harvests = c('none','clearcut','shelterwood'),
                             mast.scenario = "hee",
@@ -83,25 +80,14 @@ drought.prob10 <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
                             dispersal.scenario = "fixedaverage",
                             seedling.scenario = "randomdrought",
                             prob.drought = 1.0,
-                            force.processors = 12,
-                            ram.max = 5000)
+                            force.processors = 15,
+                            ram.max = 4000)
 
 save(drought.prob0,drought.prob2,drought.prob4,drought.prob6,drought.prob8,drought.prob10,
      file='output/casestudy_drought.Rdata')
 
-#Calculate runtime and push alert message
-end.time <- Sys.time() 
-runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
-
-setwd('output/drought')
-zip('drought.zip',files=list.files())
-setwd('../..')
-
-pbPost('note','Analysis Complete',
-       paste('Drought experiment on rbrutus16 complete after',runtime,'minutes.'),
-       devices='Nexus 6')
-
-pbPost('file',url='output/drought/drought.zip')
+#Notify with simplepush
+notify("drought done")
 
 #Shut down instance 
 system('sudo shutdown -h now')

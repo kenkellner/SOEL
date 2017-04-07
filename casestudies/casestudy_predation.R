@@ -3,10 +3,7 @@
 ####################################################################
 
 source('run_SOEL.R')
-
-library(RPushbullet)
-
-start.time <- Sys.time()
+source('notify.R')
 
 #Run experiment and save results
 weevil.dispersal.average <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=36,
@@ -48,19 +45,8 @@ weevil.dispersal.treatyearlyeff <- run.SOEL(xcorewidth=140, ycorewidth=140, nrep
 save(weevil.dispersal.average,weevil.dispersal.treateff,weevil.dispersal.yearlyeff,
      weevil.dispersal.treatyearlyeff,file='output/casestudy_predation.Rdata')
 
-#Calculate runtime and push alert message
-end.time <- Sys.time() 
-runtime <- round(as.numeric(end.time-start.time,units="mins"),digits=3)
-
-setwd('output/predation')
-zip('predation.zip',files=list.files())
-setwd('../..')
-
-pbPost('note','Analysis Complete',
-       paste('Predation experiment on rbrutus16 complete after',runtime,'minutes. Sending files and shutting down instance.'),
-       devices='Nexus 6')
-
-pbPost('file',url='output/predation/predation.zip')
+#Notify with simplepush
+notify("predation done")
 
 #Shut down instance 
 system('sudo shutdown -h now')
