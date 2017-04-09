@@ -4,7 +4,7 @@
 ################################
 
 #Read in/format raw HEE seedling density data
-seedling <- read.csv('data/hee_seedlings.csv',header=T)[,1:9]
+seedling <- read.csv('data/ibm_seedlings.csv',header=T)[,1:9]
 names(seedling) <- c('unit','plot','quad','class','species','class1','class2','class3','class4')
 
 #Generate new variable combining unit and plot
@@ -102,27 +102,27 @@ hee.sapling.se <- c(
 #SOEL output data
 
 soel.seedling.means <- c(
-  mean(seedlingsval.out$none$seedclass123[26,1:30]),
-  mean(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
-  mean(seedlingsval.shelt$shelterwood$seedclass123[26,1:30])
+  mean(seedlingsval.soel$none$seedclass123[36,1:30]),
+  mean(seedlingsval.soel$clearcut$seedclass123[36,1:30]),
+  mean(seedlingsval.soel$shelterwood$seedclass123[36,1:30])
 )
 
 soel.seedling.sd <- c(
-  sd(seedlingsval.out$none$seedclass123[26,1:30]),
-  sd(seedlingsval.clear$clearcut$seedclass123[26,1:30]),
-  sd(seedlingsval.shelt$shelterwood$seedclass123[26,1:30])
+  sd(seedlingsval.soel$none$seedclass123[36,1:30]),
+  sd(seedlingsval.soel$clearcut$seedclass123[36,1:30]),
+  sd(seedlingsval.soel$shelterwood$seedclass123[36,1:30])
 ) 
 
 soel.sapling.means <- c(
-  mean(seedlingsval.out$none$seedclass4[26,1:30]),
-  mean(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
-  mean(seedlingsval.shelt$shelterwood$seedclass4[26,1:30])
+  mean(seedlingsval.soel$none$seedclass4[36,1:30]),
+  mean(seedlingsval.soel$clearcut$seedclass4[36,1:30]),
+  mean(seedlingsval.soel$shelterwood$seedclass4[36,1:30])
 )
 
 soel.sapling.sd <- c(
-  sd(seedlingsval.out$none$seedclass4[26,1:30]),
-  sd(seedlingsval.clear$clearcut$seedclass4[26,1:30]),
-  sd(seedlingsval.shelt$shelterwood$seedclass4[26,1:30])
+  sd(seedlingsval.soel$none$seedclass4[36,1:30]),
+  sd(seedlingsval.soel$clearcut$seedclass4[36,1:30]),
+  sd(seedlingsval.soel$shelterwood$seedclass4[36,1:30])
   
 )
 
@@ -130,15 +130,15 @@ soel.sapling.sd <- c(
 #JABOWA output data
 
 jabowa.sapling.means <- c(
-  mean(seedlingsval.none.jabowa$none$seedclass4[26,1:30]),
-  mean(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30]),
-  mean(seedlingsval.shelt.jabowa$shelterwood$seedclass4[26,1:30])
+  mean(seedlingsval.jabowa$none$seedclass4[26,1:30]),
+  mean(seedlingsval.jabowa$clearcut$seedclass4[26,1:30]),
+  mean(seedlingsval.jabowa$shelterwood$seedclass4[26,1:30])
 )
 
 jabowa.sapling.sd <- c(
-  sd(seedlingsval.none.jabowa$none$seedclass4[26,1:30]),
-  sd(seedlingsval.clear.jabowa$clearcut$seedclass4[26,1:30]),
-  sd(seedlingsval.shelt.jabowa$shelterwood$seedclass4[26,1:30])
+  sd(seedlingsval.jabowa$none$seedclass4[26,1:30]),
+  sd(seedlingsval.jabowa$clearcut$seedclass4[26,1:30]),
+  sd(seedlingsval.jabowa$shelterwood$seedclass4[26,1:30])
 )
 
 
@@ -154,7 +154,7 @@ par(fig=c(0,1,0.45,1),new=FALSE,mgp=c(2.5,1,0))
 structure <- c(2.5,5.5,8.5)
 
 #Plot means for seedling figure
-plot(structure,soel.seedling.means,ylim=c(0,8000),xlim=c(1.5,9.5),xaxt='n',xlab=''
+plot(structure,soel.seedling.means,ylim=c(0,9000),xlim=c(1.5,9.5),xaxt='n',xlab=''
      ,ylab=expression('Seedlings'~ha^{-1}))
 
 #Draw shaded boxes representing actual HEE data
@@ -187,7 +187,7 @@ for (i in 1:3){
 points(structure,soel.seedling.means,pch=21,bg=rep(c('white','white'),3),
        cex=1)
 
-legend('topleft',pch=c(21,21,22),pt.bg=c('white','black',shadecol),
+legend(4,9500,pch=c(21,21,22),pt.bg=c('white','black',shadecol),
        pt.cex=c(1,1,3),
        legend=c('SOEL','JABOWA', 'HEE Data'),bty='n')
 

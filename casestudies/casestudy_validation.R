@@ -7,42 +7,29 @@
 ##############################################
 
 source('run_SOEL.R')
+source('notify.R')
 
-#No harvest treatment
-seedlingsval.out <- run.SOEL(model='ibm', nreps=30, nyears=40, 
-                               harvests=c('none'),seedlings='hee',
-                               acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
-                                            disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
-                               mastscenario="hee")
-seedlingsval.none.jabowa <- run.SOEL(model='jabowa', nreps=30, nyears=40, 
-                                     harvests=c('none'),seedlings='none',
-                                     acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
-                                                  disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
-                                     mastscenario="hee")
+seedlingsval.soel <- run.SOEL(xcorewidth=140, ycorewidth=140, nreps=30,
+                             burnin=30,nyears=40,
+                             harvests = c('none','clearcut','shelterwood'),
+                             seedlings = "hee",
+                             seedling.scenario = "fixedaverage",
+                             mast.scenario = "hee",
+                             weevil.scenario = "custom",
+                             prob.weevil = 0.31,
+                             dispersal.scenario = "custom",
+                             force.processors = 15,
+                             ram.max = 4000)
 
-#Clearcut treatment
-seedlingsval.clear <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
-                               harvests=c('clearcut'),seedlings='hee',
-                                acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
-                                disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
-                                mastscenario="hee")
-seedlingsval.clear.jabowa <- run.SOEL(model='jabowa', nreps=30, nyears=30, burnin=20,
-                                      harvests=c('clearcut'),seedlings='none',
-                                      acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
-                                                   disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
-                                      mastscenario="hee")
+seedlingsval.jabowa <- run.SOEL(model='jabowa',xcorewidth=140, ycorewidth=140, nreps=30,
+                              burnin=30,nyears=40,
+                              harvests = c('none','clearcut','shelterwood'),
+                              seedlings = "none",
+                              force.processors = 15,
+                              ram.max = 4000)
 
-#Shelterwood/midstory removal treatment
-seedlingsval.shelt <- run.SOEL(model='ibm', nreps=30, nyears=30, burnin=20,
-                                 harvests=c('shelterwood'),seedlings='hee',
-                                 acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
-                                              disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
-                                 mastscenario="hee")
-seedlingsval.shelt.jabowa <- run.SOEL(model='jabowa', nreps=30, nyears=30, burnin=20,
-                                         harvests=c('shelterwood'),seedlings='simple',
-                                         acorn = list(weevil=0.31,disperse=0.41,disperse.dist=5.185,
-                                                      disperse.eaten=0.704,cache.prob=0.288,undisperse.eaten=0.538),
-                                         mastscenario="hee")
+#Notify with simplepush
+notify("seedlings done")
 
 ############################################
 ## Forest Structure Validation Case Study ##
@@ -67,9 +54,9 @@ ba.jabowa <- run.SOEL(model='jabowa', nreps=30, nyears=122, burnin=1,
 #############################
 
 #Save all model output
-save('seedlingsval.out','seedlingsval.none.jabowa',
-     'seedlingsval.clear','seedlingsval.clear.jabowa',
-     'seedlingsval.shelt','seedlingsval.shelt.jabowa',
-     'ba.hee','ba.jabowa',
+save('seedlingsval.soel','seedlingsval.jabowa','ba.hee','ba.jabowa',
      file='output/casestudy_validation.Rdata')
+
+#Notify with simplepush
+notify("structure done")
 
