@@ -83,15 +83,15 @@ source('utility_functions.R')
 
 load('output/casestudy_sensitivity.Rdata')
 
-#Pctgerm (year 38)
+#Pctgerm (year 37)
 inp.covs <- as.data.frame(scale(sens.test.int$lhc))
 out.vals <- sens.test.int$out$none$pctgerm[37,]
-varPart(out.vals,inp.covs,4)
+varPart(out.vals,inp.covs,4)[,c(1,5,8)]
 
-#Seedlings (total new seedlings accumulated 30-40)
+#Seedlings (total new seedlings accumulated 30-37)
 out.vals <- colSums(sens.test.int$out$none$newseedlings[30:37,])
-varPart(out.vals,inp.covs,4)
+varPart(out.vals,inp.covs,4)[,c(1,5,8)]
 
-#Saplings (total at year 36)
-out.vals <- sens.test.int$out$none$seedclass4[36,]
-varPart(out.vals,inp.covs,4)
+#Saplings (total at year 37)
+out.vals <- sens.test.int$out$none$seedclass4[37,]
+varPart(out.vals,inp.covs,4)[,c(1,5,8)]

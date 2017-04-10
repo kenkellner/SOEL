@@ -70,59 +70,59 @@ load('output/casestudy_validation.Rdata')
 #Empirical data from HEE
 hee.seedling.means <- c(
   mean(collapsed$class123[collapsed$treat=="matrix"]/16*10000),
-  mean(collapsed$class123[collapsed$treat=="clear"]/16*10000),
-  mean(collapsed$class123[collapsed$treat=="shelter"]/16*10000)
+  mean(collapsed$class123[collapsed$treat=="shelter"]/16*10000),
+  mean(collapsed$class123[collapsed$treat=="clear"]/16*10000)
 )
 
 hee.seedling.se <- c(
   sd(collapsed$class123[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class123[collapsed$treat=='matrix'])),
-  sd(collapsed$class123[collapsed$treat=="clear"]/16*10000)/sqrt(
-    length(collapsed$class123[collapsed$treat=='clear'])),
   sd(collapsed$class123[collapsed$treat=="shelter"]/16*10000)/sqrt(
-    length(collapsed$class123[collapsed$treat=='shelter']))
+    length(collapsed$class123[collapsed$treat=='shelter'])),
+  sd(collapsed$class123[collapsed$treat=="clear"]/16*10000)/sqrt(
+    length(collapsed$class123[collapsed$treat=='clear']))
 )
 
 hee.sapling.means <- c(
   mean(collapsed$class4[collapsed$treat=="matrix"]/16*10000),
-  mean(collapsed$class4[collapsed$treat=="clear"]/16*10000),
-  mean(collapsed$class4[collapsed$treat=="shelter"]/16*10000)
+  mean(collapsed$class4[collapsed$treat=="shelter"]/16*10000),
+  mean(collapsed$class4[collapsed$treat=="clear"]/16*10000)
 )
 
 hee.sapling.se <- c(
   sd(collapsed$class4[collapsed$treat=="matrix"]/16*10000)/sqrt(
     length(collapsed$class4[collapsed$treat=='matrix'])),
-  sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
-    length(collapsed$class4[collapsed$treat=='clear'])),
   sd(collapsed$class4[collapsed$treat=="shelter"]/16*10000)/sqrt(
-    length(collapsed$class4[collapsed$treat=='shelter']))
+    length(collapsed$class4[collapsed$treat=='shelter'])),
+  sd(collapsed$class4[collapsed$treat=="clear"]/16*10000)/sqrt(
+    length(collapsed$class4[collapsed$treat=='clear']))
 )
 
 ############################
 #SOEL output data
 
 soel.seedling.means <- c(
-  mean(seedlingsval.soel$none$seedclass123[36,1:30]),
-  mean(seedlingsval.soel$clearcut$seedclass123[36,1:30]),
-  mean(seedlingsval.soel$shelterwood$seedclass123[36,1:30])
+  mean(seedlingsval.soel$none$seedclass123[35,1:30]),
+  mean(seedlingsval.soel$shelterwood$seedclass123[35,1:30]),
+  mean(seedlingsval.soel$clearcut$seedclass123[35,1:30])
 )
 
 soel.seedling.sd <- c(
-  sd(seedlingsval.soel$none$seedclass123[36,1:30]),
-  sd(seedlingsval.soel$clearcut$seedclass123[36,1:30]),
-  sd(seedlingsval.soel$shelterwood$seedclass123[36,1:30])
+  sd(seedlingsval.soel$none$seedclass123[35,1:30]),
+  sd(seedlingsval.soel$shelterwood$seedclass123[35,1:30]),
+  sd(seedlingsval.soel$clearcut$seedclass123[35,1:30])
 ) 
 
 soel.sapling.means <- c(
-  mean(seedlingsval.soel$none$seedclass4[36,1:30]),
-  mean(seedlingsval.soel$clearcut$seedclass4[36,1:30]),
-  mean(seedlingsval.soel$shelterwood$seedclass4[36,1:30])
+  mean(seedlingsval.soel$none$seedclass4[35,1:30]),
+  mean(seedlingsval.soel$shelterwood$seedclass4[35,1:30]),
+  mean(seedlingsval.soel$clearcut$seedclass4[35,1:30])
 )
 
 soel.sapling.sd <- c(
-  sd(seedlingsval.soel$none$seedclass4[36,1:30]),
-  sd(seedlingsval.soel$clearcut$seedclass4[36,1:30]),
-  sd(seedlingsval.soel$shelterwood$seedclass4[36,1:30])
+  sd(seedlingsval.soel$none$seedclass4[35,1:30]),
+  sd(seedlingsval.soel$shelterwood$seedclass4[35,1:30]),
+  sd(seedlingsval.soel$clearcut$seedclass4[35,1:30])
   
 )
 
@@ -131,14 +131,14 @@ soel.sapling.sd <- c(
 
 jabowa.sapling.means <- c(
   mean(seedlingsval.jabowa$none$seedclass4[26,1:30]),
-  mean(seedlingsval.jabowa$clearcut$seedclass4[26,1:30]),
-  mean(seedlingsval.jabowa$shelterwood$seedclass4[26,1:30])
+  mean(seedlingsval.jabowa$shelterwood$seedclass4[26,1:30]),
+  mean(seedlingsval.jabowa$clearcut$seedclass4[26,1:30])
 )
 
 jabowa.sapling.sd <- c(
   sd(seedlingsval.jabowa$none$seedclass4[26,1:30]),
-  sd(seedlingsval.jabowa$clearcut$seedclass4[26,1:30]),
-  sd(seedlingsval.jabowa$shelterwood$seedclass4[26,1:30])
+  sd(seedlingsval.jabowa$shelterwood$seedclass4[26,1:30]),
+  sd(seedlingsval.jabowa$clearcut$seedclass4[26,1:30])
 )
 
 
@@ -187,10 +187,9 @@ for (i in 1:3){
 points(structure,soel.seedling.means,pch=21,bg=rep(c('white','white'),3),
        cex=1)
 
-legend(4,9500,pch=c(21,21,22),pt.bg=c('white','black',shadecol),
+legend(7,9500,pch=c(21,21,22),pt.bg=c('white','black',shadecol),
        pt.cex=c(1,1,3),
        legend=c('SOEL','JABOWA', 'HEE Data'),bty='n')
-
 ########################################################
 #Bottom (sapling) figure
 
@@ -205,7 +204,7 @@ comb.se <- c(rbind(soel.sapling.sd,jabowa.sapling.sd))
 #Plot means
 plot(structure,comb,ylim=c(0,1100),xlim=c(1.5,9.5),xaxt='n',xlab='',
      ylab=expression('Saplings'~ha^{-1}),pch=rep(c(21,21),3),cex=1)
-axis(1,at=c(2.5,5.5,8.5),labels=c('Matrix','Clearcut','Midstory Removal'),tick=FALSE)
+axis(1,at=c(2.5,5.5,8.5),labels=c('No Harvest','Midstory Removal','Clearcut'),tick=FALSE)
 
 #Plot shaded boxes
 st <- c(0,4,7,10)

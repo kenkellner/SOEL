@@ -91,7 +91,7 @@ summary(test$anova)
 test$anova.mc
 
 #Saplings
-test = analyze.ibm(datalist,metric='seedorigin',year=30)
+test = analyze.ibm(datalist,metric='seedorigin',year=37)
 summary(test$anova)
 test$anova.mc
 

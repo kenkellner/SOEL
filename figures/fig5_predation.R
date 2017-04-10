@@ -12,7 +12,7 @@ source('utility_functions.R')
 #Generate dataset from SOEL output files
 datalist <- list(avg=weevil.dispersal.average,trt=weevil.dispersal.treateff,yrly=weevil.dispersal.yearlyeff,
                  treat.yrly=weevil.dispersal.treatyearlyeff)
-datalist <- add.newseedlings(datalist,30,38)
+datalist <- add.newseedlings(datalist,30,37)
 datalist <- add.seedorigin(datalist)
 datalist <- add.acornsum(datalist,30,37)
 datalist <- add.pctgermmean(datalist,30,37)
@@ -50,7 +50,7 @@ for(i in 1:8){
 
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
 
-text(structure,(uplim+15),c('A','AB','B','AB','AB','B','AB','AB'))
+text(structure,(uplim+15),rep('A',8))
 text(9,min(lowlim),'(a)',cex=1.5)
 
 ###############################################################
@@ -70,7 +70,7 @@ sds <- aggregate(x=h$pctgerm,by=list(h$scenario,h$harvest),FUN=sd)[,3]
 uplim <- mns+sds
 lowlim <- mns-sds
 
-plot(1,xlim=c(0.5,9.5),ylim=c(.95*min(lowlim),1.3*max(uplim)),xaxt='n',xlab="",
+plot(1,xlim=c(0.5,9.5),ylim=c(.95*min(lowlim),1.2*max(uplim)),xaxt='n',xlab="",
      ylab="PCTEMR")
 abline(v=5)
 
@@ -82,7 +82,7 @@ for(i in 1:8){
 }
 
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
-text(structure,(uplim+0.002),c('A','A','BC','B','A','D','BC','C'))
+text(structure,(uplim+0.001),c('A','A','B','BC','A','D','BC','C'))
 text(9,min(lowlim),'(b)',cex=1.5)
 legend("topleft",legend=c('Control','Treat Effect','Year Effect','Treat + Year'),
        pt.bg=rev(gray.colors(4)),pch=21,bg='white',ncol=2,title='Acorn Predation Scenario')
@@ -111,7 +111,7 @@ for(i in 1:8){
 
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
 
-text(structure,(uplim+0.7),c('A','A','B','B','A','C','B','B'))
+text(structure,(uplim+0.7),c('AB','AB','C','C','A','B','C','C'))
 text(9,min(lowlim),'(c)',cex=1.5)
 
 axis(1,at=c(2.5,7.5),tick=F,
@@ -141,7 +141,7 @@ for(i in 1:8){
 }
 
 points(structure,mns,cex=2,bg=rev(gray.colors(4)),pch=21)
-text(structure,(uplim+8),c('A','A','BC','B','C','C','D','D'))
+text(structure,(uplim+8),c('A','A','B','BC','BC','C','D','D'))
 text(9,min(lowlim),'(d)',cex=1.5)
 
 axis(1,at=c(2.5,7.5),tick=F,

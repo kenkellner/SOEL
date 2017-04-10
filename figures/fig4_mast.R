@@ -51,20 +51,21 @@ for(i in 1:15){
 
 points(structure,mns,cex=2,bg=rev(gray.colors(5)),pch=21)
 
-text(structure,(uplim+1),c('A','B','C','D','E'))
+text(structure,(uplim+1),c('A','ABC','C','D','E','AB','BC','C','D','E','A','C','C','D','E'))
+
 text(17,min(lowlim),'(a)',cex=1.5)
 
 ############################################################################
 
 par(fig=c(0,1,0,0.57),mgp=c(2.5,1,0),new=TRUE,mar = c(5,4.5,1,2) + 0.1)
 
-s <- gen.dataset(datalist,'seedclass4',37)
+s <- gen.dataset(datalist,'seedorigin',37)
 s$harvest <- as.factor(s$harvest)
 s$scenario = factor(s$scenario,c('pga','pg11','pg21','pg12','pg22'))
 s$harvest = factor(s$harvest,c('none','shelterwood','clearcut'))
 
-mns <- aggregate(x=s$seedclass4,by=list(s$scenario,s$harvest),FUN=mean)[,3]
-sds <- aggregate(x=s$seedclass4,by=list(s$scenario,s$harvest),FUN=sd)[,3]
+mns <- aggregate(x=s$seedorigin,by=list(s$scenario,s$harvest),FUN=mean)[,3]
+sds <- aggregate(x=s$seedorigin,by=list(s$scenario,s$harvest),FUN=sd)[,3]
 uplim <- mns+sds
 lowlim <- mns-sds
 
@@ -83,8 +84,7 @@ for(i in 1:15){
 
 points(structure,mns,cex=2,bg=rev(gray.colors(5)),pch=21)
 
-text(structure,(uplim+10),
-     c(rep('A',5),c('B','BC','C','BC','C'),c('D','DE','E','E','F')))
+text(structure,(uplim+20), c('A','AB','AB','AB','ABC','BCD','CD','CD','D','D','E','E','E','F','F'))
 text(17,min(lowlim),'(b)',cex=1.5)
 
 axis(1,at=c(3,9,15),tick=F,
